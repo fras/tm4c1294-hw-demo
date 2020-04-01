@@ -57,39 +57,39 @@ Rev.: 01 Apr 2020
 
 1. Install required packages. Example for Ubuntu 18.04.  
     ARM cross compiler toolchain.
-    ```console
+    ```shell
     sudo apt-get install build-essential gcc-arm-none-eabi binutils-arm-none-eabi openocd
     ```
     Firmware flashing tool.
-    ```console
+    ```shell
     sudo apt-get install lm4flash
     ```
     Minicom terminal program.
-    ```console
+    ```shell
     sudo apt-get install minicom
     ```
     ARM GDB and nemiver graphical debugger.
-    ```console
+    ```shell
     sudo apt-get install gdb-multiarch nemiver
     ```
     Python 3 and required modules.
-    ```console
+    ```shell
     sudo apt-get install python3 python3-serial python3-tk
     ```
 
 2. Compile the firmware project.  
     Change to the ```Firmware``` directory. Then clean the firmware project
     directory. This will remove all compiled files and backups of source files.
-    ```console
+    ```shell
     make mrproper
     ```
     Build the firmware project.
-    ```console
+    ```shell
     make
     ```
     Download the firmware. Make sure that the TM4C1294 Connected LaunchPad™
     Evaluation Kit is connected to an USB port of the PC.
-    ```console
+    ```shell
     make install
     ```
 
@@ -106,7 +106,7 @@ Rev.: 01 Apr 2020
     press ```Ctrl-A```, then ```Z```.
 
     Example minicom session:
-    ```console
+    ```
     **********************************************************************
     TIVA TM4C1294 hw_demo firmware version 0.0.7, release date: 30 Mar 2020
     **********************************************************************
