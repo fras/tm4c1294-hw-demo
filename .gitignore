@@ -1,0 +1,31 @@
+# File: .gitignore
+# Auth: M. Fras, Electronics Division, MPI for Physics, Munich
+# Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
+# Date: 01 Apr 2020
+# Rev.: 01 Apr 2020
+#
+# List of files to be ignored by git.
+#
+
+# This file itself.
+#.gitignore
+
+# Vi/Vim swap and backup files.
+.*.swp
+.*.swo
+*~
+
+# Other backup files.
+*.bac
+*.bak
+
+# Compile firmware files.
+*.axf
+*.bin
+*.d
+*.o
+
+# Compiled python files.
+*.pyc
+__pycache__/
+
