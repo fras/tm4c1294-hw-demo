@@ -3,7 +3,7 @@
 Auth: M. Fras, Electronics Division, MPI for Physics, Munich  
 Mod.: M. Fras, Electronics Division, MPI for Physics, Munich  
 Date: 07 Feb 2020  
-Rev.: 01 Apr 2020  
+Rev.: 02 Apr 2020  
 
 
 
@@ -77,9 +77,14 @@ Rev.: 01 Apr 2020
     sudo apt-get install python3 python3-serial python3-tk
     ```
 
-2. Compile the firmware project.  
+2. Compile and download the firmware project.  
     Change to the ```Firmware``` directory. Then clean the firmware project
-    directory. This will remove all compiled files and backups of source files.
+    directory.
+    ```shell
+    make clean
+    ```
+    This will wipe all compiled files and backups of source files from the
+    project.
     ```shell
     make mrproper
     ```
@@ -92,6 +97,18 @@ Rev.: 01 Apr 2020
     ```shell
     make install
     ```
+    Compile and download a debug version of the firmware, then start the
+    nemiver graphical debugger. Please note that there is a breakpoint set at
+    the start of the program! This prevents it from running until the program
+    is continued from the debugger.
+    ```shell
+    make debug
+    ```
+    After you have finished debugging, build and download the normal firmware
+    version again.
+    ```shell
+    make clean install
+    ```
 
 3. Communicate with the MCU using the minicom terminal program.  
     Create a file ```.minirc.hw_demo``` in your home directory with this
@@ -100,6 +117,9 @@ Rev.: 01 Apr 2020
     pu port             /dev/ttyUSB0
     pu rtscts           No
     ```
+    Adapt the ```pu port``` to the serial input to which your TM4C1294
+    Connected LaunchPad™ Evaluation Kitis connected.
+
     Launch minicom either by calling ```make minicom``` inside the firmware
     folder or by starting minicom from the shell ```minicom hw_demo```. To quit
     minicom, press ```Ctrl-A```, then ```Q```. To edit the minicom settings,
@@ -123,10 +143,23 @@ Rev.: 01 Apr 2020
       rgb     VALUE                       Set the RGB LED.
       temp    [COUNT]                     Read temperature sensor info.
       uart    PORT R/W NUM|DATA           UART access (0 = write, 1 = read).
+    > info
+    TIVA TM4C1294 hw_demo firmware version 0.0.7, release date: 30 Mar 2020
+    It was compiled using gcc 6.3.1 20170620 at 13:56:27 on Apr  2 2020.
     > led 0xf
     OK: LEDs set to 0x0f.
-    > temp 2
-    OK: Temperature = 27.25000 *C ; Manufacturer ID = 0x5449 ; Device ID = 0x0067
+    > i2c 2 0x40 0 0x2
+    OK.
+    > i2c 2 0x40 1 2
+    OK. Data: 0x74 0x80
+    > uart 6 0 0x11 0x22 0x33
+    OK.
+    > uart 6 1 3
+    OK. Data: 0x11 0x22 0x33
+    > adc 2
+    OK: Joystick: X = 1919 Y = 1892 ; Accelerometer: X = 1977 Y = 2074 Z = 2867
+    OK: Joystick: X = 1929 Y = 1896 ; Accelerometer: X = 1983 Y = 2072 Z = 2871
+    > temp
     OK: Temperature = 27.25000 *C ; Manufacturer ID = 0x5449 ; Device ID = 0x0067
     >
     ```
@@ -137,4 +170,52 @@ Rev.: 01 Apr 2020
     line or ```./pyMcu.py --gui``` to open a GUI. You can specify a custom
     serial device to which the MCU is attached using the ```--device``` option,
     e.g. ```./pyMcu.py --device /dev/ttyUSB0 --gui```.
+
+
+
+## Literature
+
+### ARM® Cortex®-M4F-Based MCU TM4C1294 Connected LaunchPad™ Evaluation Kit
+
+![EK-TM4C1294XL TM4C1294 Connected LaunchPad Board Image](http://www.ti.com/diagrams/ek-tm4c1294xl\_tm4c1294\_connected\_launchpad\_top\_view.jpg)
+* [ARM® Cortex®-M4F-Based MCU TM4C1294 Connected LaunchPad™ Evaluation Kit](http://www.ti.com/tool/EK-TM4C1294XL)
+* [Meet the Tiva™ C Series TM4C1294 Connected LaunchPad Evaluation Kit](http://www.ti.com/lit/ml/spmz858/spmz858.pdf)
+* [Tiva™ C Series TM4C1294 Connected LaunchPad Evaluation Kit User's Guide](http://www.ti.com/lit/ug/spmu365c/spmu365c.pdf)
+
+
+
+### BoosterPacks
+
+#### TRS3122E: RS-232 transceiver BoosterPack™ Plug-in Module
+
+![TRS3122E: RS-232 transceiver BoosterPack™ Plug-in Module](http://www.ti.com/diagrams/med_boostxl-rs232_boostxl-rs232_-_ti_11_15_2016--22.JPG)
+* [TRS3122E: RS-232 transceiver BoosterPack™ Plug-in Module](http://www.ti.com/tool/BOOSTXL-RS232)
+* [BOOSTXL-RS232 BoosterPack™ Hardware User's Guide](http://www.ti.com/lit/ug/sllu250/sllu250.pdf)
+
+#### Educational BoosterPack MKII
+
+![BOOSTXL-EDUMKII - Educational BoosterPack MKII](http://www.ti.com/diagrams/med_boostxl-edumkii_boostxl-edumkii_frontnewresize.jpg)
+* [Educational BoosterPack MKII](http://www.ti.com/tool/BOOSTXL-EDUMKII)
+* [ BOOSTXL-EDUMKII Quick Start Guide](http://www.ti.com/lit/ml/slau600/slau600.pdf)
+* [BOOSTXL-EDUMKII Educational BoosterPack Plug-in Module Mark II User's Guide (Rev. A)](http://www.ti.com/lit/ug/slau599a/slau599a.pdf)
+
+
+
+### TM4C1294NCPDT IoT enabled High performance 32-bit ARM® Cortex®-M4F based MCU 
+
+![IoT enabled High performance 32-bit ARM® Cortex®-M4F based MCU](http://www.ti.com/graphics/folders/partimages/TM4C1294NCPDT.jpg)
+* [TM4C1294NCPDT product page](http://www.ti.com/product/TM4C1294NCPDT)
+* [Tiva C Series TM4C1294NCPDT Microcontroller Data Sheet datasheet (Rev. B)](http://www.ti.com/lit/ds/symlink/tm4c1294ncpdt.pdf)
+* [TivaWare™ Peripheral Driver Library for C Series User's Guide (Rev. D)](http://www.ti.com/lit/ug/spmu298d/spmu298d.pdf)
+
+
+
+### Getting Started, HOWTOs, Tutorials
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/JpGNNCYjtFw" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+
+* [HowTo: Develop on the TI Tiva LaunchPad using Linux](http://chrisrm.com/howto-develop-on-the-ti-tiva-launchpad-using-linux/)
+* [Tiva TM4C123G LaunchPad Blink the RGB](https://processors.wiki.ti.com/index.php/Tiva_TM4C123G_LaunchPad_Blink_the_RGB)
+* [Tiva Tutorials - Tiva Peripherals with TivaWare](https://sites.google.com/site/luiselectronicprojects/tutorials/tiva-tutorials)
+* [Getting Started with the TI Stellaris LaunchPad on Linux](https://www.jann.cc/2012/12/11/getting_started_with_the_ti_stellaris_launchpad_on_linux.html)
 
