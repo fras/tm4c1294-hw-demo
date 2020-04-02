@@ -212,7 +212,7 @@ Rev.: 02 Apr 2020
 
 ### Getting Started, HOWTOs, Tutorials
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/JpGNNCYjtFw" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+[![Tiva C Series Connected Launchpad Getting Started EK-TM4C1294XL](https://img.youtube.com/vi/JpGNNCYjtFw/1.jpg)](https://www.youtube.com/watch?v=JpGNNCYjtFw "Tiva C Series Connected Launchpad Getting Started EK-TM4C1294XL")
 
 * [HowTo: Develop on the TI Tiva LaunchPad using Linux](http://chrisrm.com/howto-develop-on-the-ti-tiva-launchpad-using-linux/)
 * [Tiva TM4C123G LaunchPad Blink the RGB](https://processors.wiki.ti.com/index.php/Tiva_TM4C123G_LaunchPad_Blink_the_RGB)
