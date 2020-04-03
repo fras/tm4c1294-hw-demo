@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 07 Feb 2020
-// Rev.: 30 Mar 2020
+// Rev.: 03 Apr 2020
 //
 // Hardware demo for the TI Tiva TM4C1294 Connected LaunchPad Evaluation Kit.
 //
@@ -326,6 +326,10 @@ int I2CAccess(char *cmd, char *param)
                 ui8I2CRw = (uint8_t) strtoul(param, (char **) NULL, 0) & 0x01;
             }
         } else {
+            if (i == 3 && ui8I2CRw == 0 && param == NULL) {
+                UARTprintf("%s: At least one data byte required after I2C write command `%s'.", UI_STR_ERROR, cmd);
+                return -1;
+            }
             if (param == NULL) break;
             else ui8I2CData[i-3] = (uint8_t) strtoul(param, (char **) NULL, 0) & 0xff;
         }
@@ -473,6 +477,10 @@ int UartAccess(char *cmd, char *param)
                 ui8UartRw = (uint8_t) strtoul(param, (char **) NULL, 0) & 0x01;
             }
         } else {
+            if (i == 2 && ui8UartRw == 0 && param == NULL) {
+                UARTprintf("%s: At least one data byte required after UART write command `%s'.", UI_STR_ERROR, cmd);
+                return -1;
+            }
             if (param == NULL) break;
             else ui8UartData[i-2] = (uint8_t) strtoul(param, (char **) NULL, 0) & 0xff;
         }
