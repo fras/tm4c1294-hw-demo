@@ -7,7 +7,7 @@
 # Rev.: 21 Nov 2019
 #
 # Script to launch the Nemiver debugger to debug code running on the TI Tiva
-# TM4C1294 connected LaunchPad evaluation kit.
+# TM4C1294 Connected LaunchPad Evaluation Kit.
 #
 # This script is based on the example on this webpage:
 # https://www.jann.cc/2012/12/11/getting_started_with_the_ti_stellaris_launchpad_on_linux.html

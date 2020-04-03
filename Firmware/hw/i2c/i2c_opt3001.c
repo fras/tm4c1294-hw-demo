@@ -5,8 +5,8 @@
 // Rev.: 19 Feb 2020
 //
 // I2C functions for the OPT3001 ambient light sensor on the Educational
-// BoosterPack MK II connected to the TI Tiva TM4C1294 connected LaunchPad
-// evaluation kit.
+// BoosterPack MK II connected to the TI Tiva TM4C1294 Connected LaunchPad
+// Evaluation Kit.
 //
 
 

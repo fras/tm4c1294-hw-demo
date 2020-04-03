@@ -4,7 +4,7 @@
 // Date: 07 Feb 2020
 // Rev.: 30 Mar 2020
 //
-// Hardware demo for the TI Tiva TM4C1294 connected LaunchPad evaluation kit.
+// Hardware demo for the TI Tiva TM4C1294 Connected LaunchPad Evaluation Kit.
 //
 
 

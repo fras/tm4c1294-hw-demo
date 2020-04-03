@@ -4,8 +4,8 @@
 // Date: 11 Feb 2020
 // Rev.: 18 Feb 2020
 //
-// Header file for the I2C functions on the TI Tiva TM4C1294 connected
-// LaunchPad evaluation kit.
+// Header file for the I2C functions on the TI Tiva TM4C1294 Connected
+// LaunchPad Evaluation Kit.
 //
 
 

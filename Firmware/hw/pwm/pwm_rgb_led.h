@@ -5,7 +5,7 @@
 // Rev.: 11 Feb 2020
 //
 // Header file for the RGB LED control using PWD functions on the TI Tiva
-// TM4C1294 connected LaunchPad evaluation kit.
+// TM4C1294 Connected LaunchPad Evaluation Kit.
 //
 
 

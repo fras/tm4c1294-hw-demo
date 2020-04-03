@@ -4,7 +4,7 @@
 // Date: 11 Feb 2020
 // Rev.: 11 Feb 2020
 //
-// System functions on the TI Tiva TM4C1294 connected LaunchPad evaluation kit.
+// System functions on the TI Tiva TM4C1294 Connected LaunchPad Evaluation Kit.
 //
 
 
@@ -33,8 +33,8 @@
 //          When enabling it at run time, it will cause the MCU to reset.
 //          For details see here:
 //          https://e2e.ti.com/support/microcontrollers/other/f/908/t/345762
-// REMEDY:  Press the RESET button on the Tiva TM4C1294 connected LaunchPad
-//          evaluation kit while flashing. Then power cycle the board and flash
+// REMEDY:  Press the RESET button on the Tiva TM4C1294 Connected LaunchPad
+//          Evaluation Kit while flashing. Then power cycle the board and flash
 //          again.
 void ClockOutputEnable(uint32_t ui32Div)
 {

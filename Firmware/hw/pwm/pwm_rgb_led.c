@@ -4,8 +4,8 @@
 // Date: 10 Feb 2020
 // Rev.: 19 Feb 2020
 //
-// RGB LED control using PWM functions on the TI Tiva TM4C1294 connected
-// LaunchPad evaluation kit.
+// RGB LED control using PWM functions on the TI Tiva TM4C1294 Connected
+// LaunchPad Evaluation Kit.
 //
 
 

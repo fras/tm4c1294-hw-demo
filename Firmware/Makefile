@@ -4,8 +4,8 @@
 # Date: 07 Fab 2020
 # Rev.: 28 Mar 2020
 #
-# Makefile for the firmware running on the TI Tiva TM4C1294 connected LaunchPad
-# evaluation kit.
+# Makefile for the firmware running on the TI Tiva TM4C1294 Connected LaunchPad
+# Evaluation Kit.
 #
 
 

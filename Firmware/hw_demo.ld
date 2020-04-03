@@ -5,7 +5,7 @@
  * Rev.: 10 Feb 2020
  *
  * Linker configuration file of the hardware demo for the TI Tiva TM4C1294
- * connected LaunchPad evaluation kit.
+ * Connected LaunchPad Evaluation Kit.
  */
 
 

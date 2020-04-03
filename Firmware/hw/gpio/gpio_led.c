@@ -4,8 +4,8 @@
 // Date: 07 Feb 2020
 // Rev.: 19 Feb 2020
 //
-// GPIO LED control for the TI Tiva TM4C1294 connected LaunchPad evaluation
-// kit.
+// GPIO LED control for the TI Tiva TM4C1294 Connected LaunchPad Evaluation
+// Kit.
 //
 
 

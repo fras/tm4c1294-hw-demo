@@ -4,8 +4,8 @@
 // Date: 07 Feb 2020
 // Rev.: 30 Mar 2020
 //
-// Header file of the hardware demo for the TI Tiva TM4C1294 connected
-// LaunchPad evaluation kit.
+// Header file of the hardware demo for the TI Tiva TM4C1294 Connected
+// LaunchPad Evaluation Kit.
 //
 
 

@@ -4,7 +4,7 @@
 // Date: 18 Feb 2020
 // Rev.: 18 Feb 2020
 //
-// UART functions on the TI Tiva TM4C1294 connected LaunchPad evaluation kit.
+// UART functions on the TI Tiva TM4C1294 Connected LaunchPad Evaluation Kit.
 //
 
 

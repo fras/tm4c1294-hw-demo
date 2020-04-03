@@ -4,7 +4,7 @@
 // Date: 13 Feb 2020
 // Rev.: 30 Mar 2020
 //
-// ADC functions on the TI Tiva TM4C1294 connected LaunchPad evaluation kit.
+// ADC functions on the TI Tiva TM4C1294 Connected LaunchPad Evaluation Kit.
 //
 
 
