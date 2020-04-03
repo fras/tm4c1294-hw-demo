@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 07 Fab 2020
-# Rev.: 28 Mar 2020
+# Rev.: 03 Apr 2020
 #
 # Makefile for the firmware running on the TI Tiva TM4C1294 Connected LaunchPad
 # Evaluation Kit.
@@ -21,12 +21,16 @@ SOURCE_FILES  = hw_demo.c                   \
                 startup_gcc.c               \
                 uart_ui.c                   \
                 hw/adc/adc.c                \
-                hw/i2c/i2c.c                \
-                hw/i2c/i2c_tmp006.c         \
-                hw/i2c/i2c_opt3001.c        \
                 hw/gpio/gpio.c              \
                 hw/gpio/gpio_button.c       \
                 hw/gpio/gpio_led.c          \
+                hw/i2c/i2c.c                \
+                hw/i2c/i2c_tmp006.c         \
+                hw/i2c/i2c_opt3001.c        \
+                hw/lcd/Crystalfontz128x128_ST7735.c                     \
+                hw/lcd/HAL_EK_TM4C1294XL_Crystalfontz128x128_ST7735.c   \
+                hw/lcd/images.c             \
+                hw/lcd/lcd.c                \
                 hw/pwm/pwm_rgb_led.c        \
                 hw/system/system.c          \
                 hw/uart/uart.c              \
@@ -40,6 +44,10 @@ HEADER_FILES  = hw_demo.h                   \
                 hw/i2c/i2c.h                \
                 hw/i2c/i2c_tmp006.h         \
                 hw/i2c/i2c_opt3001.h        \
+                hw/lcd/Crystalfontz128x128_ST7735.h                     \
+                hw/lcd/HAL_EK_TM4C1294XL_Crystalfontz128x128_ST7735.h   \
+                hw/lcd/images.h             \
+                hw/lcd/lcd.h                \
                 hw/pwm/pwm_rgb_led.h        \
                 hw/system/system.h          \
                 hw/uart/uart.h              \
@@ -47,6 +55,7 @@ HEADER_FILES  = hw_demo.h                   \
 LINKER_FILE   = hw_demo.ld
 
 EXTRA_SOURCES = uartstdio.c                 \
+                ustdlib.c                   \
 
 
 
@@ -80,6 +89,7 @@ IPATH += ./hw
 IPATH += ./hw/adc
 IPATH += ./hw/gpio
 IPATH += ./hw/i2c
+IPATH += ./hw/lcd
 IPATH += ./hw/pwm
 IPATH += ./hw/system
 IPATH += ./hw/uart
@@ -146,7 +156,8 @@ OBJS := $(addprefix $(COMPILER)/, $(OBJS))
 
 
 # ********** Generate libraries variable. **********
-LIBS = ${TIVAWARE}/driverlib/${COMPILER}/libdriver.a
+LIBS  = ${TIVAWARE}/driverlib/${COMPILER}/libdriver.a
+LIBS += ${TIVAWARE}/grlib/${COMPILER}/libgr.a
 
 
 

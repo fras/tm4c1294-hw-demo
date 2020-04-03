@@ -3,7 +3,7 @@
 Auth: M. Fras, Electronics Division, MPI for Physics, Munich  
 Mod.: M. Fras, Electronics Division, MPI for Physics, Munich  
 Date: 07 Feb 2020  
-Rev.: 02 Apr 2020  
+Rev.: 03 Apr 2020  
 
 
 
@@ -207,6 +207,7 @@ Rev.: 02 Apr 2020
 * [TM4C1294NCPDT product page](http://www.ti.com/product/TM4C1294NCPDT)
 * [Tiva C Series TM4C1294NCPDT Microcontroller Data Sheet datasheet (Rev. B)](http://www.ti.com/lit/ds/symlink/tm4c1294ncpdt.pdf)
 * [TivaWare™ Peripheral Driver Library for C Series User's Guide (Rev. D)](http://www.ti.com/lit/ug/spmu298d/spmu298d.pdf)
+* [TivaWare™ Graphics Library User's Guide](http://www.ti.com/lit/ug/spmu300d/spmu300d.pdf)
 
 
 

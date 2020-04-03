@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 11 Feb 2020
-// Rev.: 18 Feb 2020
+// Rev.: 03 Apr 2020
 //
 // I2C functions on the TI Tiva TM4C1294 Connected LaunchPad Evaluation Kit.
 //
@@ -27,9 +27,6 @@
 #include "utils/uartstdio.h"
 #include "i2c.h"
 
-
-
-// I2C master definitions.
 
 
 // Initialize an I2C master.

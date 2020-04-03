@@ -16,11 +16,11 @@
 
 
 // ******************************************************************
-// Program parameters.
+// Firmware parameters.
 // ******************************************************************
-#define PROG_NAME                   "hw_demo"
-#define PROG_VERSION                "0.0.8"
-#define PROG_RELEASEDATE            "03 Apr 2020"
+#define FW_NAME                     "hw_demo"
+#define FW_VERSION                  "0.1.0"
+#define FW_RELEASEDATE              "03 Apr 2020"
 
 
 
@@ -143,6 +143,23 @@ tUART uartBoosterPack2 = {
     UART_CONFIG_WLEN_8 | UART_CONFIG_STOP_ONE | UART_CONFIG_PAR_NONE,
     true
 };
+
+
+
+// ******************************************************************
+// LCD settings.
+// ******************************************************************
+#define LCD_COLOR_BLACK             0x000000
+#define LCD_COLOR_WHITE             0xffffff
+#define LCD_COLOR_MPG_GREEN_1       0x006c66
+#define LCD_COLOR_MPG_GREEN_2       0x005555
+#define LCD_COLOR_MPG_GREY_DARK     0x777777
+#define LCD_COLOR_MPG_GREY          0xa7a7a8
+#define LCD_COLOR_MPG_GREY_LIGHT    0xeeeeee
+#define LCD_COLOR_MPG_GREEN_LIGHT   0xc6d325
+#define LCD_COLOR_MPG_BLUE_DARK     0x29485d
+#define LCD_COLOR_MPG_BLUE_LIGHT    0x00b1ea
+#define LCD_COLOR_MPG_ORANGE        0xef7c00
 
 
 
