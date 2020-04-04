@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 03 Apr 2020
-// Rev.: 03 Apr 2020
+// Rev.: 04 Apr 2020
 //
 // Functions for the LCD on the Educational BoosterPack MKII connected to the
 // BoosterPack 2 socket of the TI Tiva TM4C1294 Connected LaunchPad Evaluation
@@ -194,11 +194,11 @@ void LcdFwInfo(tLcdFwInfo *psLcdFwInfo)
 {
     tContext *psContext = psLcdFwInfo->psContext;
     tRectangle sRect;
-    int imageX;
+    int i32ImageX;
     char str[64];
 
     // Fill background.
-    GrContextForegroundSet(psContext, psLcdFwInfo->colorBackground);
+    GrContextForegroundSet(psContext, psLcdFwInfo->ui32ColorBackground);
     sRect.i16XMin = 0;
     sRect.i16YMin = 0;
     sRect.i16XMax = GrContextDpyWidthGet(psContext) - 1;
@@ -206,7 +206,7 @@ void LcdFwInfo(tLcdFwInfo *psLcdFwInfo)
     GrRectFill(psContext, &sRect);
 
     // Draw frame.
-    GrContextForegroundSet(psContext, psLcdFwInfo->colorFrame);
+    GrContextForegroundSet(psContext, psLcdFwInfo->ui32ColorFrame);
     sRect.i16XMin = LCD_FRAME_PADDING;
     sRect.i16YMin = LCD_FRAME_PADDING;
     sRect.i16XMax = GrContextDpyWidthGet(psContext) - 1 - LCD_FRAME_PADDING;
@@ -220,26 +220,26 @@ void LcdFwInfo(tLcdFwInfo *psLcdFwInfo)
     }
 
     // Draw title.
-    GrContextForegroundSet(psContext, psLcdFwInfo->colorTitle);
+    GrContextForegroundSet(psContext, psLcdFwInfo->ui32ColorTitle);
     GrContextFontSet(psContext, &g_sFontCmss14b);
-    GrStringDrawCentered(psContext, psLcdFwInfo->strTitle, -1,
+    GrStringDrawCentered(psContext, psLcdFwInfo->pcTitle, -1,
                          GrContextDpyWidthGet(psContext) / 2,
                          LCD_FRAME_PADDING + LCD_FRAME_WIDTH + LCD_CONTENT_PADDING + 3, false);
 
     // Draw firmware info.
-    GrContextForegroundSet(psContext, psLcdFwInfo->colorText);
+    GrContextForegroundSet(psContext, psLcdFwInfo->ui32ColorText);
     GrContextFontSet(psContext, &g_sFontFixed6x8);
     usnprintf(str, sizeof(str), "Firmware Info");
     GrStringDraw(psContext, str, -1, LCD_FRAME_PADDING + LCD_FRAME_WIDTH + LCD_CONTENT_PADDING, 24, false);
-    usnprintf(str, sizeof(str), "Name: %s", psLcdFwInfo->strFwName);
+    usnprintf(str, sizeof(str), "Name: %s", psLcdFwInfo->pcFwName);
     GrStringDraw(psContext, str, -1, LCD_FRAME_PADDING + LCD_FRAME_WIDTH + LCD_CONTENT_PADDING, 38, false);
-    usnprintf(str, sizeof(str), "Ver.: %s", psLcdFwInfo->strFwVersion);
+    usnprintf(str, sizeof(str), "Ver.: %s", psLcdFwInfo->pcFwVersion);
     GrStringDraw(psContext, str, -1, LCD_FRAME_PADDING + LCD_FRAME_WIDTH + LCD_CONTENT_PADDING, 48, false);
-    usnprintf(str, sizeof(str), "Date: %s", psLcdFwInfo->strFwDate);
+    usnprintf(str, sizeof(str), "Date: %s", psLcdFwInfo->pcFwDate);
     GrStringDraw(psContext, str, -1, LCD_FRAME_PADDING + LCD_FRAME_WIDTH + LCD_CONTENT_PADDING, 58, false);
 
     // Draw horizontal lines as separator.
-    GrContextForegroundSet(psContext, psLcdFwInfo->colorSeparator);
+    GrContextForegroundSet(psContext, psLcdFwInfo->ui32ColorSeparator);
     GrLineDrawH(psContext, LCD_FRAME_PADDING + LCD_FRAME_WIDTH + LCD_CONTENT_PADDING,
                 GrContextDpyWidthGet(psContext) - (LCD_FRAME_PADDING + LCD_FRAME_WIDTH + LCD_CONTENT_PADDING) - 1, 34);
     GrLineDrawH(psContext, LCD_FRAME_PADDING + LCD_FRAME_WIDTH + LCD_CONTENT_PADDING,
@@ -247,13 +247,13 @@ void LcdFwInfo(tLcdFwInfo *psLcdFwInfo)
 
     // Draw logo.
     // Auto center the image.
-    if (psLcdFwInfo->imageX < 0) {
-        imageX = (GrContextDpyWidthGet(psContext) -
-                 (psLcdFwInfo->imageData[1] + (psLcdFwInfo->imageData[2] << 8)))  / 2;
+    if (psLcdFwInfo->i32ImageX < 0) {
+        i32ImageX = (GrContextDpyWidthGet(psContext) -
+                 (psLcdFwInfo->pu8ImageData[1] + (psLcdFwInfo->pu8ImageData[2] << 8)))  / 2;
     } else {
-        imageX = psLcdFwInfo->imageX;
+        i32ImageX = psLcdFwInfo->i32ImageX;
     }
-    GrImageDraw(psContext, psLcdFwInfo->imageData, imageX, psLcdFwInfo->imageY);
+    GrImageDraw(psContext, psLcdFwInfo->pu8ImageData, i32ImageX, psLcdFwInfo->i32ImageY);
 
     // Flush any cached drawing operations.
     GrFlush(psContext);

@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 10 Feb 2020
-// Rev.: 19 Feb 2020
+// Rev.: 04 Apr 2020
 //
 // RGB LED control using PWM functions on the TI Tiva TM4C1294 Connected
 // LaunchPad Evaluation Kit.
@@ -76,23 +76,23 @@ void PwmRgbLedInit(void)
 
 
 // Coerce a RGB value.
-int PwmRgbLedCoerce(int rgb)
+int PwmRgbLedCoerce(int iRgb)
 {
-    int val = rgb;
+    int iVal = iRgb;
     
-    if (val < 1) val = 1;
-    else if (val > 255) val = 255;
+    if (iVal < 1) iVal = 1;
+    else if (iVal > 255) iVal = 255;
 
-    return val;
+    return iVal;
 }
 
 
 
 // Set the RGB LED value.
-void PwmRgbLedSet(int r, int g, int b)
+void PwmRgbLedSet(int iR, int iG, int iB)
 {
-    PWMPulseWidthSet(PWM0_BASE, PWM_OUT_6, PwmRgbLedCoerce(r));
-    PWMPulseWidthSet(PWM0_BASE, PWM_OUT_7, PwmRgbLedCoerce(g));
-    TimerMatchSet(TIMER2_BASE, TIMER_A, PWM_RGB_LED_PERIOD - PwmRgbLedCoerce(b));
+    PWMPulseWidthSet(PWM0_BASE, PWM_OUT_6, PwmRgbLedCoerce(iR));
+    PWMPulseWidthSet(PWM0_BASE, PWM_OUT_7, PwmRgbLedCoerce(iG));
+    TimerMatchSet(TIMER2_BASE, TIMER_A, PWM_RGB_LED_PERIOD - PwmRgbLedCoerce(iB));
 }
 

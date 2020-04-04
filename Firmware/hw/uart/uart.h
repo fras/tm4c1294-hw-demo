@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 18 Feb 2020
-// Rev.: 19 Feb 2020
+// Rev.: 04 Apr 2020
 //
 // Header file for the UART functions on the TI Tiva TM4C1294 Connected
 // LaunchPad Evaluation Kit.
@@ -35,8 +35,8 @@ typedef struct {
 
 // Function prototypes.
 void UartInit(tUART *uart);
-uint32_t UartWrite(tUART *uart, uint8_t *ui8Data, uint8_t ui8Length);
-uint32_t UartRead(tUART *uart, uint8_t *ui8Data, uint8_t ui8Length);
+uint32_t UartWrite(tUART *psUart, uint8_t *ui8Data, uint8_t ui8Length);
+uint32_t UartRead(tUART *psUart, uint8_t *ui8Data, uint8_t ui8Length);
 
 
 

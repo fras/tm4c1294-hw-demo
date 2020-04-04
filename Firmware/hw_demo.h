@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 07 Feb 2020
-// Rev.: 03 Apr 2020
+// Rev.: 04 Apr 2020
 //
 // Header file of the hardware demo for the TI Tiva TM4C1294 Connected
 // LaunchPad Evaluation Kit.
@@ -19,8 +19,8 @@
 // Firmware parameters.
 // ******************************************************************
 #define FW_NAME                     "hw_demo"
-#define FW_VERSION                  "0.1.0"
-#define FW_RELEASEDATE              "03 Apr 2020"
+#define FW_VERSION                  "0.1.1"
+#define FW_RELEASEDATE              "04 Apr 2020"
 
 
 
@@ -51,7 +51,7 @@
 // ADCs.
 //#define ADC_VALUES_HEX
 // Joystick X.
-tADC adcJoystickX = {
+tADC sAdcJoystickX = {
     SYSCTL_PERIPH_ADC0,
     SYSCTL_PERIPH_GPIOD,
     GPIO_PORTD_BASE,
@@ -62,7 +62,7 @@ tADC adcJoystickX = {
     ADC_CTL_CH13 | ADC_CTL_IE | ADC_CTL_END
 };
 // Joystick Y.
-tADC adcJoystickY = {
+tADC sAdcJoystickY = {
     SYSCTL_PERIPH_ADC0,
     SYSCTL_PERIPH_GPIOK,
     GPIO_PORTK_BASE,
@@ -73,7 +73,7 @@ tADC adcJoystickY = {
     ADC_CTL_CH17 | ADC_CTL_IE | ADC_CTL_END
 };
 // Accelerometer X.
-tADC adcAccelX = {
+tADC sAdcAccelX = {
     SYSCTL_PERIPH_ADC1,
     SYSCTL_PERIPH_GPIOB,
     GPIO_PORTB_BASE,
@@ -84,7 +84,7 @@ tADC adcAccelX = {
     ADC_CTL_CH10 | ADC_CTL_IE | ADC_CTL_END
 };
 // Accelerometer Y.
-tADC adcAccelY = {
+tADC sAdcAccelY = {
     SYSCTL_PERIPH_ADC1,
     SYSCTL_PERIPH_GPIOB,
     GPIO_PORTB_BASE,
@@ -95,7 +95,7 @@ tADC adcAccelY = {
     ADC_CTL_CH11 | ADC_CTL_IE | ADC_CTL_END
 };
 // Accelerometer Z.
-tADC adcAccelZ = {
+tADC sAdcAccelZ = {
     SYSCTL_PERIPH_ADC1,
     SYSCTL_PERIPH_GPIOK,
     GPIO_PORTK_BASE,
@@ -107,7 +107,7 @@ tADC adcAccelZ = {
 };
 
 // I2C master No. 2.
-tI2C i2c2 = {
+tI2C sI2C2 = {
     SYSCTL_PERIPH_I2C2,
     SYSCTL_PERIPH_GPION,
     GPIO_PORTN_BASE,
@@ -129,7 +129,7 @@ tI2C i2c2 = {
 
 
 // UARTs.
-tUART uartBoosterPack2 = {
+tUART sUartBoosterPack2 = {
     SYSCTL_PERIPH_UART6,
     SYSCTL_PERIPH_GPIOP,
     GPIO_PORTP_BASE,

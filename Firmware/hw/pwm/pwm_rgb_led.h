@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 10 Feb 2020
-// Rev.: 11 Feb 2020
+// Rev.: 04 Apr 2020
 //
 // Header file for the RGB LED control using PWD functions on the TI Tiva
 // TM4C1294 Connected LaunchPad Evaluation Kit.
@@ -22,7 +22,7 @@
 
 // Function prototypes.
 void PwmRgbLedInit(void);
-void PwmRgbLedSet(int r, int g, int b);
+void PwmRgbLedSet(int iR, int iG, int iB);
 
 
 

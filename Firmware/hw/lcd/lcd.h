@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 03 Apr 2020
-// Rev.: 03 Apr 2020
+// Rev.: 04 Apr 2020
 //
 // Header file for the LCD on the Educational BoosterPack MKII connected to the
 // BoosterPack 2 socket of the TI Tiva TM4C1294 Connected LaunchPad Evaluation
@@ -32,18 +32,18 @@
 // Types.
 typedef struct {
     tContext        *psContext;
-    uint32_t        colorBackground;
-    uint32_t        colorFrame;
-    uint32_t        colorSeparator;
-    uint32_t        colorTitle;
-    uint32_t        colorText;
-    char            *strTitle;
-    char            *strFwName;
-    char            *strFwVersion;
-    char            *strFwDate;
-    const uint8_t   *imageData;
-    int32_t         imageX;
-    int32_t         imageY;
+    uint32_t        ui32ColorBackground;
+    uint32_t        ui32ColorFrame;
+    uint32_t        ui32ColorSeparator;
+    uint32_t        ui32ColorTitle;
+    uint32_t        ui32ColorText;
+    char            *pcTitle;
+    char            *pcFwName;
+    char            *pcFwVersion;
+    char            *pcFwDate;
+    const uint8_t   *pu8ImageData;
+    int32_t         i32ImageX;
+    int32_t         i32ImageY;
 } tLcdFwInfo;
 
 

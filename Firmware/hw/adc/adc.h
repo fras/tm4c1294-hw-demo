@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 13 Feb 2020
-// Rev.: 30 Mar 2020
+// Rev.: 04 Apr 2020
 //
 // Header file for the ADC functions on the TI Tiva TM4C1294 Connected
 // LaunchPad Evaluation Kit.
@@ -29,9 +29,9 @@ typedef struct {
 
 
 // Function prototypes.
-void AdcReset(tADC *adc);
-void AdcInit(tADC *adc);
-uint32_t AdcConvert(tADC *adc);
+void AdcReset(tADC *psAdc);
+void AdcInit(tADC *psAdc);
+uint32_t AdcConvert(tADC *psAdc);
 
 
 

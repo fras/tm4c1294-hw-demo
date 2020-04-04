@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 11 Feb 2020
-// Rev.: 18 Feb 2020
+// Rev.: 04 Apr 2020
 //
 // Header file for the I2C functions on the TI Tiva TM4C1294 Connected
 // LaunchPad Evaluation Kit.
@@ -33,9 +33,9 @@ typedef struct {
 
 
 // Function prototypes.
-void I2C2MasterInit(tI2C *i2c);
-uint32_t I2CMasterWrite(tI2C *i2c, uint8_t ui8SlaveAddr, uint8_t *ui8Data, uint8_t ui8Length);
-uint32_t I2CMasterRead(tI2C *i2c, uint8_t ui8SlaveAddr, uint8_t *ui8Data, uint8_t ui8Length);
+void I2C2MasterInit(tI2C *psI2C);
+uint32_t I2CMasterWrite(tI2C *pcI2C, uint8_t ui8SlaveAddr, uint8_t *ui8Data, uint8_t ui8Length);
+uint32_t I2CMasterRead(tI2C *psI2C, uint8_t ui8SlaveAddr, uint8_t *ui8Data, uint8_t ui8Length);
 
 
 
