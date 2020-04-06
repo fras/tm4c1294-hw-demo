@@ -3,7 +3,7 @@
 Auth: M. Fras, Electronics Division, MPI for Physics, Munich  
 Mod.: M. Fras, Electronics Division, MPI for Physics, Munich  
 Date: 07 Feb 2020  
-Rev.: 03 Apr 2020  
+Rev.: 06 Apr 2020  
 
 
 
@@ -15,7 +15,7 @@ Rev.: 03 Apr 2020
 * Minicom terminal program.
 * ARM GDB and nemiver graphical debugger.
 * Python 3 and required modules.
-* TI Tiva TM4C1294 Connected LaunchPad evaluation board.
+* TI Tiva TM4C1294 Connected LaunchPad Evaluation Kit board.
 * BOOSTXL-RS232 board (connected to the BoosterPack 1 socket).
 * Educational BoosterPack MK II (connected to the BoosterPack 2 socket).
 
@@ -39,12 +39,13 @@ Rev.: 03 Apr 2020
 * PWM - RGB LED:  
   Control the RGB LED on the Educational BoosterPack MK II using PWM.
 * I2C master:  
-  - Basic read/write from/to the I2C master port 2.
+  - Basic read/write from/to the I2C master ports 0 and 2 (BoosterPack 1 and
+    2).
   - Functions to read information from the TMP006 temperature sensor and the
     OPT3001 ambient light sensor on the Educational BoosterPack MK II are
     implemented in the firmware.
-* SPI master:  
-  TODO
+* Synchronous Serial Interface (SSI) / SPI master:  
+  Read/write from/to the SSI  ports 2 and 3 (BoosterPack 1 and 2).
 * UART master:  
   Read/write from/to the UART port 6.
 * Analog inputs:  
@@ -175,6 +176,95 @@ Rev.: 03 Apr 2020
     line or ```./pyMcu.py --gui``` to open a GUI. You can specify a custom
     serial device to which the MCU is attached using the ```--device``` option,
     e.g. ```./pyMcu.py --device /dev/ttyUSB0 --gui```.
+
+
+
+## Testing Hardware Features
+
+Easily test some hardware features with the following instructions.
+
+
+
+### ADC (Analog-to-Digital Converter)
+
+Repeatedly read all ADC value 10,000 times:
+```
+> adc 10000
+OK: Joystick: X = 1983 Y = 1878 ; Accelerometer: X = 2063 Y = 2067 Z = 2883
+OK: Joystick: X = 1985 Y = 1867 ; Accelerometer: X = 2049 Y = 2072 Z = 2887
+...
+```
+
+Watch the values change while moving the joystick and tilting/turning the whole
+board.
+
+Hint: You can stop the test by pressing the ```RESET``` button on the board.
+
+
+
+### I2C (Inter-Integrated Circuit) Bus
+
+Preform a raw access the I2C temperature sensor on the Educational BoosterPack
+MK II. It has the I2C slave address ```0x40```. Set the pointer to the
+temperature register and read the raw temperature values:
+
+```
+> i2c 2 0x40 0 0x01
+OK.
+> i2c 2 0x40 1 2
+OK. Data: 0x0e 0x14
+>
+```
+
+
+
+### SSI (Synchronous Serial Interface) / SPI (Serial Peripheral Interface) Bus
+
+Note: The slave select pin ```PD2``` of the SSI port 2 on BoosterPack 1 is used
+as analog input on BoosterPack 2 (joystick X on the Educational BoosterPack MK
+II)! Thus it is disabled in the firmware by default.
+
+Note: The SSI port 3 on BoosterPack 2 is used by the LCD on the Educational
+BoosterPack MK II!
+
+To test the SSI port 2 on BoosterPack 1 in loopback mode, remove the jumper
+across pins 5 and 6 of the BOOSTXL-RS232 board and place it across the pins 14
+and 15. These are the pins ```PD0``` and ```PD1``` on the TM4C1294 Connected
+LaunchPad Evaluation Kit.
+
+Then send a few bytes and read them back. E.g.
+```
+> ssi 2 0 0x11 0x22 0x33 0x44 0x55 0xaa
+OK.
+> ssi 2 1 6
+OK. Data: 0x11 0x22 0x33 0x44 0x55 0xaa
+>
+```
+
+Please note that the hardware FIFO for buffering SSI data is only 8 entries
+long. This limits the maximum number of data for this test to 8.
+
+
+
+### Universal Asynchronous Receiver Transmitter (UART)
+
+To test the UART 6 on BoosterPack 2, you can set the loopback mode in the
+configuration of the UART in the file ```hw_demo.c```.
+```c
+sUartBoosterPack2.bLoopback = true;
+```
+
+Alternatively, put a jumper across the pins ```PP0``` and ```PP1``` on the
+TM4C1294 Connected LaunchPad Evaluation Kit.
+
+Then send a few bytes and read them back. E.g.
+```
+> uart 6 0 0x11 0x22 0x33 0x44 0x55 0xaa
+OK.
+> uart 6 1 6
+OK. Data: 0x11 0x22 0x33 0x44 0x55 0xaa
+>
+```
 
 
 

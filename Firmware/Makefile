@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 07 Fab 2020
-# Rev.: 03 Apr 2020
+# Rev.: 06 Apr 2020
 #
 # Makefile for the firmware running on the TI Tiva TM4C1294 Connected LaunchPad
 # Evaluation Kit.
@@ -32,6 +32,7 @@ SOURCE_FILES  = hw_demo.c                   \
                 hw/lcd/images.c             \
                 hw/lcd/lcd.c                \
                 hw/pwm/pwm_rgb_led.c        \
+                hw/ssi/ssi.c                \
                 hw/system/system.c          \
                 hw/uart/uart.c              \
 
@@ -49,6 +50,7 @@ HEADER_FILES  = hw_demo.h                   \
                 hw/lcd/images.h             \
                 hw/lcd/lcd.h                \
                 hw/pwm/pwm_rgb_led.h        \
+                hw/ssi/ssi.h                \
                 hw/system/system.h          \
                 hw/uart/uart.h              \
 
@@ -91,6 +93,7 @@ IPATH += ./hw/gpio
 IPATH += ./hw/i2c
 IPATH += ./hw/lcd
 IPATH += ./hw/pwm
+IPATH += ./hw/ssi
 IPATH += ./hw/system
 IPATH += ./hw/uart
 

@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 13 Feb 2020
-// Rev.: 04 Apr 2020
+// Rev.: 06 Apr 2020
 //
 // Header file for the ADC functions on the TI Tiva TM4C1294 Connected
 // LaunchPad Evaluation Kit.
@@ -19,7 +19,7 @@
 typedef struct {
     uint32_t ui32PeripheralAdc;
     uint32_t ui32PeripheralGpio;
-    uint32_t ui32PortGpio;
+    uint32_t ui32PortGpioBase;
     uint8_t  ui8PinGpio;
     uint32_t ui32BaseAdc;
     uint32_t ui32SequenceNum;

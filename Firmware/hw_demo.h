@@ -19,7 +19,7 @@
 // Firmware parameters.
 // ******************************************************************
 #define FW_NAME                     "hw_demo"
-#define FW_VERSION                  "0.1.2"
+#define FW_VERSION                  "0.1.3"
 #define FW_RELEASEDATE              "06 Apr 2020"
 
 
@@ -162,6 +162,58 @@ tUART sUartBoosterPack2 = {
     115200,                 // ui32Baud
     UART_CONFIG_WLEN_8 | UART_CONFIG_STOP_ONE | UART_CONFIG_PAR_NONE,
     false                   // bLoopback
+};
+
+
+
+// Synchronous Serial Interface (SSI). This can also be configured to use the
+// Motorola SPI frame format.
+
+// SSI 2 for BoosterPack 1.
+tSSI sSsi2 = {
+    SYSCTL_PERIPH_SSI2,
+    SYSCTL_PERIPH_GPIOD,
+    GPIO_PORTD_BASE,
+    GPIO_PIN_3,             // CLK
+    // CAUTION: Pin PD2 is used as analog input on BoosterPack 2 (joystick X on
+    //          the Educational BoosterPack MK II)! So it is disabled here.
+//    GPIO_PIN_2,             // FSS
+    0,                      // FSS
+    GPIO_PIN_0,             // RX
+    GPIO_PIN_1,             // TX
+    GPIO_PD3_SSI2CLK,       // CLK
+    GPIO_PD2_SSI2FSS,       // FSS
+    GPIO_PD0_SSI2XDAT1,     // RX
+    GPIO_PD1_SSI2XDAT0,     // TX
+    SSI2_BASE,
+    0,                      // ui32SysClock
+    SSI_FRF_MOTO_MODE_0,    // ui32Protocol
+    SSI_MODE_MASTER,        // ui32Mode
+    15000000,               // ui32BitRate
+    8,                      // ui32DataWidth
+    100                     // ui32Timeout
+};
+
+// SSI 3 for BoosterPack 2.
+tSSI sSsi3 = {
+    SYSCTL_PERIPH_SSI3,
+    SYSCTL_PERIPH_GPIOQ,
+    GPIO_PORTQ_BASE,
+    GPIO_PIN_0,             // CLK
+    GPIO_PIN_1,             // FSS
+    GPIO_PIN_3,             // RX
+    GPIO_PIN_2,             // TX
+    GPIO_PQ0_SSI3CLK,       // CLK
+    GPIO_PQ1_SSI3FSS,       // FSS
+    GPIO_PQ3_SSI3XDAT1,     // RX
+    GPIO_PQ2_SSI3XDAT0,     // TX
+    SSI3_BASE,
+    0,                      // ui32SysClock
+    SSI_FRF_MOTO_MODE_0,    // ui32Protocol
+    SSI_MODE_MASTER,        // ui32Mode
+    15000000,               // ui32BitRate
+    8,                      // ui32DataWidth
+    100                     // ui32Timeout
 };
 
 

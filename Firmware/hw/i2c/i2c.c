@@ -53,7 +53,7 @@ void I2CMasterInit(tI2C *psI2C)
 
 
 // Write data to an I2C master.
-uint32_t I2CMasterWrite(tI2C *psI2C, uint8_t ui8SlaveAddr, uint8_t *ui8Data, uint8_t ui8Length)
+uint32_t I2CMasterWrite(tI2C *psI2C, uint8_t ui8SlaveAddr, uint8_t *pui8Data, uint8_t ui8Length)
 {
     uint32_t ui32I2CMasterInt, ui32I2CMasterErr;
     uint32_t ui32Timeout = psI2C->ui32Timeout + 10;     // Guarantee some minimum timeout value.
@@ -77,7 +77,7 @@ uint32_t I2CMasterWrite(tI2C *psI2C, uint8_t ui8SlaveAddr, uint8_t *ui8Data, uin
 
     // Send data.
     for (int i = 0; i < ui8Length; i++) {
-        I2CMasterDataPut(psI2C->ui32BaseI2C, ui8Data[i]);
+        I2CMasterDataPut(psI2C->ui32BaseI2C, pui8Data[i]);
         if (ui8Length == 1) {
             I2CMasterControl(psI2C->ui32BaseI2C, I2C_MASTER_CMD_SINGLE_SEND);
         } else {
@@ -117,7 +117,7 @@ uint32_t I2CMasterWrite(tI2C *psI2C, uint8_t ui8SlaveAddr, uint8_t *ui8Data, uin
 
 
 // Read data from an I2C master.
-uint32_t I2CMasterRead(tI2C *psI2C, uint8_t ui8SlaveAddr, uint8_t *ui8Data, uint8_t ui8Length)
+uint32_t I2CMasterRead(tI2C *psI2C, uint8_t ui8SlaveAddr, uint8_t *pui8Data, uint8_t ui8Length)
 {
     uint32_t ui32I2CMasterInt, ui32I2CMasterErr;
     uint32_t ui32Timeout = psI2C->ui32Timeout + 10;     // Guarantee some minimum timeout value.
@@ -172,7 +172,7 @@ uint32_t I2CMasterRead(tI2C *psI2C, uint8_t ui8SlaveAddr, uint8_t *ui8Data, uint
             return 1;
         }
         // Get the data byte from the I2C master.
-        ui8Data[i] = I2CMasterDataGet(psI2C->ui32BaseI2C);
+        pui8Data[i] = I2CMasterDataGet(psI2C->ui32BaseI2C);
     }
 
     return ui32I2CMasterInt;

@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 13 Feb 2020
-// Rev.: 04 Apr 2020
+// Rev.: 06 Apr 2020
 //
 // ADC functions on the TI Tiva TM4C1294 Connected LaunchPad Evaluation Kit.
 //
@@ -45,7 +45,7 @@ void AdcInit(tADC *psAdc)
 {
     // Setup the IO pins for the I2C master.
     SysCtlPeripheralEnable(psAdc->ui32PeripheralGpio);
-    GPIOPinTypeADC(psAdc->ui32PortGpio, psAdc->ui8PinGpio);
+    GPIOPinTypeADC(psAdc->ui32PortGpioBase, psAdc->ui8PinGpio);
 
     // Setup the ADC.
     SysCtlPeripheralEnable(psAdc->ui32PeripheralAdc);

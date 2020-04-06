@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 11 Feb 2020
-// Rev.: 04 Apr 2020
+// Rev.: 06 Apr 2020
 //
 // Header file for the I2C functions on the TI Tiva TM4C1294 Connected
 // LaunchPad Evaluation Kit.
@@ -19,7 +19,7 @@
 typedef struct {
     uint32_t ui32PeripheralI2C;
     uint32_t ui32PeripheralGpio;
-    uint32_t ui32PortGpio;
+    uint32_t ui32PortGpioBase;
     uint8_t  ui8PinGpioScl;
     uint8_t  ui8PinGpioSda;
     uint32_t ui32PinConfigScl;

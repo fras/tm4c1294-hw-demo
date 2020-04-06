@@ -23,6 +23,7 @@
 #include "driverlib/pwm.h"
 #include "driverlib/rom.h"
 #include "driverlib/rom_map.h"
+#include "driverlib/ssi.h"
 #include "driverlib/sysctl.h"
 #include "driverlib/timer.h"
 #include "driverlib/uart.h"
@@ -37,6 +38,7 @@
 #include "hw/lcd/images.h"
 #include "hw/lcd/lcd.h"
 #include "hw/pwm/pwm_rgb_led.h"
+#include "hw/ssi/ssi.h"
 #include "hw/system/system.h"
 #include "hw/uart/uart.h"
 #include "hw_demo.h"
@@ -66,6 +68,7 @@ int RgbLedSet(char *pcCmd, char *pcParam);
 int I2CAccess(char *pcCmd, char *pcParam);
 int TemperatureRead(char *pcCmd, char *pcParam);
 int IlluminanceRead(char *pcCmd, char *pcParam);
+int SsiAccess(char *pcCmd, char *pcParam);
 int UartAccess(char *pcCmd, char *pcParam);
 
 
@@ -117,10 +120,18 @@ int main(void)
     I2COpt3001Reset(&sI2C2, EDUMKII_I2C_OPT3001_SLV_ADR);
     I2COpt3001Init(&sI2C2, EDUMKII_I2C_OPT3001_SLV_ADR);
 
-    // Initialize the UART on the Educational BoosterPack MKII..
+    // Initialize the UART on the Educational BoosterPack MKII.
     sUartBoosterPack2.ui32SysClock = ui32SysClock;
     sUartBoosterPack2.bLoopback = true;     // Enable loopback for testing.
     UartInit(&sUartBoosterPack2);
+
+    // Initialize SSI 2 for BoosterPack 1.
+    sSsi2.ui32SysClock = ui32SysClock;
+    SsiMasterInit(&sSsi2);
+
+    // Initialize SSI 3 for BoosterPack 2.
+    sSsi3.ui32SysClock = ui32SysClock;
+    SsiMasterInit(&sSsi3);
 
     // Initialize the LCD on the Educational BoosterPack MKII.
     tContext sContext;
@@ -180,6 +191,9 @@ int main(void)
         // PWM based functions.
         } else if (!strcasecmp(pcUartCmd, "rgb")) {
             RgbLedSet(pcUartCmd, pcUartParam);
+        // SSI based functions.
+        } else if (!strcasecmp(pcUartCmd, "ssi")) {
+            SsiAccess(pcUartCmd, pcUartParam);
         // UART based functions.
         } else if (!strcasecmp(pcUartCmd, "uart")) {
             UartAccess(pcUartCmd, pcUartParam);
@@ -216,6 +230,7 @@ void Help(void)
     UARTprintf("  lcd     CMD PARAMS                  LCD commands.\n");
     UARTprintf("  led     VALUE                       Set the Leds.\n");
     UARTprintf("  rgb     VALUE                       Set the RGB LED.\n");
+    UARTprintf("  ssi     PORT R/W NUM|DATA           SSI/SPI access (0 = write, 1 = read).\n");
     UARTprintf("  temp    [COUNT]                     Read temperature sensor info.\n");
     UARTprintf("  uart    PORT R/W NUM|DATA           UART access (0 = write, 1 = read).");
 }
@@ -482,7 +497,7 @@ int I2CAccess(char *pcCmd, char *pcParam)
     uint8_t ui8I2CSlaveAddr = 0;
     uint8_t ui8I2CRw = 0;   // 0 = write; 1 = read
     uint8_t ui8I2CDataNum = 0;
-    uint8_t pui8I2CData[256];
+    uint8_t pui8I2CData[32];
     uint32_t ui32I2CMasterStatus;
     // Parse parameters.
     for (i = 0; i < sizeof(pui8I2CData) / sizeof(pui8I2CData[0]); i++) {
@@ -533,11 +548,14 @@ int I2CAccess(char *pcCmd, char *pcParam)
     } else {
         if (i == 3) ui8I2CDataNum = 1;
         else ui8I2CDataNum = pui8I2CData[0];
+        if (ui8I2CDataNum > sizeof(pui8I2CData) / sizeof(pui8I2CData[0])) {
+            ui8I2CDataNum = sizeof(pui8I2CData) / sizeof(pui8I2CData[0]);
+        }
         ui32I2CMasterStatus = I2CMasterRead(psI2C, ui8I2CSlaveAddr, pui8I2CData, ui8I2CDataNum);
     }
     // Check the I2C status.
     if (ui32I2CMasterStatus) {
-        UARTprintf("%s: Error flags from I2C master: 0x%08x", UI_STR_ERROR, ui32I2CMasterStatus);
+        UARTprintf("%s: Error flags from I2C the master %d: 0x%08x", UI_STR_ERROR, ui8I2CPort, ui32I2CMasterStatus);
         if (ui32I2CMasterStatus & I2C_MASTER_INT_TIMEOUT) UARTprintf("\n%s: I2C timeout.", UI_STR_ERROR);
         if (ui32I2CMasterStatus & I2C_MASTER_INT_NACK) UARTprintf("\n%s: NACK received.", UI_STR_ERROR);
         if (ui32I2CMasterStatus & I2C_MASTER_INT_ARB_LOST) UARTprintf("\n%s: I2C bus arbitration lost.", UI_STR_ERROR);
@@ -633,16 +651,95 @@ int IlluminanceRead(char *pcCmd, char *pcParam)
 
 
 
+// SSI access.
+int SsiAccess(char *pcCmd, char *pcParam)
+{
+    int i;
+    uint8_t ui8SsiPort = 0;
+    uint8_t ui8SsiRw = 0;   // 0 = write; 1 = read
+    uint8_t ui8SsiDataNum = 0;
+    uint32_t pui32SsiData[32];
+    tSSI *psSsi;
+    int32_t i32SsiStatus;
+    // Parse parameters.
+    for (i = 0; i < sizeof(pui32SsiData) / sizeof(pui32SsiData[0]); i++) {
+        if (i != 0) pcParam = strtok(NULL, UI_STR_DELIMITER);
+        if (i == 0) {
+            if (pcParam == NULL) {
+                UARTprintf("%s: SSI port number required after command `%s'.", UI_STR_ERROR, pcCmd);
+                break;
+            } else {
+                ui8SsiPort = (uint8_t) strtoul(pcParam, (char **) NULL, 0) & 0xff;
+            }
+        } else if (i == 1) {
+            if (pcParam == NULL) {
+                UARTprintf("%s: SSI read/write required after command `%s'.", UI_STR_ERROR, pcCmd);
+                break;
+            } else {
+                ui8SsiRw = (uint8_t) strtoul(pcParam, (char **) NULL, 0) & 0x01;
+            }
+        } else {
+            if (i == 2 && ui8SsiRw == 0 && pcParam == NULL) {
+                UARTprintf("%s: At least one data byte required after SSI write command `%s'.", UI_STR_ERROR, pcCmd);
+                return -1;
+            }
+            if (pcParam == NULL) break;
+            else pui32SsiData[i-2] = (uint8_t) strtoul(pcParam, (char **) NULL, 0) & 0xff;
+        }
+    }
+    if (i < 2) return -1;
+    // Check if the SSI port number is valid.
+    switch (ui8SsiPort) {
+        case 2: psSsi = &sSsi2; break;
+        case 3: psSsi = &sSsi3; break;
+        default:
+            UARTprintf("%s: Only SSI port numbers 2 and 3 are supported!", UI_STR_ERROR);
+            return -1;
+    }
+    // SSI write.
+    if (ui8SsiRw == 0) {
+        i32SsiStatus = SsiMasterWrite(psSsi, pui32SsiData, i - 2);
+        // Check the SSI status.
+        if (i32SsiStatus) {
+            UARTprintf("%s: Error status from the SSI master %d: %d", UI_STR_ERROR, ui8SsiPort, i32SsiStatus);
+        } else {
+            UARTprintf("%s.", UI_STR_OK);
+        }
+    // SSI read.
+    } else {
+        if (i == 2) ui8SsiDataNum = 1;
+        else ui8SsiDataNum = pui32SsiData[0];
+        if (ui8SsiDataNum > sizeof(pui32SsiData) / sizeof(pui32SsiData[0])) {
+            ui8SsiDataNum = sizeof(pui32SsiData) / sizeof(pui32SsiData[0]);
+        }
+        i32SsiStatus = SsiMasterRead(psSsi, pui32SsiData, ui8SsiDataNum);
+        // Check the SSI status.
+        if (i32SsiStatus != ui8SsiDataNum) {
+            UARTprintf("%s: Could only read %d data bytes from the SSI master %d instead of %d.", UI_STR_ERROR, i32SsiStatus, ui8SsiPort, ui8SsiDataNum);
+        } else {
+            UARTprintf("%s.", UI_STR_OK);
+        }
+        if (i32SsiStatus > 0) {
+            UARTprintf(" Data:");
+            for (i = 0; i < i32SsiStatus; i++) UARTprintf(" 0x%02x", pui32SsiData[i]);
+        }
+    }
+    
+    return 0;
+}
+
+
+
 // UART access.
 int UartAccess(char *pcCmd, char *pcParam)
 {
     int i;
     uint8_t ui8UartPort = 0;
-    uint8_t ui8UartRw = 0;   // 0 = write; 1 = read
+    uint8_t ui8UartRw = 0;  // 0 = write; 1 = read
     uint8_t ui8UartDataNum = 0;
-    uint8_t pui8UartData[256];
+    uint8_t pui8UartData[32];
     tUART *psUart;
-    uint32_t ui32UartStatus;
+    int32_t i32UartStatus;
     // Parse parameters.
     for (i = 0; i < sizeof(pui8UartData) / sizeof(pui8UartData[0]); i++) {
         if (i != 0) pcParam = strtok(NULL, UI_STR_DELIMITER);
@@ -679,10 +776,10 @@ int UartAccess(char *pcCmd, char *pcParam)
     }
     // UART write.
     if (ui8UartRw == 0) {
-        ui32UartStatus = UartWrite(psUart, pui8UartData, i - 2);
+        i32UartStatus = UartWrite(psUart, pui8UartData, i - 2);
         // Check the UART status.
-        if (ui32UartStatus) {
-            UARTprintf("%s: Error flags from the UART: 0x%08x", UI_STR_ERROR, ui32UartStatus);
+        if (i32UartStatus) {
+            UARTprintf("%s: Error status from the UART %d: %d", UI_STR_ERROR, ui8UartPort, i32UartStatus);
         } else {
             UARTprintf("%s.", UI_STR_OK);
         }
@@ -690,16 +787,19 @@ int UartAccess(char *pcCmd, char *pcParam)
     } else {
         if (i == 2) ui8UartDataNum = 1;
         else ui8UartDataNum = pui8UartData[0];
-        ui32UartStatus = UartRead(psUart, pui8UartData, ui8UartDataNum);
+        if (ui8UartDataNum > sizeof(pui8UartData) / sizeof(pui8UartData[0])) {
+            ui8UartDataNum = sizeof(pui8UartData) / sizeof(pui8UartData[0]);
+        }
+        i32UartStatus = UartRead(psUart, pui8UartData, ui8UartDataNum);
         // Check the UART status.
-        if (ui32UartStatus != ui8UartDataNum) {
-            UARTprintf("%s: Could only read %d data bytes from the UART instead of %d.", UI_STR_ERROR, ui32UartStatus, ui8UartDataNum);
+        if (i32UartStatus != ui8UartDataNum) {
+            UARTprintf("%s: Could only read %d data bytes from the UART %d instead of %d.", UI_STR_ERROR, i32UartStatus, ui8UartPort, ui8UartDataNum);
         } else {
             UARTprintf("%s.", UI_STR_OK);
         }
-        if (ui32UartStatus > 0) {
+        if (i32UartStatus > 0) {
             UARTprintf(" Data:");
-            for (i = 0; i < ui32UartStatus; i++) UARTprintf(" 0x%02x", pui8UartData[i]);
+            for (i = 0; i < i32UartStatus; i++) UARTprintf(" 0x%02x", pui8UartData[i]);
         }
     }
     
