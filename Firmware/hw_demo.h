@@ -35,7 +35,7 @@
 // User interface.
 // ******************************************************************
 #define UI_COMMAND_PROMPT           "> "
-#define UI_STR_BUF_SIZE             128
+#define UI_STR_BUF_SIZE             256
 #define UI_STR_DELIMITER            " \t"
 #define UI_STR_OK                   "OK"
 #define UI_STR_WARNING              "WARNING"
