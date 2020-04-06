@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 07 Feb 2020
-// Rev.: 04 Apr 2020
+// Rev.: 06 Apr 2020
 //
 // Hardware demo for the TI Tiva TM4C1294 Connected LaunchPad Evaluation Kit.
 //
@@ -102,9 +102,14 @@ int main(void)
     // Initialize the RGB LED on the Educational BoosterPack MK II.
     PwmRgbLedInit();
 
-    // Initialize the I2C master for the Educational BoosterPack MK II.
+    // Initialize the I2C master for the BoosterPack 1 socket.
+    sI2C0.ui32SysClock = ui32SysClock;
+    I2CMasterInit(&sI2C0);
+
+    // Initialize the I2C master for the Educational BoosterPack MK II
+    // (BoosterPack 2 socket).
     sI2C2.ui32SysClock = ui32SysClock;
-    I2C2MasterInit(&sI2C2);
+    I2CMasterInit(&sI2C2);
 
     // Initialize the I2C devices.
     I2CTmp006Reset(&sI2C2, EDUMKII_I2C_TMP006_SLV_ADR);
@@ -112,8 +117,9 @@ int main(void)
     I2COpt3001Reset(&sI2C2, EDUMKII_I2C_OPT3001_SLV_ADR);
     I2COpt3001Init(&sI2C2, EDUMKII_I2C_OPT3001_SLV_ADR);
 
-    // Initialize the UART.
+    // Initialize the UART on the Educational BoosterPack MKII..
     sUartBoosterPack2.ui32SysClock = ui32SysClock;
+    sUartBoosterPack2.bLoopback = true;     // Enable loopback for testing.
     UartInit(&sUartBoosterPack2);
 
     // Initialize the LCD on the Educational BoosterPack MKII.
@@ -514,9 +520,10 @@ int I2CAccess(char *pcCmd, char *pcParam)
     if (i < 3) return -1;
     // Check if the I2C port number is valid.
     switch (ui8I2CPort) {
+        case 0: psI2C = &sI2C0; break;
         case 2: psI2C = &sI2C2; break;
         default:
-            UARTprintf("%s: Only I2C port number 2 is supported!", UI_STR_ERROR);
+            UARTprintf("%s: Only I2C port numbers 0 and 2 are supported!", UI_STR_ERROR);
             return -1;
     }
     // I2C write.

@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 11 Feb 2020
-// Rev.: 04 Apr 2020
+// Rev.: 06 Apr 2020
 //
 // I2C functions on the TI Tiva TM4C1294 Connected LaunchPad Evaluation Kit.
 //
@@ -30,14 +30,14 @@
 
 
 // Initialize an I2C master.
-void I2C2MasterInit(tI2C *psI2C)
+void I2CMasterInit(tI2C *psI2C)
 {
     // Setup the IO pins for the I2C master.
     SysCtlPeripheralEnable(psI2C->ui32PeripheralGpio);
     GPIOPinConfigure(psI2C->ui32PinConfigScl);
     GPIOPinConfigure(psI2C->ui32PinConfigSda);
-    GPIOPinTypeI2CSCL(psI2C->ui32PortGpio, psI2C->ui8PinGpioScl);   // SCL
-    GPIOPinTypeI2C(psI2C->ui32PortGpio, psI2C->ui8PinGpioSda);      // SDA
+    GPIOPinTypeI2CSCL(psI2C->ui32PortGpioBase, psI2C->ui8PinGpioScl);   // SCL
+    GPIOPinTypeI2C(psI2C->ui32PortGpioBase, psI2C->ui8PinGpioSda);      // SDA
 
     // Setup the I2C master.
     SysCtlPeripheralDisable(psI2C->ui32PeripheralI2C);
@@ -56,6 +56,7 @@ void I2C2MasterInit(tI2C *psI2C)
 uint32_t I2CMasterWrite(tI2C *psI2C, uint8_t ui8SlaveAddr, uint8_t *ui8Data, uint8_t ui8Length)
 {
     uint32_t ui32I2CMasterInt, ui32I2CMasterErr;
+    uint32_t ui32Timeout = psI2C->ui32Timeout + 10;     // Guarantee some minimum timeout value.
 
     if (ui8Length < 1) return 1;
 
@@ -66,7 +67,13 @@ uint32_t I2CMasterWrite(tI2C *psI2C, uint8_t ui8SlaveAddr, uint8_t *ui8Data, uin
     I2CMasterSlaveAddrSet(psI2C->ui32BaseI2C, ui8SlaveAddr, false);   // false = write; true = read
 
     // Wait until the I2C bus is free.
-    while (I2CMasterBusBusy(psI2C->ui32BaseI2C));
+    for (int i = 0; i <= ui32Timeout; i++) {
+        if (!I2CMasterBusBusy(psI2C->ui32BaseI2C)) break;
+        SysCtlDelay(psI2C->ui32SysClock / 3e5);     // 10 us delay.
+                                                    // Note: The SysCtlDelay executes a simple 3 instruction cycle loop.
+        // Timeout while waiting for the I2C bus to be free.
+        if (i == ui32Timeout) return -1;
+    }
 
     // Send data.
     for (int i = 0; i < ui8Length; i++) {
@@ -78,9 +85,17 @@ uint32_t I2CMasterWrite(tI2C *psI2C, uint8_t ui8SlaveAddr, uint8_t *ui8Data, uin
             else if (i == ui8Length - 1) I2CMasterControl(psI2C->ui32BaseI2C, I2C_MASTER_CMD_BURST_SEND_FINISH);
             else I2CMasterControl(psI2C->ui32BaseI2C, I2C_MASTER_CMD_BURST_SEND_CONT);
         }
-        // Wait until transfer is finished.
-        SysCtlDelay(1000);
-        while(I2CMasterBusy(psI2C->ui32BaseI2C));
+        // Wait until the transfer is finished.
+        SysCtlDelay(psI2C->ui32SysClock / 3e5);     // 10 us delay.
+        for (int i = 0; i <= ui32Timeout; i++) {
+            if (!I2CMasterBusy(psI2C->ui32BaseI2C)) break;
+            SysCtlDelay(psI2C->ui32SysClock / 3e5);     // 10 us delay.
+            // Timeout while waiting for the I2C master to be ready.
+            if (i == ui32Timeout) {
+                I2CMasterControl(psI2C->ui32BaseI2C, I2C_MASTER_CMD_BURST_SEND_ERROR_STOP);
+                return -1;
+            }
+        }
         // Read I2C master interrupts.
         ui32I2CMasterInt = I2CMasterIntStatusEx(psI2C->ui32BaseI2C, false);
         ui32I2CMasterInt &= I2C_MASTER_INT_ARB_LOST | I2C_MASTER_INT_NACK | I2C_MASTER_INT_TIMEOUT;
@@ -105,6 +120,7 @@ uint32_t I2CMasterWrite(tI2C *psI2C, uint8_t ui8SlaveAddr, uint8_t *ui8Data, uin
 uint32_t I2CMasterRead(tI2C *psI2C, uint8_t ui8SlaveAddr, uint8_t *ui8Data, uint8_t ui8Length)
 {
     uint32_t ui32I2CMasterInt, ui32I2CMasterErr;
+    uint32_t ui32Timeout = psI2C->ui32Timeout + 10;     // Guarantee some minimum timeout value.
 
     if (ui8Length < 1) return 1;
 
@@ -115,7 +131,12 @@ uint32_t I2CMasterRead(tI2C *psI2C, uint8_t ui8SlaveAddr, uint8_t *ui8Data, uint
     I2CMasterSlaveAddrSet(psI2C->ui32BaseI2C, ui8SlaveAddr, true);    // false = write; true = read
 
     // Wait until the I2C bus is free.
-    while (I2CMasterBusBusy(psI2C->ui32BaseI2C));
+    for (int i = 0; i <= ui32Timeout; i++) {
+        if (!I2CMasterBusBusy(psI2C->ui32BaseI2C)) break;
+        SysCtlDelay(psI2C->ui32SysClock / 3e5);     // 10 us delay.
+        // Timeout while waiting for the I2C bus to be free.
+        if (i == ui32Timeout) return -1;
+    }
 
     // Receive data.
     for (int i = 0; i < ui8Length; i++) {
@@ -126,9 +147,17 @@ uint32_t I2CMasterRead(tI2C *psI2C, uint8_t ui8SlaveAddr, uint8_t *ui8Data, uint
             else if (i == ui8Length - 1) I2CMasterControl(psI2C->ui32BaseI2C, I2C_MASTER_CMD_BURST_RECEIVE_FINISH);
             else I2CMasterControl(psI2C->ui32BaseI2C, I2C_MASTER_CMD_BURST_RECEIVE_CONT);
         }
-        // Wait until transfer is finished.
-        SysCtlDelay(1000);
-        while(I2CMasterBusy(psI2C->ui32BaseI2C));
+        // Wait until the transfer is finished.
+        SysCtlDelay(psI2C->ui32SysClock / 3e5);     // 10 us delay.
+        for (int i = 0; i <= ui32Timeout; i++) {
+            if (!I2CMasterBusy(psI2C->ui32BaseI2C)) break;
+            SysCtlDelay(psI2C->ui32SysClock / 3e5);     // 10 us delay.
+            // Timeout while waiting for the I2C master to be ready.
+            if (i == ui32Timeout) {
+                I2CMasterControl(psI2C->ui32BaseI2C, I2C_MASTER_CMD_BURST_SEND_ERROR_STOP);
+                return -1;
+            }
+        }
         // Read I2C master interrupts.
         ui32I2CMasterInt = I2CMasterIntStatusEx(psI2C->ui32BaseI2C, false);
         ui32I2CMasterInt &= I2C_MASTER_INT_ARB_LOST | I2C_MASTER_INT_NACK | I2C_MASTER_INT_TIMEOUT;

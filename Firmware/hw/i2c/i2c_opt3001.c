@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 13 Feb 2020
-// Rev.: 04 Apr 2020
+// Rev.: 06 Apr 2020
 //
 // I2C functions for the OPT3001 ambient light sensor on the Educational
 // BoosterPack MK II connected to the TI Tiva TM4C1294 Connected LaunchPad
@@ -89,7 +89,7 @@ uint32_t I2COpt3001ReadManufacturerId(tI2C *psI2C, uint8_t ui8SlaveAddr)
 {
     uint8_t ui8Data[2];
     uint32_t ui32I2CMasterStatus;
-    uint32_t ui32ManufacturerID;
+    uint32_t ui32ManufacturerId;
 
     // Set the pointer register of the OPT3001 IC to the manufacturer ID register (0x7e).
     ui8Data[0] = 0x7e;
@@ -101,9 +101,9 @@ uint32_t I2COpt3001ReadManufacturerId(tI2C *psI2C, uint8_t ui8SlaveAddr)
     if (ui32I2CMasterStatus) return ~0;
 
     // Calculate the manufacturer ID.
-    ui32ManufacturerID = (uint32_t) (ui8Data[0] << 8) | (ui8Data[1]);
+    ui32ManufacturerId = (uint32_t) (ui8Data[0] << 8) | (ui8Data[1]);
 
-    return ui32ManufacturerID;
+    return ui32ManufacturerId;
 }
 
 

@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 07 Feb 2020
-// Rev.: 04 Apr 2020
+// Rev.: 06 Apr 2020
 //
 // Header file of the hardware demo for the TI Tiva TM4C1294 Connected
 // LaunchPad Evaluation Kit.
@@ -19,8 +19,8 @@
 // Firmware parameters.
 // ******************************************************************
 #define FW_NAME                     "hw_demo"
-#define FW_VERSION                  "0.1.1"
-#define FW_RELEASEDATE              "04 Apr 2020"
+#define FW_VERSION                  "0.1.2"
+#define FW_RELEASEDATE              "06 Apr 2020"
 
 
 
@@ -57,8 +57,8 @@ tADC sAdcJoystickX = {
     GPIO_PORTD_BASE,
     GPIO_PIN_2,
     ADC0_BASE,
-    0,
-    0,
+    0,                      // ui32SequenceNum
+    0,                      // ui32Step
     ADC_CTL_CH13 | ADC_CTL_IE | ADC_CTL_END
 };
 // Joystick Y.
@@ -68,8 +68,8 @@ tADC sAdcJoystickY = {
     GPIO_PORTK_BASE,
     GPIO_PIN_1,
     ADC0_BASE,
-    1,
-    0,
+    1,                      // ui32SequenceNum
+    0,                      // ui32Step
     ADC_CTL_CH17 | ADC_CTL_IE | ADC_CTL_END
 };
 // Accelerometer X.
@@ -79,8 +79,8 @@ tADC sAdcAccelX = {
     GPIO_PORTB_BASE,
     GPIO_PIN_4,
     ADC1_BASE,
-    0,
-    0,
+    0,                      // ui32SequenceNum
+    0,                      // ui32Step
     ADC_CTL_CH10 | ADC_CTL_IE | ADC_CTL_END
 };
 // Accelerometer Y.
@@ -90,8 +90,8 @@ tADC sAdcAccelY = {
     GPIO_PORTB_BASE,
     GPIO_PIN_5,
     ADC1_BASE,
-    1,
-    0,
+    1,                      // ui32SequenceNum
+    0,                      // ui32Step
     ADC_CTL_CH11 | ADC_CTL_IE | ADC_CTL_END
 };
 // Accelerometer Z.
@@ -101,27 +101,47 @@ tADC sAdcAccelZ = {
     GPIO_PORTK_BASE,
     GPIO_PIN_0,
     ADC1_BASE,
-    2,
-    0,
+    2,                      // ui32SequenceNum
+    0,                      // ui32Step
     ADC_CTL_CH16 | ADC_CTL_IE | ADC_CTL_END
 };
 
-// I2C master No. 2.
+
+
+// I2C master No. 0 (BoosterPack 1).
+tI2C sI2C0 = {
+    SYSCTL_PERIPH_I2C0,
+    SYSCTL_PERIPH_GPIOB,
+    GPIO_PORTB_BASE,
+    GPIO_PIN_2,             // SCL
+    GPIO_PIN_3,             // SDA
+    GPIO_PB2_I2C0SCL,
+    GPIO_PB3_I2C0SDA,
+    I2C0_BASE,
+    0,                      // ui32SysClock
+    false,                  // false = 100 kbps; true = 400 kbps
+    I2C_MASTER_INT_ARB_LOST | I2C_MASTER_INT_STOP | I2C_MASTER_INT_START |
+        I2C_MASTER_INT_NACK | I2C_MASTER_INT_TIMEOUT | I2C_MASTER_INT_DATA,
+    100                     // ui32Timeout
+};
+
+// I2C master No. 2 (BoosterPack 2).
 tI2C sI2C2 = {
     SYSCTL_PERIPH_I2C2,
     SYSCTL_PERIPH_GPION,
     GPIO_PORTN_BASE,
-    GPIO_PIN_5,
-    GPIO_PIN_4,
+    GPIO_PIN_5,             // SCL
+    GPIO_PIN_4,             // SDA
     GPIO_PN5_I2C2SCL,
     GPIO_PN4_I2C2SDA,
     I2C2_BASE,
-    0,
-    false,
+    0,                      // ui32SysClock
+    false,                  // false = 100 kbps; true = 400 kbps
     I2C_MASTER_INT_ARB_LOST | I2C_MASTER_INT_STOP | I2C_MASTER_INT_START |
         I2C_MASTER_INT_NACK | I2C_MASTER_INT_TIMEOUT | I2C_MASTER_INT_DATA,
-    100
+    100                     // ui32Timeout
 };
+
 // I2C parameters.
 #define EDUMKII_I2C_TMP006_SLV_ADR  0x40
 #define EDUMKII_I2C_OPT3001_SLV_ADR 0x44
@@ -138,10 +158,10 @@ tUART sUartBoosterPack2 = {
     GPIO_PP0_U6RX,
     GPIO_PP1_U6TX,
     UART6_BASE,
-    0,
-    115200,
+    0,                      // ui32SysClock
+    115200,                 // ui32Baud
     UART_CONFIG_WLEN_8 | UART_CONFIG_STOP_ONE | UART_CONFIG_PAR_NONE,
-    true
+    false                   // bLoopback
 };
 
 
