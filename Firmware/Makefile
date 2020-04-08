@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 07 Fab 2020
-# Rev.: 06 Apr 2020
+# Rev.: 08 Apr 2020
 #
 # Makefile for the firmware running on the TI Tiva TM4C1294 Connected LaunchPad
 # Evaluation Kit.
@@ -159,19 +159,19 @@ OBJS := $(addprefix $(COMPILER)/, $(OBJS))
 
 
 # ********** Generate libraries variable. **********
-LIBS  = ${TIVAWARE}/driverlib/${COMPILER}/libdriver.a
-LIBS += ${TIVAWARE}/grlib/${COMPILER}/libgr.a
+LIBS  = $(TIVAWARE)/driverlib/$(COMPILER)/libdriver.a
+LIBS += $(TIVAWARE)/grlib/$(COMPILER)/libgr.a
 
 
 
 # ********** Rules. **********
-.PHONY: all exec edit flash install clean real_clean mrproper minicom mk_backup mk_backup_src
+.PHONY: all exec edit flash install clean real_clean mrproper minicom mk_backup mk_backup_src $(COMPILER)
 
-all: ${COMPILER}
-all: $(COMPILER) ${COMPILER}/$(PROJECT).axf
+all: $(COMPILER)
+all: $(COMPILER) $(COMPILER)/$(PROJECT).axf
 
-${COMPILER}:
-	@$(MKDIR) -p ${COMPILER}
+$(COMPILER):
+	@$(MKDIR) -p $(COMPILER)
 	@$(MKDIR) -p $(addprefix $(COMPILER)/, $(filter-out $(TIVAWARE), $(IPATH)))
 
 edit: $(SOURCE_FILES) $(HEADER_FILES) $(LINKER_FILE)
@@ -181,18 +181,21 @@ exec: install
 
 flash: install
 
-install: ${COMPILER} ${COMPILER}/$(PROJECT).axf ${COMPILER}/$(PROJECT).bin
-#	@$(LM4FLASH) -E -v ${COMPILER}/$(PROJECT).bin
-	@$(LM4FLASH) -E ${COMPILER}/$(PROJECT).bin
+install: $(COMPILER) $(COMPILER)/$(PROJECT).axf $(COMPILER)/$(PROJECT).bin
+#	@$(LM4FLASH) -E -v $(COMPILER)/$(PROJECT).bin
+	@$(LM4FLASH) -E $(COMPILER)/$(PROJECT).bin
 
-${COMPILER}/$(PROJECT).axf: $(OBJS) $(LIBS)
+$(COMPILER)/$(PROJECT).axf: $(OBJS) $(LIBS)
 
 $(OBJS): $(SOURCE_FILES) $(HEADER_FILES) $(LINKER_FILE)
 
+$(LIBS): $(TIVAWARE)
+	@$(CD) $(TIVAWARE) && $(MAKE)
+
 debug: clean
 debug: CFLAGS+=-g -D DEBUG
-debug: ${COMPILER}
-debug: ${COMPILER}/$(PROJECT).axf
+debug: $(COMPILER)
+debug: $(COMPILER)/$(PROJECT).axf
 debug: flash
 debug:
 	debug/debug_nemiver.sh $(PROJECT)
