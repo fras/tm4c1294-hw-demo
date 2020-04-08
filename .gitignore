@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 01 Apr 2020
-# Rev.: 01 Apr 2020
+# Rev.: 08 Apr 2020
 #
 # List of files to be ignored by git.
 #
@@ -19,11 +19,21 @@
 *.bac
 *.bak
 
-# Compile firmware files.
+# Compiled firmware files.
 *.axf
 *.bin
 *.d
 *.o
+
+# Compiled TivaWare libraries.
+/Firmware/TivaWare/SW-EK-TM4C1294XL-2.1.4.178/driverlib/ccs/
+/Firmware/TivaWare/SW-EK-TM4C1294XL-2.1.4.178/driverlib/ewarm/
+/Firmware/TivaWare/SW-EK-TM4C1294XL-2.1.4.178/driverlib/gcc/
+/Firmware/TivaWare/SW-EK-TM4C1294XL-2.1.4.178/driverlib/rvmdk/
+/Firmware/TivaWare/SW-EK-TM4C1294XL-2.1.4.178/grlib/ccs/
+/Firmware/TivaWare/SW-EK-TM4C1294XL-2.1.4.178/grlib/ewarm/
+/Firmware/TivaWare/SW-EK-TM4C1294XL-2.1.4.178/grlib/gcc/
+/Firmware/TivaWare/SW-EK-TM4C1294XL-2.1.4.178/grlib/rvmdk/
 
 # Compiled python files.
 *.pyc
