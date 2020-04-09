@@ -25,6 +25,7 @@
 #include <stdint.h>
 #include "inc/hw_nvic.h"
 #include "inc/hw_types.h"
+#include "utils/uartstdio.h"
 
 //*****************************************************************************
 //
@@ -35,6 +36,7 @@ void ResetISR(void);
 static void NmiSR(void);
 static void FaultISR(void);
 static void IntDefaultHandler(void);
+static void FatalErrorMessage(void);
 
 //*****************************************************************************
 //
@@ -270,6 +272,7 @@ ResetISR(void)
 static void
 NmiSR(void)
 {
+    FatalErrorMessage();
     //
     // Enter an infinite loop.
     //
@@ -288,6 +291,7 @@ NmiSR(void)
 static void
 FaultISR(void)
 {
+    FatalErrorMessage();
     //
     // Enter an infinite loop.
     //
@@ -306,11 +310,23 @@ FaultISR(void)
 static void
 IntDefaultHandler(void)
 {
+    FatalErrorMessage();
     //
     // Go into an infinite loop.
     //
     while(1)
     {
     }
+}
+
+//*****************************************************************************
+//
+// Print fatal error message to UART (console).
+//
+//*****************************************************************************
+static void
+FatalErrorMessage(void)
+{
+    UARTprintf("\nFATAL ERROR. System halted.\n");
 }
 
