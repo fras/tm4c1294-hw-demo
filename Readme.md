@@ -3,11 +3,13 @@
 Auth: M. Fras, Electronics Division, MPI for Physics, Munich  
 Mod.: M. Fras, Electronics Division, MPI for Physics, Munich  
 Date: 07 Feb 2020  
-Rev.: 06 Apr 2020  
+Rev.: 09 Apr 2020  
 
 
 
 ## Prerequisites
+
+### Software
 
 * ARM GCC.
 * GNU make.
@@ -15,6 +17,11 @@ Rev.: 06 Apr 2020
 * Minicom terminal program.
 * ARM GDB and nemiver graphical debugger.
 * Python 3 and required modules.
+
+
+
+### Hardware
+
 * TI Tiva TM4C1294 Connected LaunchPad Evaluation Kit board.
 * BOOSTXL-RS232 board (connected to the BoosterPack 1 socket).
 * Educational BoosterPack MK II (connected to the BoosterPack 2 socket).
@@ -133,10 +140,10 @@ Rev.: 06 Apr 2020
 
     Example minicom session:
     ```
-    **********************************************************************
-    TIVA TM4C1294 hw_demo firmware version 0.0.7, release date: 30 Mar 2020
-    **********************************************************************
-    
+    *******************************************************************************
+    TIVA TM4C1294 `hw_demo' firmware version 0.1.4, release date: 09 Apr 2020
+    *******************************************************************************
+
     Type `help' to get an overview of available commands.
     > help
     Available commands:
@@ -145,8 +152,10 @@ Rev.: 06 Apr 2020
       i2c     PORT SLV-ADR R/W NUM|DATA   I2C access (0 = write, 1 = read).
       illum   [COUNT]                     Read ambient light sensor info.
       info                                Show information about this firmware.
-      led     VALUE                       Set the LEDs.
+      lcd     CMD PARAMS                  LCD commands.
+      led     VALUE                       Set the Leds.
       rgb     VALUE                       Set the RGB LED.
+      ssi     PORT R/W NUM|DATA           SSI/SPI access (0 = write, 1 = read).
       temp    [COUNT]                     Read temperature sensor info.
       uart    PORT R/W NUM|DATA           UART access (0 = write, 1 = read).
     > info
@@ -298,7 +307,7 @@ OK. Data: 0x11 0x22 0x33 0x44 0x55 0xaa
 
 ### TM4C1294NCPDT IoT enabled High performance 32-bit ARM® Cortex®-M4F based MCU 
 
-![IoT enabled High performance 32-bit ARM® Cortex®-M4F based MCU](http://www.ti.com/graphics/folders/partimages/TM4C1294NCPDT.jpg)
+![TM4C1294NCPDT IoT enabled High performance 32-bit ARM® Cortex®-M4F based MCU](http://www.ti.com/graphics/folders/partimages/TM4C1294NCPDT.jpg)
 * [TM4C1294NCPDT product page](http://www.ti.com/product/TM4C1294NCPDT)
 * [Tiva C Series TM4C1294NCPDT Microcontroller Data Sheet datasheet (Rev. B)](http://www.ti.com/lit/ds/symlink/tm4c1294ncpdt.pdf)
 * [TivaWare™ Peripheral Driver Library for C Series User's Guide (Rev. D)](http://www.ti.com/lit/ug/spmu298d/spmu298d.pdf)

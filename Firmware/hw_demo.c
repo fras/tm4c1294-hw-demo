@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 07 Feb 2020
-// Rev.: 06 Apr 2020
+// Rev.: 09 Apr 2020
 //
 // Hardware demo for the TI Tiva TM4C1294 Connected LaunchPad Evaluation Kit.
 //
@@ -41,16 +41,17 @@
 #include "hw/ssi/ssi.h"
 #include "hw/system/system.h"
 #include "hw/uart/uart.h"
-#include "hw_demo.h"
 #include "uart_ui.h"
+#include "hw_demo.h"
+#include "hw_demo_io.h"
 
 
 
-// The error routine that is called if the driver library eniCnters an error.
+// The error routine that is called if the driver library encounters an error.
 #ifdef DEBUG
 void __error__(char *pcFilename, uint32_t ui32Line)
 {
-    UARTprintf("FATAL: Unhandled error occured in file `%s', line %d.\n", pcFilename, ui32Line);
+    UARTprintf("%s: Unhandled error occured in file `%s', line %d.\n", UI_STR_FATAL, pcFilename, ui32Line);
 }
 #endif
 
@@ -88,13 +89,13 @@ int main(void)
     UartUiInit(ui32SysClock);
 
     // Initialize the ADCs.
-    AdcReset(&sAdcJoystickX);
-    AdcInit(&sAdcJoystickX);
-    AdcInit(&sAdcJoystickY);
-    AdcReset(&sAdcAccelX);
-    AdcInit(&sAdcAccelX);
-    AdcInit(&sAdcAccelY);
-    AdcInit(&sAdcAccelZ);
+    AdcReset(&g_sAdcJoystickX);
+    AdcInit(&g_sAdcJoystickX);
+    AdcInit(&g_sAdcJoystickY);
+    AdcReset(&g_sAdcAccelX);
+    AdcInit(&g_sAdcAccelX);
+    AdcInit(&g_sAdcAccelY);
+    AdcInit(&g_sAdcAccelZ);
 
     // Initialize the user buttons.
     GpioButtonInit();
@@ -106,32 +107,32 @@ int main(void)
     PwmRgbLedInit();
 
     // Initialize the I2C master for the BoosterPack 1 socket.
-    sI2C0.ui32SysClock = ui32SysClock;
-    I2CMasterInit(&sI2C0);
+    g_sI2C0.ui32SysClock = ui32SysClock;
+    I2CMasterInit(&g_sI2C0);
 
     // Initialize the I2C master for the Educational BoosterPack MK II
     // (BoosterPack 2 socket).
-    sI2C2.ui32SysClock = ui32SysClock;
-    I2CMasterInit(&sI2C2);
+    g_sI2C2.ui32SysClock = ui32SysClock;
+    I2CMasterInit(&g_sI2C2);
 
     // Initialize the I2C devices.
-    I2CTmp006Reset(&sI2C2, EDUMKII_I2C_TMP006_SLV_ADR);
-    I2CTmp006Init(&sI2C2, EDUMKII_I2C_TMP006_SLV_ADR);
-    I2COpt3001Reset(&sI2C2, EDUMKII_I2C_OPT3001_SLV_ADR);
-    I2COpt3001Init(&sI2C2, EDUMKII_I2C_OPT3001_SLV_ADR);
-
-    // Initialize the UART on the Educational BoosterPack MKII.
-    sUartBoosterPack2.ui32SysClock = ui32SysClock;
-    sUartBoosterPack2.bLoopback = true;     // Enable loopback for testing.
-    UartInit(&sUartBoosterPack2);
+    I2CTmp006Reset(&g_sI2C2, EDUMKII_I2C_TMP006_SLV_ADR);
+    I2CTmp006Init(&g_sI2C2, EDUMKII_I2C_TMP006_SLV_ADR);
+    I2COpt3001Reset(&g_sI2C2, EDUMKII_I2C_OPT3001_SLV_ADR);
+    I2COpt3001Init(&g_sI2C2, EDUMKII_I2C_OPT3001_SLV_ADR);
 
     // Initialize SSI 2 for BoosterPack 1.
-    sSsi2.ui32SysClock = ui32SysClock;
-    SsiMasterInit(&sSsi2);
+    g_sSsi2.ui32SysClock = ui32SysClock;
+    SsiMasterInit(&g_sSsi2);
 
     // Initialize SSI 3 for BoosterPack 2.
-    sSsi3.ui32SysClock = ui32SysClock;
-    SsiMasterInit(&sSsi3);
+    g_sSsi3.ui32SysClock = ui32SysClock;
+    SsiMasterInit(&g_sSsi3);
+
+    // Initialize the UART on the Educational BoosterPack MKII.
+    g_sUart6.ui32SysClock = ui32SysClock;
+    g_sUart6.bLoopback = true;        // Enable loopback for testing.
+    UartInit(&g_sUart6);
 
     // Initialize the LCD on the Educational BoosterPack MKII.
     tContext sContext;
@@ -155,9 +156,9 @@ int main(void)
     LcdFwInfo(&sLcdFwInfo);
 
     // Send initial information to UART.
-    UARTprintf("\n\n**********************************************************************\n");
-    UARTprintf("TIVA TM4C1294 %s firmware version %s, release date: %s\n", FW_NAME, FW_VERSION, FW_RELEASEDATE);
-    UARTprintf("**********************************************************************\n\n");
+    UARTprintf("\n\n*******************************************************************************\n");
+    UARTprintf("TIVA TM4C1294 `%s' firmware version %s, release date: %s\n", FW_NAME, FW_VERSION, FW_RELEASEDATE);
+    UARTprintf("*******************************************************************************\n\n");
     UARTprintf("Type `help' to get an overview of available commands.\n");
 
     while(1)
@@ -240,7 +241,7 @@ void Help(void)
 // Show information.
 void Info(void)
 {
-    UARTprintf("TIVA TM4C1294 %s firmware version %s, release date: %s\n", FW_NAME, FW_VERSION, FW_RELEASEDATE);
+    UARTprintf("TIVA TM4C1294 `%s' firmware version %s, release date: %s\n", FW_NAME, FW_VERSION, FW_RELEASEDATE);
     UARTprintf("It was compiled using gcc %s at %s on %s.", __VERSION__, __TIME__, __DATE__);
 }
 
@@ -275,16 +276,16 @@ int AdcRead(char *pcCmd, char *pcParam)
         UARTprintf(" Z = 0x%03x", ui32Adc);
         #else
         // Joystick.
-        ui32Adc = AdcConvert(&sAdcJoystickX);
+        ui32Adc = AdcConvert(&g_sAdcJoystickX);
         UARTprintf("Joystick: X = %4d ", ui32Adc);
-        ui32Adc = AdcConvert(&sAdcJoystickY);
+        ui32Adc = AdcConvert(&g_sAdcJoystickY);
         UARTprintf("Y = %4d", ui32Adc);
         // Accelerometer.
-        ui32Adc = AdcConvert(&sAdcAccelX);
+        ui32Adc = AdcConvert(&g_sAdcAccelX);
         UARTprintf(" ; Accelerometer: X = %4d", ui32Adc);
-        ui32Adc = AdcConvert(&sAdcAccelY);
+        ui32Adc = AdcConvert(&g_sAdcAccelY);
         UARTprintf(" Y = %4d", ui32Adc);
-        ui32Adc = AdcConvert(&sAdcAccelZ);
+        ui32Adc = AdcConvert(&g_sAdcAccelZ);
         UARTprintf(" Z = %4d", ui32Adc);
         #endif
         if (i < iCnt - 1) {
@@ -492,7 +493,7 @@ int RgbLedSet(char *pcCmd, char *pcParam)
 int I2CAccess(char *pcCmd, char *pcParam)
 {
     int i;
-    tI2C *psI2C;
+    tI2C *pg_sI2C;
     uint8_t ui8I2CPort = 0;
     uint8_t ui8I2CSlaveAddr = 0;
     uint8_t ui8I2CRw = 0;   // 0 = write; 1 = read
@@ -535,15 +536,15 @@ int I2CAccess(char *pcCmd, char *pcParam)
     if (i < 3) return -1;
     // Check if the I2C port number is valid.
     switch (ui8I2CPort) {
-        case 0: psI2C = &sI2C0; break;
-        case 2: psI2C = &sI2C2; break;
+        case 0: pg_sI2C = &g_sI2C0; break;
+        case 2: pg_sI2C = &g_sI2C2; break;
         default:
             UARTprintf("%s: Only I2C port numbers 0 and 2 are supported!", UI_STR_ERROR);
             return -1;
     }
     // I2C write.
     if (ui8I2CRw == 0) {
-        ui32I2CMasterStatus = I2CMasterWrite(psI2C, ui8I2CSlaveAddr, pui8I2CData, i - 3);
+        ui32I2CMasterStatus = I2CMasterWrite(pg_sI2C, ui8I2CSlaveAddr, pui8I2CData, i - 3);
     // I2C read.
     } else {
         if (i == 3) ui8I2CDataNum = 1;
@@ -551,7 +552,7 @@ int I2CAccess(char *pcCmd, char *pcParam)
         if (ui8I2CDataNum > sizeof(pui8I2CData) / sizeof(pui8I2CData[0])) {
             ui8I2CDataNum = sizeof(pui8I2CData) / sizeof(pui8I2CData[0]);
         }
-        ui32I2CMasterStatus = I2CMasterRead(psI2C, ui8I2CSlaveAddr, pui8I2CData, ui8I2CDataNum);
+        ui32I2CMasterStatus = I2CMasterRead(pg_sI2C, ui8I2CSlaveAddr, pui8I2CData, ui8I2CDataNum);
     }
     // Check the I2C status.
     if (ui32I2CMasterStatus) {
@@ -589,9 +590,9 @@ int TemperatureRead(char *pcCmd, char *pcParam)
     }
 
     for (int i = 0; i < iCnt; i++) {
-        fTemp = I2CTmp006ReadTemp(&sI2C2, EDUMKII_I2C_TMP006_SLV_ADR);
-        ui32Tmp006ManufacturerId = I2CTmp006ReadManufacturerId(&sI2C2, EDUMKII_I2C_TMP006_SLV_ADR);
-        ui32Tmp006DeviceId = I2CTmp006ReadDeviceId(&sI2C2, EDUMKII_I2C_TMP006_SLV_ADR);
+        fTemp = I2CTmp006ReadTemp(&g_sI2C2, EDUMKII_I2C_TMP006_SLV_ADR);
+        ui32Tmp006ManufacturerId = I2CTmp006ReadManufacturerId(&g_sI2C2, EDUMKII_I2C_TMP006_SLV_ADR);
+        ui32Tmp006DeviceId = I2CTmp006ReadDeviceId(&g_sI2C2, EDUMKII_I2C_TMP006_SLV_ADR);
         if ((ui32Tmp006ManufacturerId == ~0) || (ui32Tmp006DeviceId == ~0)) {
             UARTprintf("%s: Cannot read from the TMP006 IC.", UI_STR_ERROR);
             return -1;
@@ -628,9 +629,9 @@ int IlluminanceRead(char *pcCmd, char *pcParam)
     }
 
     for (int i = 0; i < iCnt; i++) {
-        fIlluminance = I2COpt3001ReadIlluminance(&sI2C2, EDUMKII_I2C_OPT3001_SLV_ADR);
-        ui32Opt3001ManufacturerId = I2COpt3001ReadManufacturerId(&sI2C2, EDUMKII_I2C_OPT3001_SLV_ADR);
-        ui32Opt3001DeviceId = I2COpt3001ReadDeviceId(&sI2C2, EDUMKII_I2C_OPT3001_SLV_ADR);
+        fIlluminance = I2COpt3001ReadIlluminance(&g_sI2C2, EDUMKII_I2C_OPT3001_SLV_ADR);
+        ui32Opt3001ManufacturerId = I2COpt3001ReadManufacturerId(&g_sI2C2, EDUMKII_I2C_OPT3001_SLV_ADR);
+        ui32Opt3001DeviceId = I2COpt3001ReadDeviceId(&g_sI2C2, EDUMKII_I2C_OPT3001_SLV_ADR);
         if ((ui32Opt3001ManufacturerId == ~0) || (ui32Opt3001DeviceId == ~0)) {
             UARTprintf("%s: Cannot read from the OPT3001 IC.", UI_STR_ERROR);
             return -1;
@@ -690,8 +691,8 @@ int SsiAccess(char *pcCmd, char *pcParam)
     if (i < 2) return -1;
     // Check if the SSI port number is valid.
     switch (ui8SsiPort) {
-        case 2: psSsi = &sSsi2; break;
-        case 3: psSsi = &sSsi3; break;
+        case 2: psSsi = &g_sSsi2; break;
+        case 3: psSsi = &g_sSsi3; break;
         default:
             UARTprintf("%s: Only SSI port numbers 2 and 3 are supported!", UI_STR_ERROR);
             return -1;
@@ -769,7 +770,7 @@ int UartAccess(char *pcCmd, char *pcParam)
     if (i < 2) return -1;
     // Check if the UART port number is valid.
     switch (ui8UartPort) {
-        case 6: psUart = &sUartBoosterPack2; break;
+        case 6: psUart = &g_sUart6; break;
         default:
             UARTprintf("%s: Only UART port number 6 is supported!", UI_STR_ERROR);
             return -1;
