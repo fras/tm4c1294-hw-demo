@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 07 Fab 2020
-# Rev.: 09 Apr 2020
+# Rev.: 10 Apr 2020
 #
 # Makefile for the firmware running on the TI Tiva TM4C1294 Connected LaunchPad
 # Evaluation Kit.
@@ -86,6 +86,7 @@ include $(TIVAWARE)/makedefs
 # Where to find source files that do not live in this directory.
 #VPATH  = $(TIVAWARE)/utils
 VPATH  = ./utils
+VPATH += $(TIVAWARE)/utils
 
 # Where to find header files that do not live in the source directory.
 IPATH  = $(TIVAWARE)
