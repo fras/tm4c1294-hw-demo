@@ -2,10 +2,10 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 07 Feb 2020
-// Rev.: 06 Apr 2020
+// Rev.: 10 Apr 2020
 //
-// UART user interface for the TI Tiva TM4C1294 Connected LaunchPad Evaluation
-// Kit.
+// UART user interface (UI) for the TI Tiva TM4C1294 Connected LaunchPad
+// Evaluation Kit.
 //
 
 
@@ -28,22 +28,22 @@
 
 
 // Initialize the UART user interface and its pins.
-void UartUiInit(uint32_t ui32SysClock)
+void UartUiInit(tUartUi *psUartUi)
 {
     // Enable the GPIO Peripheral used by the UART.
-    SysCtlPeripheralEnable(UART_UI_SYSCTL_PERIPH_GPIO);
+    SysCtlPeripheralEnable(psUartUi->ui32PeripheralGpio);
 
     // Setup the UART.
-    SysCtlPeripheralDisable(UART_UI_SYSCTL_PERIPH_UART);
-    SysCtlPeripheralReset(UART_UI_SYSCTL_PERIPH_UART);
-    SysCtlPeripheralEnable(UART_UI_SYSCTL_PERIPH_UART);
+    SysCtlPeripheralDisable(psUartUi->ui32PeripheralUart);
+    SysCtlPeripheralReset(psUartUi->ui32PeripheralUart);
+    SysCtlPeripheralEnable(psUartUi->ui32PeripheralUart);
 
     // Configure GPIO Pins for UART mode.
-    GPIOPinConfigure(UART_UI_GPIO_RX);
-    GPIOPinConfigure(UART_UI_GPIO_TX);
-    GPIOPinTypeUART(UART_UI_GPIO_PORT_BASE, UART_UI_GPIO_PIN_RX | UART_UI_GPIO_PIN_TX);
+    GPIOPinConfigure(psUartUi->ui32PinConfigRx);
+    GPIOPinConfigure(psUartUi->ui32PinConfigTx);
+    GPIOPinTypeUART(psUartUi->ui32PortGpioBase, psUartUi->ui8PinGpioRx | psUartUi->ui8PinGpioTx);
 
     // Initialize the UART for console I/O.
-    UARTStdioConfig(UART_UI_NUM, UART_UI_BAUD, ui32SysClock);
+    UARTStdioConfig(psUartUi->ui32Port, psUartUi->ui32Baud, psUartUi->ui32SrcClock);
 }
 

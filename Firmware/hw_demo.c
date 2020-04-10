@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 07 Feb 2020
-// Rev.: 09 Apr 2020
+// Rev.: 10 Apr 2020
 //
 // Hardware demo for the TI Tiva TM4C1294 Connected LaunchPad Evaluation Kit.
 //
@@ -86,7 +86,8 @@ int main(void)
     ui32SysClock = MAP_SysCtlClockFreqSet(SYSTEM_CLOCK_SETTINGS, SYSTEM_CLOCK_FREQ);
 
     // Initialize the UART for the user interface.
-    UartUiInit(ui32SysClock);
+    g_sUartUi.ui32SrcClock = ui32SysClock;
+    UartUiInit(&g_sUartUi);
 
     // Initialize the ADCs.
     AdcReset(&g_sAdcJoystickX);

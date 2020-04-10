@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 09 Apr 2020
-// Rev.: 09 Apr 2020
+// Rev.: 10 Apr 2020
 //
 // Header file for the IO peripheral definitions of the hardware demo for the
 // TI Tiva TM4C1294 Connected LaunchPad Evaluation Kit.
@@ -31,6 +31,7 @@
 #include "hw/i2c/i2c.h"
 #include "hw/ssi/ssi.h"
 #include "hw/uart/uart.h"
+#include "uart_ui.h"
 #include "hw_demo.h"
 
 
@@ -38,6 +39,9 @@
 // ******************************************************************
 // Global variables for the IO peripherals.
 // ******************************************************************
+
+// UART user inferface (UI).
+extern tUartUi g_sUartUi;
 
 // ADC.
 extern tADC g_sAdcJoystickX;

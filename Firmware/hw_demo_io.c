@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 09 Apr 2020
-// Rev.: 09 Apr 2020
+// Rev.: 10 Apr 2020
 //
 // IO peripheral definitions of the hardware demo for the TI Tiva TM4C1294
 // Connected LaunchPad Evaluation Kit.
@@ -11,6 +11,25 @@
 
 
 #include "hw_demo_io.h"
+
+
+// ******************************************************************
+// UART user inferface (UI).
+// ******************************************************************
+
+tUartUi g_sUartUi = {
+    SYSCTL_PERIPH_UART7,
+    SYSCTL_PERIPH_GPIOC,
+    GPIO_PORTC_BASE,
+    GPIO_PIN_4,             // RX
+    GPIO_PIN_5,             // TX
+    GPIO_PC4_U7RX,          // RX
+    GPIO_PC5_U7TX,          // TX
+    UART7_BASE,             // ui32Base
+    0,                      // ui32SrcClock
+    115200,                 // ui32Baud
+    7                       // ui32Port
+};
 
 
 
