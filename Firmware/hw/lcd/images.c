@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 03 Apr 2020
-// Rev.: 03 Apr 2020
+// Rev.: 11 Apr 2020
 //
 // File containing images to be used with the GrImageDraw function of the TI
 // TivaWare Graphics Library.
@@ -17,8 +17,8 @@
 
 
 
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include "grlib/grlib.h"
 
 

@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 06 Apr 2020
-// Rev.: 06 Apr 2020
+// Rev.: 11 Apr 2020
 //
 // Header file for the Synchronous Serial Interface (SSI) functions on the TI
 // Tiva TM4C1294 Connected LaunchPad Evaluation Kit.
@@ -29,7 +29,7 @@ typedef struct {
     uint32_t ui32PinConfigRx;
     uint32_t ui32PinConfigTx;
     uint32_t ui32BaseSsi;
-    uint32_t ui32SysClock;
+    uint32_t ui32SsiClk;
     uint32_t ui32Protocol;
     uint32_t ui32Mode;
     uint32_t ui32BitRate;

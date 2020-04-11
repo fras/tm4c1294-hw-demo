@@ -2,31 +2,18 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 18 Feb 2020
-// Rev.: 06 Apr 2020
+// Rev.: 11 Apr 2020
 //
 // UART functions on the TI Tiva TM4C1294 Connected LaunchPad Evaluation Kit.
 //
 
 
 
-#include <stdint.h>
 #include <stdbool.h>
-#include <stdlib.h>
-#include <string.h>
-#include <strings.h>
-#include "inc/hw_memmap.h"
-#include "inc/hw_types.h"
-#include "driverlib/adc.h"
+#include <stdint.h>
 #include "driverlib/gpio.h"
-#include "driverlib/i2c.h"
-#include "driverlib/pin_map.h"
-#include "driverlib/pwm.h"
-#include "driverlib/rom.h"
-#include "driverlib/rom_map.h"
 #include "driverlib/sysctl.h"
-#include "driverlib/timer.h"
 #include "driverlib/uart.h"
-#include "utils/uartstdio.h"
 #include "uart.h"
 
 
@@ -44,7 +31,7 @@ void UartInit(tUART *psUart)
     SysCtlPeripheralDisable(psUart->ui32PeripheralUart);
     SysCtlPeripheralReset(psUart->ui32PeripheralUart);
     SysCtlPeripheralEnable(psUart->ui32PeripheralUart);
-    UARTConfigSetExpClk(psUart->ui32BaseUart, psUart->ui32SysClock, psUart->ui32Baud, psUart->ui32Config);
+    UARTConfigSetExpClk(psUart->ui32BaseUart, psUart->ui32UartClk, psUart->ui32Baud, psUart->ui32Config);
     UARTFIFOEnable(psUart->ui32BaseUart);
     if (psUart->bLoopback) UARTLoopbackEnable(psUart->ui32BaseUart);
     UARTEnable(psUart->ui32BaseUart);

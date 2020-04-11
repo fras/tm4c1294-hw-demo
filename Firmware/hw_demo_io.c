@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 09 Apr 2020
-// Rev.: 10 Apr 2020
+// Rev.: 11 Apr 2020
 //
 // IO peripheral definitions of the hardware demo for the TI Tiva TM4C1294
 // Connected LaunchPad Evaluation Kit.
@@ -10,7 +10,18 @@
 
 
 
+#include <stdbool.h>
+#include <stdint.h>
+#include "inc/hw_memmap.h"
+#include "driverlib/adc.h"
+#include "driverlib/gpio.h"
+#include "driverlib/i2c.h"
+#include "driverlib/pin_map.h"
+#include "driverlib/ssi.h"
+#include "driverlib/sysctl.h"
+#include "driverlib/uart.h"
 #include "hw_demo_io.h"
+
 
 
 // ******************************************************************
@@ -109,7 +120,7 @@ tI2C g_sI2C0 = {
     GPIO_PB2_I2C0SCL,       // SCL
     GPIO_PB3_I2C0SDA,       // SDA
     I2C0_BASE,
-    0,                      // ui32SysClock
+    0,                      // ui32I2CClk
     false,                  // false = 100 kbps; true = 400 kbps
     I2C_MASTER_INT_ARB_LOST | I2C_MASTER_INT_STOP | I2C_MASTER_INT_START |
         I2C_MASTER_INT_NACK | I2C_MASTER_INT_TIMEOUT | I2C_MASTER_INT_DATA,
@@ -126,7 +137,7 @@ tI2C g_sI2C2 = {
     GPIO_PN5_I2C2SCL,       // SCL
     GPIO_PN4_I2C2SDA,       // SDA
     I2C2_BASE,
-    0,                      // ui32SysClock
+    0,                      // ui32I2CClk
     false,                  // false = 100 kbps; true = 400 kbps
     I2C_MASTER_INT_ARB_LOST | I2C_MASTER_INT_STOP | I2C_MASTER_INT_START |
         I2C_MASTER_INT_NACK | I2C_MASTER_INT_TIMEOUT | I2C_MASTER_INT_DATA,
@@ -157,7 +168,7 @@ tSSI g_sSsi2 = {
     GPIO_PD0_SSI2XDAT1,     // RX
     GPIO_PD1_SSI2XDAT0,     // TX
     SSI2_BASE,
-    0,                      // ui32SysClock
+    0,                      // ui32SsiClk
     SSI_FRF_MOTO_MODE_0,    // ui32Protocol
     SSI_MODE_MASTER,        // ui32Mode
     15000000,               // ui32BitRate
@@ -179,7 +190,7 @@ tSSI g_sSsi3 = {
     GPIO_PQ3_SSI3XDAT1,     // RX
     GPIO_PQ2_SSI3XDAT0,     // TX
     SSI3_BASE,
-    0,                      // ui32SysClock
+    0,                      // ui32SsiClk
     SSI_FRF_MOTO_MODE_0,    // ui32Protocol
     SSI_MODE_MASTER,        // ui32Mode
     15000000,               // ui32BitRate
@@ -203,7 +214,7 @@ tUART g_sUart6 = {
     GPIO_PP0_U6RX,          // RX
     GPIO_PP1_U6TX,          // TX
     UART6_BASE,
-    0,                      // ui32SysClock
+    0,                      // ui32UartClk
     115200,                 // ui32Baud
     UART_CONFIG_WLEN_8 | UART_CONFIG_STOP_ONE | UART_CONFIG_PAR_NONE,
     false                   // bLoopback

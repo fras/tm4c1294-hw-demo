@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 07 Feb 2020
-// Rev.: 10 Apr 2020
+// Rev.: 11 Apr 2020
 //
 // Hardware demo for the TI Tiva TM4C1294 Connected LaunchPad Evaluation Kit.
 //
@@ -15,18 +15,9 @@
 #include <string.h>
 #include <strings.h>
 #include "inc/hw_memmap.h"
-#include "inc/hw_types.h"
-#include "driverlib/adc.h"
-#include "driverlib/gpio.h"
 #include "driverlib/i2c.h"
-#include "driverlib/pin_map.h"
-#include "driverlib/pwm.h"
-#include "driverlib/rom.h"
 #include "driverlib/rom_map.h"
-#include "driverlib/ssi.h"
 #include "driverlib/sysctl.h"
-#include "driverlib/timer.h"
-#include "driverlib/uart.h"
 #include "utils/uartstdio.h"
 #include "hw/adc/adc.h"
 #include "hw/gpio/gpio.h"
@@ -35,6 +26,7 @@
 #include "hw/i2c/i2c.h"
 #include "hw/i2c/i2c_tmp006.h"
 #include "hw/i2c/i2c_opt3001.h"
+#include "hw/lcd/Crystalfontz128x128_ST7735.h"
 #include "hw/lcd/images.h"
 #include "hw/lcd/lcd.h"
 #include "hw/pwm/pwm_rgb_led.h"
@@ -108,12 +100,12 @@ int main(void)
     PwmRgbLedInit();
 
     // Initialize the I2C master for the BoosterPack 1 socket.
-    g_sI2C0.ui32SysClock = ui32SysClock;
+    g_sI2C0.ui32I2CClk = ui32SysClock;
     I2CMasterInit(&g_sI2C0);
 
     // Initialize the I2C master for the Educational BoosterPack MK II
     // (BoosterPack 2 socket).
-    g_sI2C2.ui32SysClock = ui32SysClock;
+    g_sI2C2.ui32I2CClk = ui32SysClock;
     I2CMasterInit(&g_sI2C2);
 
     // Initialize the I2C devices.
@@ -123,15 +115,15 @@ int main(void)
     I2COpt3001Init(&g_sI2C2, EDUMKII_I2C_OPT3001_SLV_ADR);
 
     // Initialize SSI 2 for BoosterPack 1.
-    g_sSsi2.ui32SysClock = ui32SysClock;
+    g_sSsi2.ui32SsiClk = ui32SysClock;
     SsiMasterInit(&g_sSsi2);
 
     // Initialize SSI 3 for BoosterPack 2.
-    g_sSsi3.ui32SysClock = ui32SysClock;
+    g_sSsi3.ui32SsiClk = ui32SysClock;
     SsiMasterInit(&g_sSsi3);
 
     // Initialize the UART on the Educational BoosterPack MKII.
-    g_sUart6.ui32SysClock = ui32SysClock;
+    g_sUart6.ui32UartClk = ui32SysClock;
     g_sUart6.bLoopback = true;        // Enable loopback for testing.
     UartInit(&g_sUart6);
 

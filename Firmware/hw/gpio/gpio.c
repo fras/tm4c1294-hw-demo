@@ -2,24 +2,16 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 10 Feb 2020
-// Rev.: 04 Apr 2020
+// Rev.: 11 Apr 2020
 //
 // GPIO functions for the TI Tiva TM4C1294 Connected LaunchPad Evaluation Kit.
 //
 
 
 
-#include <stdint.h>
 #include <stdbool.h>
-#include <stdlib.h>
-#include <string.h>
-#include <strings.h>
-#include "inc/hw_memmap.h"
-#include "inc/hw_types.h"
+#include <stdint.h>
 #include "driverlib/gpio.h"
-#include "driverlib/pin_map.h"
-#include "driverlib/rom.h"
-#include "driverlib/rom_map.h"
 #include "driverlib/sysctl.h"
 #include "gpio.h"
 

@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 09 Apr 2020
-// Rev.: 10 Apr 2020
+// Rev.: 11 Apr 2020
 //
 // Header file for the IO peripheral definitions of the hardware demo for the
 // TI Tiva TM4C1294 Connected LaunchPad Evaluation Kit.
@@ -16,17 +16,6 @@
 
 
 
-#include <stdbool.h>
-#include <stdint.h>
-#include "inc/hw_memmap.h"
-#include "inc/hw_types.h"
-#include "driverlib/adc.h"
-#include "driverlib/gpio.h"
-#include "driverlib/i2c.h"
-#include "driverlib/pin_map.h"
-#include "driverlib/ssi.h"
-#include "driverlib/sysctl.h"
-#include "driverlib/uart.h"
 #include "hw/adc/adc.h"
 #include "hw/i2c/i2c.h"
 #include "hw/ssi/ssi.h"
@@ -54,12 +43,12 @@ extern tADC g_sAdcAccelZ;
 extern tI2C g_sI2C0;
 extern tI2C g_sI2C2;
 
-// UARTs.
-extern tUART g_sUart6;
-
 // Synchronous Serial Interface (SSI).
 extern tSSI g_sSsi2;
 extern tSSI g_sSsi3;
+
+// UARTs
+extern tUART g_sUart6;
 
 
 

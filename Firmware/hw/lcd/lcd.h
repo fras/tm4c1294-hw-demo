@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 03 Apr 2020
-// Rev.: 04 Apr 2020
+// Rev.: 11 Apr 2020
 //
 // Header file for the LCD on the Educational BoosterPack MKII connected to the
 // BoosterPack 2 socket of the TI Tiva TM4C1294 Connected LaunchPad Evaluation
@@ -18,7 +18,6 @@
 
 #include <stdint.h>
 #include "grlib/grlib.h"
-#include "Crystalfontz128x128_ST7735.h"
 
 
 

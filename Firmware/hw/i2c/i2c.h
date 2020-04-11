@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 11 Feb 2020
-// Rev.: 06 Apr 2020
+// Rev.: 11 Apr 2020
 //
 // Header file for the I2C functions on the TI Tiva TM4C1294 Connected
 // LaunchPad Evaluation Kit.
@@ -25,7 +25,7 @@ typedef struct {
     uint32_t ui32PinConfigScl;
     uint32_t ui32PinConfigSda;
     uint32_t ui32BaseI2C;
-    uint32_t ui32SysClock;
+    uint32_t ui32I2CClk;
     bool     bFast;                 // false = 100 kbps; true = 400 kbps
     uint32_t ui32IntFlags;
     uint32_t ui32Timeout;

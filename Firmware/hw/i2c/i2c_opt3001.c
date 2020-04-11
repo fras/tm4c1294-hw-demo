@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 13 Feb 2020
-// Rev.: 06 Apr 2020
+// Rev.: 11 Apr 2020
 //
 // I2C functions for the OPT3001 ambient light sensor on the Educational
 // BoosterPack MK II connected to the TI Tiva TM4C1294 Connected LaunchPad
@@ -11,22 +11,11 @@
 
 
 
-#include <stdint.h>
 #include <stdbool.h>
-#include <stdlib.h>
-#include <string.h>
-#include <strings.h>
-#include "inc/hw_memmap.h"
-#include "inc/hw_types.h"
+#include <stdint.h>
 #include "driverlib/gpio.h"
 #include "driverlib/i2c.h"
-#include "driverlib/pin_map.h"
-#include "driverlib/pwm.h"
-#include "driverlib/rom.h"
-#include "driverlib/rom_map.h"
 #include "driverlib/sysctl.h"
-#include "driverlib/timer.h"
-#include "utils/uartstdio.h"
 #include "i2c.h"
 
 

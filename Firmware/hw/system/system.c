@@ -9,22 +9,13 @@
 
 
 
-#include <stdint.h>
 #include <stdbool.h>
-#include <stdlib.h>
-#include <string.h>
-#include <strings.h>
+#include <stdint.h>
 #include "inc/hw_memmap.h"
-#include "inc/hw_types.h"
 #include "driverlib/gpio.h"
 #include "driverlib/pin_map.h"
-#include "driverlib/pwm.h"
-#include "driverlib/rom.h"
-#include "driverlib/rom_map.h"
 #include "driverlib/sysctl.h"
-#include "driverlib/timer.h"
-#include "utils/uartstdio.h"
-#include "pwm_rgb_led.h"
+#include "system.h"
 
 
 

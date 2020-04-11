@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 06 Apr 2020
-// Rev.: 06 Apr 2020
+// Rev.: 11 Apr 2020
 //
 // Synchronous Serial Interface (SSI) functions on the TI Tiva TM4C1294
 // Connected LaunchPad Evaluation Kit.
@@ -13,22 +13,11 @@
 
 
 
-#include <stdint.h>
 #include <stdbool.h>
-#include <stdlib.h>
-#include <string.h>
-#include <strings.h>
-#include "inc/hw_memmap.h"
-#include "inc/hw_types.h"
+#include <stdint.h>
 #include "driverlib/gpio.h"
-#include "driverlib/pin_map.h"
-#include "driverlib/pwm.h"
-#include "driverlib/rom.h"
-#include "driverlib/rom_map.h"
 #include "driverlib/ssi.h"
 #include "driverlib/sysctl.h"
-#include "driverlib/timer.h"
-#include "utils/uartstdio.h"
 #include "ssi.h"
 
 
@@ -53,7 +42,7 @@ void SsiMasterInit(tSSI *psSsi)
     SysCtlPeripheralReset(psSsi->ui32PeripheralSsi);
     SysCtlPeripheralEnable(psSsi->ui32PeripheralSsi);
     while(!SysCtlPeripheralReady(psSsi->ui32PeripheralSsi));
-    SSIConfigSetExpClk(psSsi->ui32BaseSsi, psSsi->ui32SysClock,
+    SSIConfigSetExpClk(psSsi->ui32BaseSsi, psSsi->ui32SsiClk,
                        psSsi->ui32Protocol,
                        psSsi->ui32Mode,
                        psSsi->ui32BitRate,
@@ -74,10 +63,11 @@ uint32_t SsiMasterWrite(tSSI *psSsi, uint32_t *pui32Data, uint8_t ui8Length)
     for (int i = 0; i < ui8Length; i++) {
         SSIDataPut(psSsi->ui32BaseSsi, pui32Data[i]);
         // Wait until the transfer is finished.
-        SysCtlDelay(psSsi->ui32SysClock / 3e5);     // 10 us delay.
+        SysCtlDelay(psSsi->ui32SsiClk / 3e5);   // 10 us delay.
+                                                // Note: The SysCtlDelay executes a simple 3 instruction cycle loop.
         for (int i = 0; i <= ui32Timeout; i++) {
             if (!SSIBusy(psSsi->ui32BaseSsi)) break;
-            SysCtlDelay(psSsi->ui32SysClock / 3e5);     // 10 us delay.
+            SysCtlDelay(psSsi->ui32SsiClk / 3e5);   // 10 us delay.
             // Timeout while waiting for the SSI master to be free.
             if (i == ui32Timeout) {
                 return -1;
@@ -102,10 +92,10 @@ int32_t SsiMasterRead(tSSI *psSsi, uint32_t *pui32Data, uint8_t ui8Length)
     for (int i = 0; i < ui8Length; i++) {
         i32Cnt += SSIDataGetNonBlocking(psSsi->ui32BaseSsi, &pui32Data[i]);
         // Wait until the transfer is finished.
-        SysCtlDelay(psSsi->ui32SysClock / 3e5);     // 10 us delay.
+        SysCtlDelay(psSsi->ui32SsiClk / 3e5);   // 10 us delay.
         for (int i = 0; i <= ui32Timeout; i++) {
             if (!SSIBusy(psSsi->ui32BaseSsi)) break;
-            SysCtlDelay(psSsi->ui32SysClock / 3e5);     // 10 us delay.
+            SysCtlDelay(psSsi->ui32SsiClk / 3e5);   // 10 us delay.
             // Timeout while waiting for the I2C bus to be free.
             if (i == ui32Timeout) {
                 return -1;

@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 03 Apr 2020
-// Rev.: 04 Apr 2020
+// Rev.: 11 Apr 2020
 //
 // Functions for the LCD on the Educational BoosterPack MKII connected to the
 // BoosterPack 2 socket of the TI Tiva TM4C1294 Connected LaunchPad Evaluation
@@ -13,16 +13,8 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <strings.h>
-#include "driverlib/rom_map.h"
-#include "driverlib/sysctl.h"
-#include "utils/uartstdio.h"
 #include "utils/ustdlib.h"
 #include "Crystalfontz128x128_ST7735.h"
-#include "HAL_EK_TM4C1294XL_Crystalfontz128x128_ST7735.h"
 #include "images.h"
 #include "lcd.h"
 
