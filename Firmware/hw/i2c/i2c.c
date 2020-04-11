@@ -167,3 +167,54 @@ uint32_t I2CMasterRead(tI2C *psI2C, uint8_t ui8SlaveAddr, uint8_t *pui8Data, uin
     return ui32I2CMasterInt;
 }
 
+
+
+// Send a quick command.
+uint32_t I2CMasterQuickCmd(tI2C *psI2C, uint8_t ui8SlaveAddr, bool bReceive)
+{
+    uint32_t ui32I2CMasterInt, ui32I2CMasterErr;
+    uint32_t ui32Timeout = psI2C->ui32Timeout + 10;     // Guarantee some minimum timeout value.
+
+    // Clear all I2C Master interrupts.
+    I2CMasterIntClearEx(psI2C->ui32BaseI2C, 0xffffffffU);
+
+    // Set the I2C slave address.
+    I2CMasterSlaveAddrSet(psI2C->ui32BaseI2C, ui8SlaveAddr, bReceive);  // false = write; true = read
+
+    // Wait until the I2C bus is free.
+    for (int i = 0; i <= ui32Timeout; i++) {
+        if (!I2CMasterBusBusy(psI2C->ui32BaseI2C)) break;
+        SysCtlDelay(psI2C->ui32I2CClk / 3e5);   // 10 us delay.
+                                                // Note: The SysCtlDelay executes a simple 3 instruction cycle loop.
+        // Timeout while waiting for the I2C bus to be free.
+        if (i == ui32Timeout) return -1;
+    }
+
+    // Send the quick command.
+    I2CMasterControl(psI2C->ui32BaseI2C, I2C_MASTER_CMD_QUICK_COMMAND);
+    // Wait until the transfer is finished.
+    SysCtlDelay(psI2C->ui32I2CClk / 3e5);   // 10 us delay.
+    for (int i = 0; i <= ui32Timeout; i++) {
+        if (!I2CMasterBusy(psI2C->ui32BaseI2C)) break;
+        SysCtlDelay(psI2C->ui32I2CClk / 3e5);   // 10 us delay.
+        // Timeout while waiting for the I2C master to be ready.
+        if (i == ui32Timeout) {
+            I2CMasterControl(psI2C->ui32BaseI2C, I2C_MASTER_CMD_BURST_SEND_ERROR_STOP);
+            return -1;
+        }
+    }
+    // Read I2C master interrupts.
+    ui32I2CMasterInt = I2CMasterIntStatusEx(psI2C->ui32BaseI2C, false);
+    ui32I2CMasterInt &= I2C_MASTER_INT_ARB_LOST | I2C_MASTER_INT_NACK | I2C_MASTER_INT_TIMEOUT;
+    // Send stop condition.
+    I2CMasterControl(psI2C->ui32BaseI2C, I2C_MASTER_CMD_BURST_SEND_ERROR_STOP);
+    // Check for I2C errors.
+    ui32I2CMasterErr = I2CMasterErr(psI2C->ui32BaseI2C);
+    if (ui32I2CMasterErr != I2C_MASTER_ERR_NONE) {
+        I2CMasterControl(psI2C->ui32BaseI2C, I2C_MASTER_CMD_BURST_SEND_ERROR_STOP);
+        return 1;
+    }
+
+    return ui32I2CMasterInt;
+}
+

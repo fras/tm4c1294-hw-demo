@@ -59,6 +59,7 @@ void LcdHelp(void);
 int LedSet(char *pcCmd, char *pcParam);
 int RgbLedSet(char *pcCmd, char *pcParam);
 int I2CAccess(char *pcCmd, char *pcParam);
+int I2CDetect(char *pcCmd, char *pcParam);
 int TemperatureRead(char *pcCmd, char *pcParam);
 int IlluminanceRead(char *pcCmd, char *pcParam);
 int SsiAccess(char *pcCmd, char *pcParam);
@@ -172,6 +173,8 @@ int main(void)
         // I2C based functions.
         } else if (!strcasecmp(pcUartCmd, "i2c")) {
             I2CAccess(pcUartCmd, pcUartParam);
+        } else if (!strcasecmp(pcUartCmd, "i2c-det")) {
+            I2CDetect(pcUartCmd, pcUartParam);
         } else if (!strcasecmp(pcUartCmd, "temp")) {
             TemperatureRead(pcUartCmd, pcUartParam);
         } else if (!strcasecmp(pcUartCmd, "illum")) {
@@ -218,15 +221,17 @@ void Help(void)
     UARTprintf("Available commands:\n");
     UARTprintf("  help                                Show this help text.\n");
     UARTprintf("  adc     [COUNT]                     Read ADC values.\n");
-    UARTprintf("  i2c     PORT SLV-ADR R/W NUM|DATA   I2C access (0 = write, 1 = read).\n");
+    UARTprintf("  i2c     PORT SLV-ADR R/W NUM|DATA   I2C access (R/W: 0 = write, 1 = read).\n");
+    UARTprintf("  i2c-det PORT [MODE]                 I2C detect devices (MODE: 0 = auto,\n");
+    UARTprintf("                                          1 = quick command, 2 = read).\n");
     UARTprintf("  illum   [COUNT]                     Read ambient light sensor info.\n");
     UARTprintf("  info                                Show information about this firmware.\n");
     UARTprintf("  lcd     CMD PARAMS                  LCD commands.\n");
     UARTprintf("  led     VALUE                       Set the Leds.\n");
     UARTprintf("  rgb     VALUE                       Set the RGB LED.\n");
-    UARTprintf("  ssi     PORT R/W NUM|DATA           SSI/SPI access (0 = write, 1 = read).\n");
+    UARTprintf("  ssi     PORT R/W NUM|DATA           SSI/SPI access (R/W: 0 = write, 1 = read).\n");
     UARTprintf("  temp    [COUNT]                     Read temperature sensor info.\n");
-    UARTprintf("  uart    PORT R/W NUM|DATA           UART access (0 = write, 1 = read).");
+    UARTprintf("  uart    PORT R/W NUM|DATA           UART access (R/W: 0 = write, 1 = read).");
 }
 
 
@@ -486,7 +491,7 @@ int RgbLedSet(char *pcCmd, char *pcParam)
 int I2CAccess(char *pcCmd, char *pcParam)
 {
     int i;
-    tI2C *pg_sI2C;
+    tI2C *psI2C;
     uint8_t ui8I2CPort = 0;
     uint8_t ui8I2CSlaveAddr = 0;
     uint8_t ui8I2CRw = 0;   // 0 = write; 1 = read
@@ -529,15 +534,15 @@ int I2CAccess(char *pcCmd, char *pcParam)
     if (i < 3) return -1;
     // Check if the I2C port number is valid.
     switch (ui8I2CPort) {
-        case 0: pg_sI2C = &g_sI2C0; break;
-        case 2: pg_sI2C = &g_sI2C2; break;
+        case 0: psI2C = &g_sI2C0; break;
+        case 2: psI2C = &g_sI2C2; break;
         default:
             UARTprintf("%s: Only I2C port numbers 0 and 2 are supported!", UI_STR_ERROR);
             return -1;
     }
     // I2C write.
     if (ui8I2CRw == 0) {
-        ui32I2CMasterStatus = I2CMasterWrite(pg_sI2C, ui8I2CSlaveAddr, pui8I2CData, i - 3);
+        ui32I2CMasterStatus = I2CMasterWrite(psI2C, ui8I2CSlaveAddr, pui8I2CData, i - 3);
     // I2C read.
     } else {
         if (i == 3) ui8I2CDataNum = 1;
@@ -545,7 +550,7 @@ int I2CAccess(char *pcCmd, char *pcParam)
         if (ui8I2CDataNum > sizeof(pui8I2CData) / sizeof(pui8I2CData[0])) {
             ui8I2CDataNum = sizeof(pui8I2CData) / sizeof(pui8I2CData[0]);
         }
-        ui32I2CMasterStatus = I2CMasterRead(pg_sI2C, ui8I2CSlaveAddr, pui8I2CData, ui8I2CDataNum);
+        ui32I2CMasterStatus = I2CMasterRead(psI2C, ui8I2CSlaveAddr, pui8I2CData, ui8I2CDataNum);
     }
     // Check the I2C status.
     if (ui32I2CMasterStatus) {
@@ -560,6 +565,69 @@ int I2CAccess(char *pcCmd, char *pcParam)
             UARTprintf(" Data:");
             for (i = 0; i < ui8I2CDataNum; i++) UARTprintf(" 0x%02x", pui8I2CData[i]);
         }
+    }
+
+    return 0;
+}
+
+
+
+// Detect I2C devices.
+int I2CDetect(char *pcCmd, char *pcParam)
+{
+    int i;
+    tI2C *psI2C;
+    uint8_t ui8I2CPort = 0;
+    uint8_t ui8I2CSlaveAddr = 0;
+    uint8_t ui8I2CDetectMode = 0;   // 0 = auto; 1 = quick command; 2 = read
+    uint8_t pui8I2CData[1];
+    uint32_t ui32I2CMasterStatus;
+    // Parse parameters.
+    for (i = 0; i < 4; i++) {
+        if (i != 0) pcParam = strtok(NULL, UI_STR_DELIMITER);
+        if (i == 0) {
+            if (pcParam == NULL) {
+                UARTprintf("%s: I2C port number required after command `%s'.", UI_STR_ERROR, pcCmd);
+                break;
+            } else {
+                ui8I2CPort = (uint8_t) strtoul(pcParam, (char **) NULL, 0) & 0xff;
+            }
+        } else if (i == 1 && pcParam != NULL) {
+            ui8I2CDetectMode = (uint8_t) strtoul(pcParam, (char **) NULL, 0) & 0x0f;
+        } else {
+            break;
+        }
+    }
+    if (i < 1) return -1;
+    // Check if the I2C port number is valid.
+    switch (ui8I2CPort) {
+        case 0: psI2C = &g_sI2C0; break;
+        case 2: psI2C = &g_sI2C2; break;
+        default:
+            UARTprintf("%s: Only I2C port numbers 0 and 2 are supported!", UI_STR_ERROR);
+            return -1;
+    }
+    // Detect I2C devices based on the i2cdetect program of the i2c-tools.
+    // Please see: https://github.com/mozilla-b2g/i2c-tools/blob/master/tools/i2cdetect.c
+    UARTprintf("%s. I2C device(s) found at slave address:", UI_STR_OK);
+    for (ui8I2CSlaveAddr = 1; ui8I2CSlaveAddr <= 0x7f; ui8I2CSlaveAddr++) {
+        switch (ui8I2CDetectMode) {
+            // Detection mode using I2C quick command.
+            case 1:
+                ui32I2CMasterStatus = I2CMasterQuickCmd(psI2C, ui8I2CSlaveAddr, false);   // false = write; true = read
+            // Detection mode using I2C read command.
+            case 2:
+                ui32I2CMasterStatus = I2CMasterRead(psI2C, ui8I2CSlaveAddr, pui8I2CData, 1);
+            // Automatic mode. Use I2C quick command or I2C read based on the slave address.
+            default:
+                if ((ui8I2CSlaveAddr >= 0x30 && ui8I2CSlaveAddr <= 0x37)
+                    || (ui8I2CSlaveAddr >= 0x50 && ui8I2CSlaveAddr <= 0x5F)) {
+                    ui32I2CMasterStatus = I2CMasterRead(psI2C, ui8I2CSlaveAddr, pui8I2CData, 1);
+                } else {
+                    ui32I2CMasterStatus = I2CMasterQuickCmd(psI2C, ui8I2CSlaveAddr, false);   // false = write; true = read
+                }
+        }
+        if (!ui32I2CMasterStatus) UARTprintf(" 0x%02x", ui8I2CSlaveAddr);
     }
 
     return 0;

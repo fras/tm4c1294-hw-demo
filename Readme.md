@@ -3,7 +3,7 @@
 Auth: M. Fras, Electronics Division, MPI for Physics, Munich  
 Mod.: M. Fras, Electronics Division, MPI for Physics, Munich  
 Date: 07 Feb 2020  
-Rev.: 09 Apr 2020  
+Rev.: 11 Apr 2020  
 
 
 
@@ -149,20 +149,24 @@ Rev.: 09 Apr 2020
     Available commands:
       help                                Show this help text.
       adc     [COUNT]                     Read ADC values.
-      i2c     PORT SLV-ADR R/W NUM|DATA   I2C access (0 = write, 1 = read).
+      i2c     PORT SLV-ADR R/W NUM|DATA   I2C access (R/W: 0 = write, 1 = read).
+      i2c-det PORT [MODE]                 I2C detect devices (MODE: 0 = auto,
+                                              1 = quick command, 2 = read).
       illum   [COUNT]                     Read ambient light sensor info.
       info                                Show information about this firmware.
       lcd     CMD PARAMS                  LCD commands.
       led     VALUE                       Set the Leds.
       rgb     VALUE                       Set the RGB LED.
-      ssi     PORT R/W NUM|DATA           SSI/SPI access (0 = write, 1 = read).
+      ssi     PORT R/W NUM|DATA           SSI/SPI access (R/W: 0 = write, 1 = read).
       temp    [COUNT]                     Read temperature sensor info.
-      uart    PORT R/W NUM|DATA           UART access (0 = write, 1 = read).
+      uart    PORT R/W NUM|DATA           UART access (R/W: 0 = write, 1 = read).
     > info
     TIVA TM4C1294 hw_demo firmware version 0.0.7, release date: 30 Mar 2020
     It was compiled using gcc 6.3.1 20170620 at 13:56:27 on Apr  2 2020.
     > led 0xf
     OK: LEDs set to 0x0f.
+    > i2c-det 2
+    OK. I2C device(s) found at slave address: 0x40 0x44
     > i2c 2 0x40 0 0x2
     OK.
     > i2c 2 0x40 1 2
@@ -196,7 +200,7 @@ Easily test some hardware features with the following instructions.
 
 ### ADC (Analog-to-Digital Converter)
 
-Repeatedly read all ADC value 10,000 times:
+Repeatedly read all ADC values 10,000 times:
 ```
 > adc 10000
 OK: Joystick: X = 1983 Y = 1878 ; Accelerometer: X = 2063 Y = 2067 Z = 2883
@@ -212,6 +216,13 @@ Hint: You can stop the test by pressing the ```RESET``` button on the board.
 
 
 ### I2C (Inter-Integrated Circuit) Bus
+
+Automatically detect all devices on I2C port 2:
+```
+> i2c-det 2
+OK. I2C device(s) found at slave address: 0x40 0x44
+>
+```
 
 Preform a raw access the I2C temperature sensor on the Educational BoosterPack
 MK II. It has the I2C slave address ```0x40```. Set the pointer to the
