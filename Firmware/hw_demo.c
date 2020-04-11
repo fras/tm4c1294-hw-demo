@@ -701,24 +701,38 @@ int SsiAccess(char *pcCmd, char *pcParam)
         }
     // SSI read.
     } else {
-        if (i == 2) ui8SsiDataNum = 1;
-        else ui8SsiDataNum = pui32SsiData[0];
-        if (ui8SsiDataNum > sizeof(pui32SsiData) / sizeof(pui32SsiData[0])) {
-            ui8SsiDataNum = sizeof(pui32SsiData) / sizeof(pui32SsiData[0]);
-        }
-        i32SsiStatus = SsiMasterRead(psSsi, pui32SsiData, ui8SsiDataNum);
-        // Check the SSI status.
-        if (i32SsiStatus != ui8SsiDataNum) {
-            UARTprintf("%s: Could only read %d data bytes from the SSI master %d instead of %d.", UI_STR_ERROR, i32SsiStatus, ui8SsiPort, ui8SsiDataNum);
+        // Read all available data.
+        if (i == 2) {
+            for (int iCnt = 0; ; iCnt++) {
+                i32SsiStatus = SsiMasterRead(psSsi, pui32SsiData, 1);
+                if (i32SsiStatus != 1) {
+                    if (iCnt == 0) UARTprintf("%s: No data available.", UI_STR_ERROR);
+                    break;
+                } else {
+                    if (iCnt == 0) UARTprintf("%s. Data:", UI_STR_OK);
+                    UARTprintf(" 0x%02x", pui32SsiData[0]);
+                }
+            }
+        // Read given number of data.
         } else {
-            UARTprintf("%s.", UI_STR_OK);
-        }
-        if (i32SsiStatus > 0) {
-            UARTprintf(" Data:");
-            for (i = 0; i < i32SsiStatus; i++) UARTprintf(" 0x%02x", pui32SsiData[i]);
+             ui8SsiDataNum = pui32SsiData[0];
+            if (ui8SsiDataNum > sizeof(pui32SsiData) / sizeof(pui32SsiData[0])) {
+                ui8SsiDataNum = sizeof(pui32SsiData) / sizeof(pui32SsiData[0]);
+            }
+            i32SsiStatus = SsiMasterRead(psSsi, pui32SsiData, ui8SsiDataNum);
+            // Check the SSI status.
+            if (i32SsiStatus != ui8SsiDataNum) {
+                UARTprintf("%s: Could only read %d data bytes from the SSI master %d instead of %d.", UI_STR_ERROR, i32SsiStatus, ui8SsiPort, ui8SsiDataNum);
+            } else {
+                UARTprintf("%s.", UI_STR_OK);
+            }
+            if (i32SsiStatus > 0) {
+                UARTprintf(" Data:");
+                for (i = 0; i < i32SsiStatus; i++) UARTprintf(" 0x%02x", pui32SsiData[i]);
+            }
         }
     }
-    
+
     return 0;
 }
 
@@ -780,23 +794,38 @@ int UartAccess(char *pcCmd, char *pcParam)
     // UART read.
     } else {
         if (i == 2) ui8UartDataNum = 1;
-        else ui8UartDataNum = pui8UartData[0];
-        if (ui8UartDataNum > sizeof(pui8UartData) / sizeof(pui8UartData[0])) {
-            ui8UartDataNum = sizeof(pui8UartData) / sizeof(pui8UartData[0]);
-        }
-        i32UartStatus = UartRead(psUart, pui8UartData, ui8UartDataNum);
-        // Check the UART status.
-        if (i32UartStatus != ui8UartDataNum) {
-            UARTprintf("%s: Could only read %d data bytes from the UART %d instead of %d.", UI_STR_ERROR, i32UartStatus, ui8UartPort, ui8UartDataNum);
+        // Read all available data.
+        if (i == 2) {
+            for (int iCnt = 0; ; iCnt++) {
+                i32UartStatus = UartRead(psUart, pui8UartData, 1);
+                if (i32UartStatus != 1) {
+                    if (iCnt == 0) UARTprintf("%s: No data available.", UI_STR_ERROR);
+                    break;
+                } else {
+                    if (iCnt == 0) UARTprintf("%s. Data:", UI_STR_OK);
+                    UARTprintf(" 0x%02x", pui8UartData[0]);
+                }
+            }
+        // Read given number of data.
         } else {
-            UARTprintf("%s.", UI_STR_OK);
-        }
-        if (i32UartStatus > 0) {
-            UARTprintf(" Data:");
-            for (i = 0; i < i32UartStatus; i++) UARTprintf(" 0x%02x", pui8UartData[i]);
+            ui8UartDataNum = pui8UartData[0];
+            if (ui8UartDataNum > sizeof(pui8UartData) / sizeof(pui8UartData[0])) {
+                ui8UartDataNum = sizeof(pui8UartData) / sizeof(pui8UartData[0]);
+            }
+            i32UartStatus = UartRead(psUart, pui8UartData, ui8UartDataNum);
+            // Check the UART status.
+            if (i32UartStatus != ui8UartDataNum) {
+                UARTprintf("%s: Could only read %d data bytes from the UART %d instead of %d.", UI_STR_ERROR, i32UartStatus, ui8UartPort, ui8UartDataNum);
+            } else {
+                UARTprintf("%s.", UI_STR_OK);
+            }
+            if (i32UartStatus > 0) {
+                UARTprintf(" Data:");
+                for (i = 0; i < i32UartStatus; i++) UARTprintf(" 0x%02x", pui8UartData[i]);
+            }
         }
     }
-    
+
     return 0;
 }
 

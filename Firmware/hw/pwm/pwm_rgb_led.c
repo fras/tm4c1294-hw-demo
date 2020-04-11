@@ -72,7 +72,7 @@ void PwmRgbLedInit(void)
 int PwmRgbLedCoerce(int iRgb)
 {
     int iVal = iRgb;
-    
+
     if (iVal < 1) iVal = 1;
     else if (iVal > 255) iVal = 255;
 

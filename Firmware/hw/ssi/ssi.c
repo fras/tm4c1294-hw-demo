@@ -8,7 +8,7 @@
 // Connected LaunchPad Evaluation Kit.
 //
 // The SSI can be configured to use either the Motorola SPI or the Texas
-// Instruments synchronous serial interface frame formats. 
+// Instruments synchronous serial interface frame formats.
 //
 
 
@@ -36,7 +36,7 @@ void SsiMasterInit(tSSI *psSsi)
                    psSsi->ui8PinGpioFss |
                    psSsi->ui8PinGpioRx  |
                    psSsi->ui8PinGpioTx);
-                   
+
     // Setup the SSI master.
     SysCtlPeripheralDisable(psSsi->ui32PeripheralSsi);
     SysCtlPeripheralReset(psSsi->ui32PeripheralSsi);
