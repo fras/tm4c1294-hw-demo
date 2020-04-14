@@ -138,5 +138,11 @@ def launch_gui(dev):
 
 
 if __name__ == "__main__":
-    launch_gui('/dev/ttyUSB0')
+    import argparse
+    parser = argparse.ArgumentParser(description='Access to Process some integers.')
+    parser.add_argument('-d', '--device', action='store', type=str,
+                        dest='serial_device', default='/dev/ttyUSB0',
+                        help='Serial device to access the MCU.')
+    args = parser.parse_args()
+    launch_gui(args.serial_device)
 

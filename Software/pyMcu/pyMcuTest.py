@@ -261,6 +261,12 @@ def run_test(dev):
 
 # Execute the test.
 if __name__ == "__main__":
-    run_test('/dev/ttyUSB0')
+    import argparse
+    parser = argparse.ArgumentParser(description='Access to Process some integers.')
+    parser.add_argument('-d', '--device', action='store', type=str,
+                        dest='serial_device', default='/dev/ttyUSB0',
+                        help='Serial device to access the MCU.')
+    args = parser.parse_args()
+    run_test(args.serial_device)
     print("\nBye-bye!")
 
