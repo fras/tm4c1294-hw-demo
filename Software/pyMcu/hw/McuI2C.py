@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 28 Mar 2020
-# Rev.: 31 Mar 2020
+# Rev.: 14 Apr 2020
 #
 # Python class for using the I2C ports of the TM4C1294NCPDT MCU.
 #
@@ -17,7 +17,7 @@ class McuI2C:
 
     # Message prefixes and separators.
     prefixDetails       = " - "
-    separatorDetails    = " - "    
+    separatorDetails    = " - "
     prefixError         = "ERROR: {0:s}: ".format(__file__)
     prefixDebug         = "DEBUG: {0:s}: ".format(__file__)
 
@@ -67,7 +67,7 @@ class McuI2C:
         print(self.prefixDetails, end = '')
         print("I2C master port: {0:d}".format(self.port), end = '')
         if self.debugLevel >= 1:
-            print(self.separatorDetails + "Error count: {0:d}".format(self.errorCount), end = '')        
+            print(self.separatorDetails + "Error count: {0:d}".format(self.errorCount), end = '')
         if self.debugLevel >= 1:
             print(self.separatorDetails + "Read access count: {0:d}".format(self.accessRead), end = '')
             print(self.separatorDetails + "Write access countn: {0:d}".format(self.accessWrite), end = '')
@@ -80,13 +80,20 @@ class McuI2C:
 
     # Write data to the I2C master port.
     def ms_write(self, slaveAddr, data):
+        return self.ms_write_adv(slaveAddr, data, False, True)
+
+
+
+    # Write data to the I2C master port (advanced).
+    def ms_write_adv(self, slaveAddr, data, repeatedStart, stop):
         if len(data) < 1:
             # Do not increase the error counter here!
             print(self.prefixError + "Error writing to the I2C master port {0:d}!".format(self.port))
             if self.debugLevel >= 1:
                 print(self.prefixError + "At least one data byte must be provided!")
             return -1
-        cmd = "i2c {0:d} 0x{1:02x} 0".format(self.port, slaveAddr & 0x7f)
+        accMode = 0x00 | (0x02 if repeatedStart else 0) | (0x04 if not stop else 0)
+        cmd = "i2c {0:d} 0x{1:02x} 0x{2:02x}".format(self.port, slaveAddr & 0x7f, accMode)
         for i in range(0, len(data)):
             cmd += " 0x{0:02x}".format(data[i] & 0xff)
         if self.debugLevel >= 2:
@@ -106,13 +113,20 @@ class McuI2C:
 
     # Read data from the I2C master port.
     def ms_read(self, slaveAddr, cnt):
+        return self.ms_read_adv(slaveAddr, cnt, False, True)
+
+
+
+    # Read data from the I2C master port (advanced).
+    def ms_read_adv(self, slaveAddr, cnt, repeatedStart, stop):
         if cnt < 1:
             # Do not increase the error counter here!
             print(self.prefixError + "Error reading from the I2C master port {0:d}!".format(self.port))
             if self.debugLevel >= 1:
                 print(self.prefixError + "At least one data byte must be read!")
             return []
-        cmd = "i2c {0:d} 0x{1:02x} 1 {2:d}".format(self.port, slaveAddr & 0x7f, cnt)
+        accMode = 0x01 | (0x02 if repeatedStart else 0) | (0x04 if not stop else 0)
+        cmd = "i2c {0:d} 0x{1:02x} 0x{2:02x} {3:d}".format(self.port, slaveAddr & 0x7f, accMode, cnt)
         if self.debugLevel >= 2:
             print(self.prefixDebug + "Reading data from the I2C master port {0:d}.".format(self.port))
         # Send command.

@@ -170,8 +170,16 @@ def run_test(dev):
     #    for i in range(0, 200):
     #        mcuI2C2.ms_write(0x40, [0x00, 0x34])
     #        mcuI2C2.ms_read(0x40, 2)
+        # Standard access.
         mcuI2C2.ms_write(0x40, [0x01, 0x12, 0x34])
         data = mcuI2C2.ms_read(0x40, 2)
+        print("I2C data read:", end = '')
+        for i in range(0, len(data)):
+            print(" 0x{0:02x}".format(data[i]), end = '')
+        print()
+        # Advanced access.
+        mcuI2C2.ms_write_adv(0x40, [0x01], False, False)    # No repeated start, no stop condition.
+        data = mcuI2C2.ms_read_adv(0x40, 2, True, True)     # Repeated start, stop condition.
         print("I2C data read:", end = '')
         for i in range(0, len(data)):
             print(" 0x{0:02x}".format(data[i]), end = '')
