@@ -3,7 +3,7 @@
 Auth: M. Fras, Electronics Division, MPI for Physics, Munich  
 Mod.: M. Fras, Electronics Division, MPI for Physics, Munich  
 Date: 07 Feb 2020  
-Rev.: 11 Apr 2020  
+Rev.: 14 Apr 2020  
 
 
 
@@ -141,7 +141,7 @@ Rev.: 11 Apr 2020
     Example minicom session:
     ```
     *******************************************************************************
-    TIVA TM4C1294 `hw_demo' firmware version 0.1.4, release date: 09 Apr 2020
+    TIVA TM4C1294 `hw_demo' firmware version 0.1.7, release date: 14 Apr 2020
     *******************************************************************************
 
     Type `help' to get an overview of available commands.
@@ -149,7 +149,7 @@ Rev.: 11 Apr 2020
     Available commands:
       help                                Show this help text.
       adc     [COUNT]                     Read ADC values.
-      i2c     PORT SLV-ADR R/W NUM|DATA   I2C access (R/W: 0 = write, 1 = read).
+      i2c     PORT SLV-ADR ACC NUM|DATA   I2C access (ACC bits: R/W, Sr, nP, Q).
       i2c-det PORT [MODE]                 I2C detect devices (MODE: 0 = auto,
                                               1 = quick command, 2 = read).
       illum   [COUNT]                     Read ambient light sensor info.
