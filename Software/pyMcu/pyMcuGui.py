@@ -4,7 +4,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 30 Mar 2020
-# Rev.: 01 Apr 2020
+# Rev.: 14 Apr 2020
 #
 # Python GUI for accessing the TM4C1294NCPDT MCU on the TM4C1294 Connected
 # LaunchPad Evaluation Kit over a serial port (UART).
@@ -14,7 +14,8 @@
 
 # Append hardware classes folder to python path.
 import sys
-sys.path.append('hw')
+import os
+sys.path.append(os.path.dirname(__file__) + '/hw')
 
 # System modules.
 import time
