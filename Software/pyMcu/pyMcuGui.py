@@ -4,7 +4,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 30 Mar 2020
-# Rev.: 14 Apr 2020
+# Rev.: 15 Apr 2020
 #
 # Python GUI for accessing the TM4C1294NCPDT MCU on the TM4C1294 Connected
 # LaunchPad Evaluation Kit over a serial port (UART).
@@ -52,32 +52,64 @@ class PyMcuGui(Frame):
 
     def init_window(self):
         self.master.title("pyMcu GUI")
-        self.pack(fill=BOTH, expand=1)
+        self.grid(padx=5, pady=5)
         # ---
-        self.labelGpioLed = Label(self, text="GPIO LEDs")
-        self.labelGpioLed.grid(row=0, column=0, sticky=W)
-        self.entryGpioLed = Entry(self, width=5)
+        self.frameFwInfo = Frame(self, bd=2, relief=GROOVE, padx=5, pady=5)
+        self.frameFwInfo.grid(row=0, column=0, sticky=W+E, pady=2)
+        self.labelFwInfo = Label(self.frameFwInfo, text="", anchor=W, justify=LEFT)
+        self.labelFwInfo.grid(row=0, column=0, sticky=W+E)
+        # ---
+        self.frameLed = Frame(self, bd=2, relief=GROOVE, padx=5, pady=5)
+        self.frameLed.grid(row=1, column=0, sticky=W+E, pady=2)
+        self.labelGpioLed = Label(self.frameLed, text="GPIO LEDs", anchor=W, width=10)
+        self.labelGpioLed.grid(row=0, column=0, sticky=W+E)
+        self.entryGpioLed = Entry(self.frameLed, width=5)
         self.entryGpioLed.grid(row=0, column=1)
         self.entryGpioLed.insert(0, "0x0")
-        self.buttonGpioLedSet = Button(self, text="Set LEDs", command=self.gpio_led_set)
-        self.buttonGpioLedSet.grid(row=0, column=4, sticky=W+E)
+        self.buttonGpioLedSet = Button(self.frameLed, text="Set LEDs", command=self.gpio_led_set)
+        self.buttonGpioLedSet.grid(row=0, column=4, sticky=W+E, padx=10)
         # ---
-        self.labelRgbLed = Label(self, text="RGB LED")
-        self.labelRgbLed.grid(row=1, column=0)
-        self.entryRgbLedR = Entry(self, width=5)
+        self.labelRgbLed = Label(self.frameLed, text="RGB LED", anchor=W)
+        self.labelRgbLed.grid(row=1, column=0, sticky=W+E)
+        self.entryRgbLedR = Entry(self.frameLed, width=5)
         self.entryRgbLedR.grid(row=1, column=1)
         self.entryRgbLedR.insert(0, "0x00")
-        self.entryRgbLedG = Entry(self, width=5)
+        self.entryRgbLedG = Entry(self.frameLed, width=5)
         self.entryRgbLedG.grid(row=1, column=2)
         self.entryRgbLedG.insert(0, "0x00")
-        self.entryRgbLedB = Entry(self, width=5)
+        self.entryRgbLedB = Entry(self.frameLed, width=5)
         self.entryRgbLedB.grid(row=1, column=3)
         self.entryRgbLedB.insert(0, "0x00")
-        self.buttonRgbLedSet = Button(self, text="Set RGB LED", command=self.rgb_led_set)
-        self.buttonRgbLedSet.grid(row=1, column=4, sticky=W+E)
+        self.buttonRgbLedSet = Button(self.frameLed, text="Set RGB LED", command=self.rgb_led_set)
+        self.buttonRgbLedSet.grid(row=1, column=4, sticky=W+E, padx=10)
+        # ---
+        self.frameAnalog = Frame(self, bd=2, relief=GROOVE, padx=5, pady=5)
+        self.frameAnalog.grid(row=2, column=0, sticky=W+E, pady=2)
+        self.labelAnalogX = Label(self.frameAnalog, text="X")
+        self.labelAnalogX.grid(row=0, column=1, sticky=W+E)
+        self.labelAnalogY = Label(self.frameAnalog, text="Y")
+        self.labelAnalogY.grid(row=0, column=2, sticky=W+E)
+        self.labelAnalogZ = Label(self.frameAnalog, text="Z")
+        self.labelAnalogZ.grid(row=0, column=3, sticky=W+E)
+        self.labelJoystick = Label(self.frameAnalog, text="Joystick", anchor=W, width=15)
+        self.labelJoystick.grid(row=1, column=0, sticky=W+E)
+        self.entryJoystickX = Entry(self.frameAnalog, width=5, justify=RIGHT, state="readonly")
+        self.entryJoystickX.grid(row=1, column=1, sticky=W)
+        self.entryJoystickY = Entry(self.frameAnalog, width=5, justify=RIGHT, state="readonly")
+        self.entryJoystickY.grid(row=1, column=2, sticky=W)
+        self.labelAccel = Label(self.frameAnalog, text="Accelerometer", anchor=W)
+        self.labelAccel.grid(row=2, column=0, sticky=W+E)
+        self.entryAccelX = Entry(self.frameAnalog, width=5, justify=RIGHT, state="readonly")
+        self.entryAccelX.grid(row=2, column=1, sticky=W)
+        self.entryAccelY = Entry(self.frameAnalog, width=5, justify=RIGHT, state="readonly")
+        self.entryAccelY.grid(row=2, column=2, sticky=W)
+        self.entryAccelZ = Entry(self.frameAnalog, width=5, justify=RIGHT, state="readonly")
+        self.entryAccelZ.grid(row=2, column=3, sticky=W)
+        self.buttonAnalogUpdate = Button(self.frameAnalog, text="Update", command=self.analog_update, repeatdelay=200, repeatinterval=1)
+        self.buttonAnalogUpdate.grid(row=1, rowspan=2, column=4, sticky=W+E, padx=10)
         # ---
         self.buttonQuit = Button(self, text="Quit", command=self.quit)
-        self.buttonQuit.grid(row=2, column=0, columnspan=5, sticky=W+E)
+        self.buttonQuit.grid(row=3, column=0, columnspan=5, sticky=W+E, pady=2)
 
     # Initialize the hardware.
     def init_hw(self, dev):
@@ -101,6 +133,9 @@ class PyMcuGui(Frame):
         self.i2cTmp006.debugLevel = 1
         self.i2cOpt3001 = I2COpt3001.I2COpt3001(self.mcuI2C2, 0x44)
         self.i2cOpt3001.debugLevel = 1
+        # Read and show the MCU firmware info.
+        self.mcuSer.send("info")
+        self.labelFwInfo['text'] = "Firmware info:\n" + self.mcuSer.get().replace('\r', '')
 
     # Set the GPIO LEDs.
     def gpio_led_set(self):
@@ -121,6 +156,33 @@ class PyMcuGui(Frame):
         except Exception as e:
             print(self.prefixError + "Error setting the RGB LED: " + str(e))
 
+    # Update the analog values.
+    def analog_update(self):
+        try:
+            self.adc.read()
+            self.entryJoystickX['state'] = NORMAL
+            self.entryJoystickY['state'] = NORMAL
+            self.entryAccelX['state'] = NORMAL
+            self.entryAccelY['state'] = NORMAL
+            self.entryAccelZ['state'] = NORMAL
+            self.entryJoystickX.delete(0, END)
+            self.entryJoystickY.delete(0, END)
+            self.entryAccelX.delete(0, END)
+            self.entryAccelY.delete(0, END)
+            self.entryAccelZ.delete(0, END)
+            self.entryJoystickX.insert(0, "{0:4d}".format(self.adc.joystickX))
+            self.entryJoystickY.insert(0, "{0:4d}".format(self.adc.joystickY))
+            self.entryAccelX.insert(0, "{0:4d}".format(self.adc.accelX))
+            self.entryAccelY.insert(0, "{0:4d}".format(self.adc.accelY))
+            self.entryAccelZ.insert(0, "{0:4d}".format(self.adc.accelZ))
+            self.entryJoystickX['state'] = "readonly"
+            self.entryJoystickY['state'] = "readonly"
+            self.entryAccelX['state'] = "readonly"
+            self.entryAccelY['state'] = "readonly"
+            self.entryAccelZ['state'] = "readonly"
+        except Exception as e:
+            print(self.prefixError + "Error updating the analog values: " + str(e))
+
     # Quit.
     def quit(self):
         exit()
@@ -130,7 +192,7 @@ class PyMcuGui(Frame):
 # Launch the GUI.
 def launch_gui(dev):
     root = Tk()
-    root.geometry("400x300")
+#    root.geometry("600x400")
     pyMcuGui = PyMcuGui(root)
     pyMcuGui.init_hw(dev)
     root.mainloop()
