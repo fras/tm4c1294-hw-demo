@@ -106,10 +106,43 @@ class PyMcuGui(Frame):
         self.entryAccelZ = Entry(self.frameAnalog, width=5, justify=RIGHT, state="readonly")
         self.entryAccelZ.grid(row=2, column=3, sticky=W)
         self.buttonAnalogUpdate = Button(self.frameAnalog, text="Update", command=self.analog_update, repeatdelay=200, repeatinterval=1)
-        self.buttonAnalogUpdate.grid(row=1, rowspan=2, column=4, sticky=W+E, padx=10)
+        self.buttonAnalogUpdate.grid(row=1, column=4, sticky=W+E, padx=10)
+        self.analogAutoUpdate = IntVar()
+        self.checkbuttonAnalogUpdate = Checkbutton(self.frameAnalog, text="Auto Update", variable=self.analogAutoUpdate)
+        self.checkbuttonAnalogUpdate.grid(row=2, column=4, sticky=W+E, padx=5)
+        # ---
+        self.frameSensor = Frame(self, bd=2, relief=GROOVE, padx=5, pady=5)
+        self.frameSensor.grid(row=3, column=0, sticky=W+E, pady=2)
+        self.labelSensorManufacturerId = Label(self.frameSensor, text="Manuf. ID")
+        self.labelSensorManufacturerId.grid(row=0, column=1, sticky=W+E)
+        self.labelSensorDeviceId = Label(self.frameSensor, text="Device ID")
+        self.labelSensorDeviceId.grid(row=0, column=2, sticky=W+E)
+        self.labelSensorValue = Label(self.frameSensor, text="Value")
+        self.labelSensorValue.grid(row=0, column=3, sticky=W+E)
+        self.labelSensorTmp006 = Label(self.frameSensor, text="Temperature (TMP006)", anchor=W, width=20)
+        self.labelSensorTmp006.grid(row=1, column=0, sticky=W+E)
+        self.entrySensorTmp006ManId = Entry(self.frameSensor, width=8, justify=RIGHT, state="readonly")
+        self.entrySensorTmp006ManId.grid(row=1, column=1, sticky=W)
+        self.entrySensorTmp006DevId = Entry(self.frameSensor, width=8, justify=RIGHT, state="readonly")
+        self.entrySensorTmp006DevId.grid(row=1, column=2, sticky=W)
+        self.entrySensorTmp006Value = Entry(self.frameSensor, width=14, justify=RIGHT, state="readonly")
+        self.entrySensorTmp006Value.grid(row=1, column=3, sticky=W)
+        self.labelSensorOpt3001 = Label(self.frameSensor, text="Light (OPT3001)", anchor=W, width=20)
+        self.labelSensorOpt3001.grid(row=2, column=0, sticky=W+E)
+        self.entrySensorOpt3001ManId = Entry(self.frameSensor, width=8, justify=RIGHT, state="readonly")
+        self.entrySensorOpt3001ManId.grid(row=2, column=1, sticky=W)
+        self.entrySensorOpt3001DevId = Entry(self.frameSensor, width=8, justify=RIGHT, state="readonly")
+        self.entrySensorOpt3001DevId.grid(row=2, column=2, sticky=W)
+        self.entrySensorOpt3001Value = Entry(self.frameSensor, width=14, justify=RIGHT, state="readonly")
+        self.entrySensorOpt3001Value.grid(row=2, column=3, sticky=W)
+        self.buttonSensorUpdate = Button(self.frameSensor, text="Update", command=self.sensor_update, repeatdelay=200, repeatinterval=1)
+        self.buttonSensorUpdate.grid(row=1, column=4, sticky=W+E, padx=10)
+        self.sensorAutoUpdate = IntVar()
+        self.checkbuttonSensorUpdate = Checkbutton(self.frameSensor, text="Auto Update", variable=self.sensorAutoUpdate)
+        self.checkbuttonSensorUpdate.grid(row=2, column=4, sticky=W+E, padx=5)
         # ---
         self.buttonQuit = Button(self, text="Quit", command=self.quit)
-        self.buttonQuit.grid(row=3, column=0, columnspan=5, sticky=W+E, pady=2)
+        self.buttonQuit.grid(row=4, column=0, columnspan=5, sticky=W+E, pady=2)
 
     # Initialize the hardware.
     def init_hw(self, dev):
@@ -183,9 +216,39 @@ class PyMcuGui(Frame):
         except Exception as e:
             print(self.prefixError + "Error updating the analog values: " + str(e))
 
+    # Update the analog values.
+    def sensor_update(self):
+        try:
+            self.entrySensorTmp006ManId['state'] = NORMAL
+            self.entrySensorTmp006DevId['state'] = NORMAL
+            self.entrySensorTmp006Value['state'] = NORMAL
+            self.entrySensorOpt3001ManId['state'] = NORMAL
+            self.entrySensorOpt3001DevId['state'] = NORMAL
+            self.entrySensorOpt3001Value['state'] = NORMAL
+            self.entrySensorTmp006ManId.delete(0, END)
+            self.entrySensorTmp006DevId.delete(0, END)
+            self.entrySensorTmp006Value.delete(0, END)
+            self.entrySensorOpt3001ManId.delete(0, END)
+            self.entrySensorOpt3001DevId.delete(0, END)
+            self.entrySensorOpt3001Value.delete(0, END)
+            self.entrySensorTmp006ManId.insert(0, "0x{0:04x}".format(self.i2cTmp006.read_manufacturer_id()))
+            self.entrySensorTmp006DevId.insert(0, "0x{0:04x}".format(self.i2cTmp006.read_device_id()))
+            self.entrySensorTmp006Value.insert(0, "{0:9.5f} degC".format(self.i2cTmp006.read_temperature()))
+            self.entrySensorOpt3001ManId.insert(0, "0x{0:04x}".format(self.i2cOpt3001.read_manufacturer_id()))
+            self.entrySensorOpt3001DevId.insert(0, "0x{0:04x}".format(self.i2cOpt3001.read_device_id()))
+            self.entrySensorOpt3001Value.insert(0, "{0:9.5f} lux".format(self.i2cOpt3001.read_illuminance()))
+            self.entrySensorTmp006ManId['state'] = "readonly"
+            self.entrySensorTmp006DevId['state'] = "readonly"
+            self.entrySensorTmp006Value['state'] = "readonly"
+            self.entrySensorOpt3001ManId['state'] = "readonly"
+            self.entrySensorOpt3001DevId['state'] = "readonly"
+            self.entrySensorOpt3001Value['state'] = "readonly"
+        except Exception as e:
+            print(self.prefixError + "Error updating the sensor values: " + str(e))
+
     # Quit.
     def quit(self):
-        exit()
+        self.destroy()
 
 
 
@@ -195,7 +258,13 @@ def launch_gui(dev):
 #    root.geometry("600x400")
     pyMcuGui = PyMcuGui(root)
     pyMcuGui.init_hw(dev)
-    root.mainloop()
+    while pyMcuGui.winfo_exists():
+        root.update_idletasks()
+        root.update()
+        if pyMcuGui.analogAutoUpdate.get():
+            pyMcuGui.analog_update()
+        if pyMcuGui.sensorAutoUpdate.get():
+            pyMcuGui.sensor_update()
 
 
 
