@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 07 Feb 2020
-// Rev.: 14 Apr 2020
+// Rev.: 15 Apr 2020
 //
 // Hardware demo for the TI Tiva TM4C1294 Connected LaunchPad Evaluation Kit.
 //
@@ -60,6 +60,7 @@ int LedSet(char *pcCmd, char *pcParam);
 int RgbLedSet(char *pcCmd, char *pcParam);
 int I2CAccess(char *pcCmd, char *pcParam);
 void I2CAccessHelp(void);
+int I2CPortCheck(uint8_t ui8I2CPort, tI2C **psI2C);
 int I2CDetect(char *pcCmd, char *pcParam);
 int TemperatureRead(char *pcCmd, char *pcParam);
 int IlluminanceRead(char *pcCmd, char *pcParam);
@@ -545,14 +546,8 @@ int I2CAccess(char *pcCmd, char *pcParam)
         }
     }
     if (i < 3) return -1;
-    // Check if the I2C port number is valid.
-    switch (ui8I2CPort) {
-        case 0: psI2C = &g_sI2C0; break;
-        case 2: psI2C = &g_sI2C2; break;
-        default:
-            UARTprintf("%s: Only I2C port numbers 0 and 2 are supported!", UI_STR_ERROR);
-            return -1;
-    }
+    // Check if the I2C port number is valid. If so, set the psI2C pointer to the selected I2C port struct.
+    if (I2CPortCheck(ui8I2CPort, &psI2C)) return -1;
     // I2C quick command.
     if (bI2CQuickCmd) {
         ui32I2CMasterStatus = I2CMasterQuickCmdAdv(psI2C, ui8I2CSlaveAddr, ui8I2CRw, bI2CRepeatedStart);
@@ -605,6 +600,22 @@ void I2CAccessHelp(void)
 
 
 
+// Check if the I2C port number is valid. If so, set the psI2C pointer to the selected I2C port struct.
+int I2CPortCheck(uint8_t ui8I2CPort, tI2C **psI2C)
+{
+    switch (ui8I2CPort) {
+        case 0: *psI2C = &g_sI2C0; break;
+        case 2: *psI2C = &g_sI2C2; break;
+        default:
+            *psI2C = NULL;
+            UARTprintf("%s: Only I2C port numbers 0 and 2 are supported!", UI_STR_ERROR);
+            return -1;
+    }
+    return 0;
+}
+
+
+
 // Detect I2C devices.
 int I2CDetect(char *pcCmd, char *pcParam)
 {
@@ -632,14 +643,8 @@ int I2CDetect(char *pcCmd, char *pcParam)
         }
     }
     if (i < 1) return -1;
-    // Check if the I2C port number is valid.
-    switch (ui8I2CPort) {
-        case 0: psI2C = &g_sI2C0; break;
-        case 2: psI2C = &g_sI2C2; break;
-        default:
-            UARTprintf("%s: Only I2C port numbers 0 and 2 are supported!", UI_STR_ERROR);
-            return -1;
-    }
+    // Check if the I2C port number is valid. If so, set the psI2C pointer to the selected I2C port struct.
+    if (I2CPortCheck(ui8I2CPort, &psI2C)) return -1;
     // Detect I2C devices based on the i2cdetect program of the i2c-tools.
     // Please see: https://github.com/mozilla-b2g/i2c-tools/blob/master/tools/i2cdetect.c
     UARTprintf("%s. I2C device(s) found at slave address:", UI_STR_OK);

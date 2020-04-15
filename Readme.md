@@ -3,7 +3,7 @@
 Auth: M. Fras, Electronics Division, MPI for Physics, Munich  
 Mod.: M. Fras, Electronics Division, MPI for Physics, Munich  
 Date: 07 Feb 2020  
-Rev.: 14 Apr 2020  
+Rev.: 15 Apr 2020  
 
 
 
@@ -141,7 +141,7 @@ Rev.: 14 Apr 2020
     Example minicom session:
     ```
     *******************************************************************************
-    TIVA TM4C1294 `hw_demo' firmware version 0.1.7, release date: 14 Apr 2020
+    TIVA TM4C1294 `hw_demo' firmware version 0.1.8, release date: 15 Apr 2020
     *******************************************************************************
 
     Type `help' to get an overview of available commands.
