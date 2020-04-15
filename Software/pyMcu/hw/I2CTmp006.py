@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 28 Mar 2020
-# Rev.: 31 Mar 2020
+# Rev.: 15 Apr 2020
 #
 # Python class for communicating with the TMP006 I2C temperature sensor IC.
 #
@@ -41,12 +41,12 @@ class I2CTmp006:
     # Write data to the TMP006 sensor IC.
     def write(self, data):
         if self.debugLevel >= 3:
-            print(self.prefixDebug + "Writing data to the TMP006 sensor IC.", end = '')
+            print(self.prefixDebug + "Writing data to the TMP006 sensor IC.", end='')
             self.print_details()
         ret = self.mcuI2C.ms_write(self.slaveAddr, data)
         if ret != 0:
             self.errorCount += 1
-            print(self.prefixError + "Error writing data to the TMP006 sensor IC!", end = '')
+            print(self.prefixError + "Error writing data to the TMP006 sensor IC!", end='')
             self.print_details()
             return ret
         self.accessWrite += 1
@@ -58,12 +58,12 @@ class I2CTmp006:
     # Read data from the TMP006 sensor IC.
     def read(self, cnt):
         if self.debugLevel >= 3:
-            print(self.prefixDebug + "Reading data from the TMP006 sensor IC.", end = '')
+            print(self.prefixDebug + "Reading data from the TMP006 sensor IC.", end='')
             self.print_details()
         data = self.mcuI2C.ms_read(self.slaveAddr, cnt)
         if len(data) <= 0:
             self.errorCount += 1
-            print(self.prefixError + "Error reading data from the TMP006 sensor IC!", end = '')
+            print(self.prefixError + "Error reading data from the TMP006 sensor IC!", end='')
             self.print_details()
             return data
         self.accessRead += 1
@@ -74,17 +74,17 @@ class I2CTmp006:
 
     # Print details.
     def print_details(self):
-        print(self.prefixDetails, end = '')
-        print("I2C master port: {0:d}".format(self.mcuI2C.port), end = '')
-        print(self.separatorDetails + "Slave address: 0x{0:02x}".format(self.slaveAddr), end = '')
+        print(self.prefixDetails, end='')
+        print("I2C master port: {0:d}".format(self.mcuI2C.port), end='')
+        print(self.separatorDetails + "Slave address: 0x{0:02x}".format(self.slaveAddr), end='')
         if self.debugLevel >= 1:
-            print(self.separatorDetails + "Error count: {0:d}".format(self.errorCount), end = '')                
+            print(self.separatorDetails + "Error count: {0:d}".format(self.errorCount), end='')                
         if self.debugLevel >= 2:
-            print(self.separatorDetails + "Read access count: {0:d}".format(self.accessRead), end = '')
-            print(self.separatorDetails + "Write access countn: {0:d}".format(self.accessWrite), end = '')
+            print(self.separatorDetails + "Read access count: {0:d}".format(self.accessRead), end='')
+            print(self.separatorDetails + "Write access countn: {0:d}".format(self.accessWrite), end='')
         if self.debugLevel >= 2:
-            print(self.separatorDetails + "Bytes read: {0:d}".format(self.bytesRead), end = '')
-            print(self.separatorDetails + "Bytes written: {0:d}".format(self.bytesWritten), end = '')        
+            print(self.separatorDetails + "Bytes read: {0:d}".format(self.bytesRead), end='')
+            print(self.separatorDetails + "Bytes written: {0:d}".format(self.bytesWritten), end='')        
         print()
 
 
@@ -93,13 +93,13 @@ class I2CTmp006:
     def init(self):
         # Debug info.
         if self.debugLevel >= 1:
-            print(self.prefixDebug + "Initializing the TMP006 sensor IC.", end = '')
+            print(self.prefixDebug + "Initializing the TMP006 sensor IC.", end='')
             self.print_details()
         # Write data.
         ret = self.write([0x02, 0x75, 0x00])
         # Evaluate response.
         if ret != 0:
-            print(self.prefixError + "Error initializing the TMP006 sensor IC!", end = '')
+            print(self.prefixError + "Error initializing the TMP006 sensor IC!", end='')
             self.print_details()
             print(self.prefixError + "Error code: {0:d}: ".format(ret))
             return -1
@@ -111,13 +111,13 @@ class I2CTmp006:
     def reset(self):
         # Debug info.
         if self.debugLevel >= 1:
-            print(self.prefixDebug + "Resetting the TMP006 sensor IC.", end = '')
+            print(self.prefixDebug + "Resetting the TMP006 sensor IC.", end='')
             self.print_details()
         # Write data.
         ret = self.write([0x02, 0x80, 0x00])
         # Evaluate response.
         if ret != 0:
-            print(self.prefixError + "Error resetting the TMP006 sensor IC!", end = '')
+            print(self.prefixError + "Error resetting the TMP006 sensor IC!", end='')
             self.print_details()
             print(self.prefixError + "Error code: {0:d}: ".format(ret))
             return -1
@@ -130,7 +130,7 @@ class I2CTmp006:
     def read_voltage(self):
         # Debug info.
         if self.debugLevel >= 1:
-            print(self.prefixDebug + "Reading voltage from the TMP006 sensor IC.", end = '')
+            print(self.prefixDebug + "Reading voltage from the TMP006 sensor IC.", end='')
             self.print_details()
         # Set the pointer register of the TMP006 IC to the sensor voltage register (0x00).
         ret = self.write([0x00])
@@ -138,7 +138,7 @@ class I2CTmp006:
         data = self.read(2)
         # Evaluate response.
         if ret != 0 or len(data) != 2:
-            print(self.prefixError + "Error reading the sensor voltage from the TMP006 sensor IC!", end = '')
+            print(self.prefixError + "Error reading the sensor voltage from the TMP006 sensor IC!", end='')
             self.print_details()
             print(self.prefixError + "Error code: {0:d}: ".format(ret))
             return -255.0
@@ -162,7 +162,7 @@ class I2CTmp006:
     def read_temperature(self):
         # Debug info.
         if self.debugLevel >= 1:
-            print(self.prefixDebug + "Reading temperature from the TMP006 sensor IC.", end = '')
+            print(self.prefixDebug + "Reading temperature from the TMP006 sensor IC.", end='')
             self.print_details()
         # Set the pointer register of the TMP006 IC to the ambient temperature register (0x01).
         ret = self.write([0x01])
@@ -170,7 +170,7 @@ class I2CTmp006:
         data = self.read(2)
         # Evaluate response.
         if ret != 0 or len(data) != 2:
-            print(self.prefixError + "Error reading the temperature from the TMP006 sensor IC!", end = '')
+            print(self.prefixError + "Error reading the temperature from the TMP006 sensor IC!", end='')
             self.print_details()
             print(self.prefixError + "Error code: {0:d}: ".format(ret))
             return -255.0
@@ -193,7 +193,7 @@ class I2CTmp006:
     def read_manufacturer_id(self):
         # Debug info.
         if self.debugLevel >= 1:
-            print(self.prefixDebug + "Reading manufacturer ID from the TMP006 sensor IC.", end = '')
+            print(self.prefixDebug + "Reading manufacturer ID from the TMP006 sensor IC.", end='')
             self.print_details()
         # Set the pointer register of the TMP006 IC to the manufacturer ID register (0xfe).
         ret = self.write([0xfe])
@@ -201,7 +201,7 @@ class I2CTmp006:
         data = self.read(2)
         # Evaluate response.
         if ret != 0 or len(data) != 2:
-            print(self.prefixError + "Error reading the manufacturer ID from the TMP006 sensor IC!", end = '')
+            print(self.prefixError + "Error reading the manufacturer ID from the TMP006 sensor IC!", end='')
             self.print_details()
             print(self.prefixError + "Error code: {0:d}: ".format(ret))
             return 0xffff
@@ -217,7 +217,7 @@ class I2CTmp006:
     def read_device_id(self):
         # Debug info.
         if self.debugLevel >= 1:
-            print(self.prefixDebug + "Reading device ID from the TMP006 sensor IC.", end = '')
+            print(self.prefixDebug + "Reading device ID from the TMP006 sensor IC.", end='')
             self.print_details()
         # Set the pointer register of the TMP006 IC to the device ID register (0xff).
         ret = self.write([0xff])
@@ -225,7 +225,7 @@ class I2CTmp006:
         data = self.read(2)
         # Evaluate response.
         if ret != 0 or len(data) != 2:
-            print(self.prefixError + "Error reading the device ID from the TMP006 sensor IC!", end = '')
+            print(self.prefixError + "Error reading the device ID from the TMP006 sensor IC!", end='')
             self.print_details()
             print(self.prefixError + "Error code: {0:d}: ".format(ret))
             return 0xffff

@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 28 Mar 2020
-# Rev.: 14 Apr 2020
+# Rev.: 15 Apr 2020
 #
 # Python class for using the I2C ports of the TM4C1294NCPDT MCU.
 #
@@ -64,16 +64,16 @@ class McuI2C:
 
     # Print details.
     def print_details(self):
-        print(self.prefixDetails, end = '')
-        print("I2C master port: {0:d}".format(self.port), end = '')
+        print(self.prefixDetails, end='')
+        print("I2C master port: {0:d}".format(self.port), end='')
         if self.debugLevel >= 1:
-            print(self.separatorDetails + "Error count: {0:d}".format(self.errorCount), end = '')
+            print(self.separatorDetails + "Error count: {0:d}".format(self.errorCount), end='')
         if self.debugLevel >= 1:
-            print(self.separatorDetails + "Read access count: {0:d}".format(self.accessRead), end = '')
-            print(self.separatorDetails + "Write access countn: {0:d}".format(self.accessWrite), end = '')
+            print(self.separatorDetails + "Read access count: {0:d}".format(self.accessRead), end='')
+            print(self.separatorDetails + "Write access countn: {0:d}".format(self.accessWrite), end='')
         if self.debugLevel >= 1:
-            print(self.separatorDetails + "Bytes read: {0:d}".format(self.bytesRead), end = '')
-            print(self.separatorDetails + "Bytes written: {0:d}".format(self.bytesWritten), end = '')
+            print(self.separatorDetails + "Bytes read: {0:d}".format(self.bytesRead), end='')
+            print(self.separatorDetails + "Bytes written: {0:d}".format(self.bytesWritten), end='')
         print()
 
 
@@ -97,11 +97,11 @@ class McuI2C:
         for i in range(0, len(data)):
             cmd += " 0x{0:02x}".format(data[i] & 0xff)
         if self.debugLevel >= 2:
-            print(self.prefixDebug + "Writing data to the I2C master port {0:d}.".format(self.port), end = '')
-            print(self.separatorDetails + "Slave address: 0x{0:02x}".format(slaveAddr), end = '')
-            print(self.separatorDetails + "Data:", end = '')
+            print(self.prefixDebug + "Writing data to the I2C master port {0:d}.".format(self.port), end='')
+            print(self.separatorDetails + "Slave address: 0x{0:02x}".format(slaveAddr), end='')
+            print(self.separatorDetails + "Data:", end='')
             for i in range(0, len(data)):
-                print(" 0x{0:02x}".format(data[i] & 0xff), end = '')
+                print(" 0x{0:02x}".format(data[i] & 0xff), end='')
             print()
         # Send command.
         ret = self.ms_send_cmd(cmd)
@@ -149,11 +149,34 @@ class McuI2C:
         for i in range(0, len(dataStrList)):
             data.append(int(dataStrList[i], 0))
         if self.debugLevel >= 2:
-            print(self.prefixDebug + "Data read:", end = '')
+            print(self.prefixDebug + "Data read:", end='')
             for i in range(0, len(data)):
-                print(" 0x{0:02x}".format(data[i]), end = '')
+                print(" 0x{0:02x}".format(data[i]), end='')
             print()
         self.accessRead += 1
         self.bytesRead += len(data)
         return data
+
+
+
+    # Send a quick command.
+    def ms_quick_cmd(self, slaveAddr, read):
+        return self.ms_quick_cmd_adv(slaveAddr, read, False)
+
+
+
+    # Send a quick command (advanced).
+    def ms_quick_cmd_adv(self, slaveAddr, read, repeatedStart):
+        accMode = 0x08 | (0x01 if read else 0) | (0x02 if repeatedStart else 0)
+        cmd = "i2c {0:d} 0x{1:02x} 0x{2:02x}".format(self.port, slaveAddr & 0x7f, accMode)
+        if self.debugLevel >= 2:
+            print(self.prefixDebug + "Sending quick command to the I2C master port {0:d}.".format(self.port), end='')
+            print(self.separatorDetails + "Slave address: 0x{0:02x}".format(slaveAddr), end='')
+            print(self.separatorDetails + "Read/write: {0:d}".format(read & 0x01), end='')
+            print()
+        # Send command.
+        ret = self.ms_send_cmd(cmd)
+        if read: self.accessRead += 1
+        else: self.accessWrite += 1
+        return ret
 

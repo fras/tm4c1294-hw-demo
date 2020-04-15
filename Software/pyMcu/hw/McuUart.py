@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 31 Mar 2020
-# Rev.: 31 Mar 2020
+# Rev.: 15 Apr 2020
 #
 # Python class for using the UART ports of the TM4C1294NCPDT MCU.
 #
@@ -64,16 +64,16 @@ class McuUart:
 
     # Print details.
     def print_details(self):
-        print(self.prefixDetails, end = '')
-        print("UART port: {0:d}".format(self.port), end = '')
+        print(self.prefixDetails, end='')
+        print("UART port: {0:d}".format(self.port), end='')
         if self.debugLevel >= 1:
-            print(self.separatorDetails + "Error count: {0:d}".format(self.errorCount), end = '')        
+            print(self.separatorDetails + "Error count: {0:d}".format(self.errorCount), end='')        
         if self.debugLevel >= 1:
-            print(self.separatorDetails + "Read access count: {0:d}".format(self.accessRead), end = '')
-            print(self.separatorDetails + "Write access countn: {0:d}".format(self.accessWrite), end = '')
+            print(self.separatorDetails + "Read access count: {0:d}".format(self.accessRead), end='')
+            print(self.separatorDetails + "Write access countn: {0:d}".format(self.accessWrite), end='')
         if self.debugLevel >= 1:
-            print(self.separatorDetails + "Bytes read: {0:d}".format(self.bytesRead), end = '')
-            print(self.separatorDetails + "Bytes written: {0:d}".format(self.bytesWritten), end = '')
+            print(self.separatorDetails + "Bytes read: {0:d}".format(self.bytesRead), end='')
+            print(self.separatorDetails + "Bytes written: {0:d}".format(self.bytesWritten), end='')
         print()
 
 
@@ -107,10 +107,10 @@ class McuUart:
         for i in range(0, len(data)):
             cmd += " 0x{0:02x}".format(data[i] & 0xff)
         if self.debugLevel >= 2:
-            print(self.prefixDebug + "Writing data to the UART port {0:d}.".format(self.port), end = '')
-            print(self.separatorDetails + "Data:", end = '')
+            print(self.prefixDebug + "Writing data to the UART port {0:d}.".format(self.port), end='')
+            print(self.separatorDetails + "Data:", end='')
             for i in range(0, len(data)):
-                print(" 0x{0:02x}".format(data[i] & 0xff), end = '')
+                print(" 0x{0:02x}".format(data[i] & 0xff), end='')
             print()
         # Send command.
         ret = self.send_cmd(cmd)
@@ -151,9 +151,9 @@ class McuUart:
         for i in range(0, len(dataStrList)):
             data.append(int(dataStrList[i], 0))
         if self.debugLevel >= 2:
-            print(self.prefixDebug + "Data read:", end = '')
+            print(self.prefixDebug + "Data read:", end='')
             for i in range(0, len(data)):
-                print(" 0x{0:02x}".format(data[i]), end = '')
+                print(" 0x{0:02x}".format(data[i]), end='')
             print()
         self.accessRead += 1
         self.bytesRead += len(data)
@@ -186,9 +186,9 @@ class McuUart:
         for i in range(0, len(dataStrList)):
             data.append(int(dataStrList[i], 0))
         if self.debugLevel >= 2:
-            print(self.prefixDebug + "Data read:", end = '')
+            print(self.prefixDebug + "Data read:", end='')
             for i in range(0, len(data)):
-                print(" 0x{0:02x}".format(data[i]), end = '')
+                print(" 0x{0:02x}".format(data[i]), end='')
             print()
         self.accessRead += 1
         self.bytesRead += len(data)

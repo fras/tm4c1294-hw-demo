@@ -4,7 +4,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 24 Mar 2020
-# Rev.: 14 Apr 2020
+# Rev.: 15 Apr 2020
 #
 # Python script to test hardware features of the TM4C1294NCPDT MCU on the
 # TM4C1294 Connected LaunchPad Evaluation Kit over a serial port (UART).
@@ -173,16 +173,16 @@ def run_test(dev):
         # Standard access.
         mcuI2C2.ms_write(0x40, [0x01, 0x12, 0x34])
         data = mcuI2C2.ms_read(0x40, 2)
-        print("I2C data read:", end = '')
+        print("I2C data read:", end='')
         for i in range(0, len(data)):
-            print(" 0x{0:02x}".format(data[i]), end = '')
+            print(" 0x{0:02x}".format(data[i]), end='')
         print()
         # Advanced access.
         mcuI2C2.ms_write_adv(0x40, [0x01], False, False)    # No repeated start, no stop condition.
         data = mcuI2C2.ms_read_adv(0x40, 2, True, True)     # Repeated start, stop condition.
-        print("I2C data read:", end = '')
+        print("I2C data read:", end='')
         for i in range(0, len(data)):
-            print(" 0x{0:02x}".format(data[i]), end = '')
+            print(" 0x{0:02x}".format(data[i]), end='')
         print()
         print(separatorTests)
 
@@ -198,9 +198,9 @@ def run_test(dev):
         mcuUart6.clear()
         mcuUart6.write([0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07])
         data = mcuUart6.read_all()
-        print("Data read from UART:", end = '')
+        print("Data read from UART:", end='')
         for i in range(0, len(data)):
-            print(" 0x{0:02x}".format(data[i]), end = '')
+            print(" 0x{0:02x}".format(data[i]), end='')
         print()
         # String write/read.
         mcuUart6.clear()
@@ -217,14 +217,14 @@ def run_test(dev):
     #    for i in range(0, 200):
         for i in range(0, 10):
             adc.read()
-            print("ADC values:", end = '')
-            print(" Joystick:", end = '')
-            print(" X = {0:4d}".format(adc.joystickX), end = '')
-            print(" Y = {0:4d}".format(adc.joystickY), end = '')
-            print(" ; Accelerometer:", end = '')
-            print(" X = {0:4d}".format(adc.accelX), end = '')
-            print(" Y = {0:4d}".format(adc.accelY), end = '')
-            print(" Z = {0:4d}".format(adc.accelZ), end = '')
+            print("ADC values:", end='')
+            print(" Joystick:", end='')
+            print(" X = {0:4d}".format(adc.joystickX), end='')
+            print(" Y = {0:4d}".format(adc.joystickY), end='')
+            print(" ; Accelerometer:", end='')
+            print(" X = {0:4d}".format(adc.accelX), end='')
+            print(" Y = {0:4d}".format(adc.accelY), end='')
+            print(" Z = {0:4d}".format(adc.accelZ), end='')
             print()
         print(separatorTests)
 

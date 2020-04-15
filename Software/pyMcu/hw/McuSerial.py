@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 24 Mar 2020
-# Rev.: 31 Mar 2020
+# Rev.: 15 Apr 2020
 #
 # Python class for communicating with the TM4C1294NCPDT MCU over a serial port
 # (UART).
@@ -71,21 +71,21 @@ class McuSerial:
 
     # Print details.
     def print_details(self):
-        print(self.prefixDetails, end = '')
-        print("UART port: " + self.ser.port, end = '')
-        print(self.separatorDetails + "Baud rate: {0:d}".format(self.ser.baudrate), end = '')
-        print(self.separatorDetails + "Data bytes: {0:d}".format(self.ser.bytesize), end = '')
-        print(self.separatorDetails + "Parity: " + self.ser.parity, end = '')
-        print(self.separatorDetails + "Stop bits: {0:d}".format(self.ser.stopbits), end = '')
-        print(self.separatorDetails + "Timeout: {0:f}".format(self.ser.timeout), end = '')
+        print(self.prefixDetails, end='')
+        print("UART port: " + self.ser.port, end='')
+        print(self.separatorDetails + "Baud rate: {0:d}".format(self.ser.baudrate), end='')
+        print(self.separatorDetails + "Data bytes: {0:d}".format(self.ser.bytesize), end='')
+        print(self.separatorDetails + "Parity: " + self.ser.parity, end='')
+        print(self.separatorDetails + "Stop bits: {0:d}".format(self.ser.stopbits), end='')
+        print(self.separatorDetails + "Timeout: {0:f}".format(self.ser.timeout), end='')
         if self.debugLevel >= 1:
-            print(self.separatorDetails + "Error count: {0:d}".format(self.errorCount), end = '')
+            print(self.separatorDetails + "Error count: {0:d}".format(self.errorCount), end='')
         if self.debugLevel >= 1:
-            print(self.separatorDetails + "Read access count: {0:d}".format(self.accessRead), end = '')
-            print(self.separatorDetails + "Write access countn: {0:d}".format(self.accessWrite), end = '')
+            print(self.separatorDetails + "Read access count: {0:d}".format(self.accessRead), end='')
+            print(self.separatorDetails + "Write access countn: {0:d}".format(self.accessWrite), end='')
         if self.debugLevel >= 1:
-            print(self.separatorDetails + "Bytes read: {0:d}".format(self.bytesRead), end = '')
-            print(self.separatorDetails + "Bytes written: {0:d}".format(self.bytesWritten), end = '')
+            print(self.separatorDetails + "Bytes read: {0:d}".format(self.bytesRead), end='')
+            print(self.separatorDetails + "Bytes written: {0:d}".format(self.bytesWritten), end='')
         print()
 
 
