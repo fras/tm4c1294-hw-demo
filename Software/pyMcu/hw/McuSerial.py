@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 24 Mar 2020
-# Rev.: 15 Apr 2020
+# Rev.: 16 Apr 2020
 #
 # Python class for communicating with the TM4C1294NCPDT MCU over a serial port
 # (UART).
@@ -169,6 +169,8 @@ class McuSerial:
 
     # Send a MCU command to the serial port.
     def send(self, cmd):
+        # Clear previous MCU response.
+        self.mcuResponse = ""
         if self.simulateHwAccess:
             print(self.simulateHwAccessMsg + " 'Sending MCU command: " + cmd)
             self.mcuResponse = self.mcuResponseOk + " (simulated hardware access)"
