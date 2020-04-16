@@ -141,7 +141,7 @@ Rev.: 16 Apr 2020
     Example minicom session:
     ```
     *******************************************************************************
-    TIVA TM4C1294 `hw_demo' firmware version 0.2.0, release date: 16 Apr 2020
+    TIVA TM4C1294 `hw_demo' firmware version 0.2.1, release date: 16 Apr 2020
     *******************************************************************************
     
     Type `help' to get an overview of available commands.
@@ -149,6 +149,7 @@ Rev.: 16 Apr 2020
     Available commands:
       help                                Show this help text.
       adc     [COUNT]                     Read ADC values.
+      delay   MICROSECONDS                Delay execution.
       i2c     PORT SLV-ADR ACC NUM|DATA   I2C access (ACC bits: R/W, Sr, nP, Q).
       i2c-det PORT [MODE]                 I2C detect devices (MODE: 0 = auto,
                                               1 = quick command, 2 = read).
@@ -163,8 +164,8 @@ Rev.: 16 Apr 2020
       uart    PORT R/W NUM|DATA           UART access (R/W: 0 = write, 1 = read).
       uart-s  PORT BAUD [LOOP] [PARITY]   Setup the UART port.
     > info
-    TIVA TM4C1294 `hw_demo' firmware version 0.2.0, release date: 16 Apr 2020
-    It was compiled using gcc 6.3.1 20170620 at 14:14:11 on Apr 16 2020.
+    TIVA TM4C1294 `hw_demo' firmware version 0.2.1, release date: 16 Apr 2020
+    It was compiled using gcc 6.3.1 20170620 at 17:50:04 on Apr 16 2020.
     > led 0xf
     OK: LEDs set to 0x0f.
     > i2c-det 2

@@ -54,8 +54,9 @@ void __error__(char *pcFilename, uint32_t ui32Line)
 // Function prototypes.
 void Help(void);
 void Info(void);
+int DelayUs(char *pcCmd, char *pcParam, uint32_t ui32SysClock);
 int AdcRead(char *pcCmd, char *pcParam);
-int LcdCmd(tLcdFwInfo *psLcdFwInfo, char *pcCmd, char *pcParam);
+int LcdCmd(char *pcCmd, char *pcParam, tLcdFwInfo *psLcdFwInfo);
 int LcdCheckParamCnt(char *pcLcdCmd, int iLcdParamCntActual, int iLcdParamCntTarget);
 void LcdHelp(void);
 int LedSet(char *pcCmd, char *pcParam);
@@ -173,10 +174,15 @@ int main(void)
         pcUartParam = strtok(NULL, UI_STR_DELIMITER);
         if (pcUartCmd == NULL) {
             continue;
+        // Show help.
         } else if (!strcasecmp(pcUartCmd, "help")) {
             Help();
+        // Show info.
         } else if (!strcasecmp(pcUartCmd, "info")) {
             Info();
+        // Delay execution for a given number of microseconds.
+        } else if (!strcasecmp(pcUartCmd, "delay")) {
+            DelayUs(pcUartCmd, pcUartParam, ui32SysClock);
         // ADC based functions.
         } else if (!strcasecmp(pcUartCmd, "adc")) {
             AdcRead(pcUartCmd, pcUartParam);
@@ -191,7 +197,7 @@ int main(void)
             IlluminanceRead(pcUartCmd, pcUartParam);
         // LCD based functions.
         } else if (!strcasecmp(pcUartCmd, "lcd")) {
-            LcdCmd(&sLcdFwInfo, pcUartCmd, pcUartParam);
+            LcdCmd(pcUartCmd, pcUartParam, &sLcdFwInfo);
         // GPIO based functions.
         } else if (!strcasecmp(pcUartCmd, "led")) {
             LedSet(pcUartCmd, pcUartParam);
@@ -235,6 +241,7 @@ void Help(void)
     UARTprintf("Available commands:\n");
     UARTprintf("  help                                Show this help text.\n");
     UARTprintf("  adc     [COUNT]                     Read ADC values.\n");
+    UARTprintf("  delay   MICROSECONDS                Delay execution.\n");
     UARTprintf("  i2c     PORT SLV-ADR ACC NUM|DATA   I2C access (ACC bits: R/W, Sr, nP, Q).\n");
     UARTprintf("  i2c-det PORT [MODE]                 I2C detect devices (MODE: 0 = auto,\n");
     UARTprintf("                                          1 = quick command, 2 = read).\n");
@@ -257,6 +264,28 @@ void Info(void)
 {
     UARTprintf("TIVA TM4C1294 `%s' firmware version %s, release date: %s\n", FW_NAME, FW_VERSION, FW_RELEASEDATE);
     UARTprintf("It was compiled using gcc %s at %s on %s.", __VERSION__, __TIME__, __DATE__);
+}
+
+
+
+// Delay execution for a given number of microseconds.
+int DelayUs(char *pcCmd, char *pcParam, uint32_t ui32SysClock)
+{
+    uint32_t ui32DelayUs;
+
+    if (pcParam == NULL) {
+        UARTprintf("%s: Parameter required after command `%s'.", UI_STR_ERROR, pcCmd);
+        return -1;
+    }
+    ui32DelayUs = strtoul(pcParam, (char **) NULL, 0);
+    // CAUTION: Calling SysCtlDelay(0) will hang the system.
+    if (ui32DelayUs > 0)
+        // Note: The SysCtlDelay executes a simple 3 instruction cycle loop.
+        SysCtlDelay((ui32SysClock / 3e6) * ui32DelayUs);
+
+    UARTprintf("%s.", UI_STR_OK);
+
+    return 0;
 }
 
 
@@ -314,7 +343,7 @@ int AdcRead(char *pcCmd, char *pcParam)
 
 
 // LCD commands.
-int LcdCmd(tLcdFwInfo *psLcdFwInfo, char *pcCmd, char *pcParam)
+int LcdCmd(char *pcCmd, char *pcParam, tLcdFwInfo *psLcdFwInfo)
 {
     char *pcLcdCmd = pcParam;
     #define LCD_CMD_PARAM_MAX 64
@@ -939,6 +968,7 @@ int SsiSetup(char *pcCmd, char *pcParam)
     psSsi->ui32Protocol = ui32SsiProtocol;
     psSsi->ui32DataWidth = ui32SsiDataWidth;
     SsiMasterInit(psSsi);
+
     UARTprintf("%s.", UI_STR_OK);
 
     return 0;
@@ -1132,6 +1162,7 @@ int UartSetup(char *pcCmd, char *pcParam)
     psUart->bLoopback = bUartLoopback;
     UartInit(psUart);
     UARTParityModeSet(psUart->ui32BaseUart, ui32UartParity);
+
     UARTprintf("%s.", UI_STR_OK);
 
     return 0;
