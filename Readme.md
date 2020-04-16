@@ -3,7 +3,7 @@
 Auth: M. Fras, Electronics Division, MPI for Physics, Munich  
 Mod.: M. Fras, Electronics Division, MPI for Physics, Munich  
 Date: 07 Feb 2020  
-Rev.: 15 Apr 2020  
+Rev.: 16 Apr 2020  
 
 
 
@@ -141,9 +141,9 @@ Rev.: 15 Apr 2020
     Example minicom session:
     ```
     *******************************************************************************
-    TIVA TM4C1294 `hw_demo' firmware version 0.1.8, release date: 15 Apr 2020
+    TIVA TM4C1294 `hw_demo' firmware version 0.2.0, release date: 16 Apr 2020
     *******************************************************************************
-
+    
     Type `help' to get an overview of available commands.
     > help
     Available commands:
@@ -158,11 +158,13 @@ Rev.: 15 Apr 2020
       led     VALUE                       Set the Leds.
       rgb     VALUE                       Set the RGB LED.
       ssi     PORT R/W NUM|DATA           SSI/SPI access (R/W: 0 = write, 1 = read).
+      ssi-set PORT FREQ [MODE] [WIDTH]    Setup the SSI port.
       temp    [COUNT]                     Read temperature sensor info.
       uart    PORT R/W NUM|DATA           UART access (R/W: 0 = write, 1 = read).
+      uart-s  PORT BAUD [LOOP] [PARITY]   Setup the UART port.
     > info
-    TIVA TM4C1294 hw_demo firmware version 0.0.7, release date: 30 Mar 2020
-    It was compiled using gcc 6.3.1 20170620 at 13:56:27 on Apr  2 2020.
+    TIVA TM4C1294 `hw_demo' firmware version 0.2.0, release date: 16 Apr 2020
+    It was compiled using gcc 6.3.1 20170620 at 14:14:11 on Apr 16 2020.
     > led 0xf
     OK: LEDs set to 0x0f.
     > i2c-det 2
@@ -171,9 +173,11 @@ Rev.: 15 Apr 2020
     OK.
     > i2c 2 0x40 1 2
     OK. Data: 0x74 0x80
+    > uart-s 6 11520 1 0
+    OK.
     > uart 6 0 0x11 0x22 0x33
     OK.
-    > uart 6 1 3
+    > uart 6 1
     OK. Data: 0x11 0x22 0x33
     > adc 2
     OK: Joystick: X = 1919 Y = 1892 ; Accelerometer: X = 1977 Y = 2074 Z = 2867
@@ -247,6 +251,14 @@ II)! Thus it is disabled in the firmware by default.
 Note: The SSI port 3 on BoosterPack 2 is used by the LCD on the Educational
 BoosterPack MK II!
 
+Since firmware version 0.2.0, you can set the clock frequency, the SSI mode and
+the data width with the command ```ssi-set```.  
+Example for an SSI clock of 1 MHz, SPI mode 0 and a data width of 8 on SSI port
+2:
+```
+ssi-set 2 1000000 0 8
+```
+
 To test the SSI port 2 on BoosterPack 1 in loopback mode, remove the jumper
 across pins 5 and 6 of the BOOSTXL-RS232 board and place it across the pins 14
 and 15. These are the pins ```PD0``` and ```PD1``` on the TM4C1294 Connected
@@ -256,7 +268,7 @@ Then send a few bytes and read them back. E.g.
 ```
 > ssi 2 0 0x11 0x22 0x33 0x44 0x55 0xaa
 OK.
-> ssi 2 1 6
+> ssi 2 1
 OK. Data: 0x11 0x22 0x33 0x44 0x55 0xaa
 >
 ```
@@ -274,6 +286,13 @@ configuration of the UART in the file ```hw_demo.c```.
 sUartBoosterPack2.bLoopback = true;
 ```
 
+Since firmware version 0.2.0, you can set the baud rate, the loopback mode and
+the parity with the command ```uart-s```.  
+Example for a baud rate of 11520, internal loopback and no parity on UART port 6:
+```
+uart-s 6 11520 1 0
+```
+
 Alternatively, put a jumper across the pins ```PP0``` and ```PP1``` on the
 TM4C1294 Connected LaunchPad Evaluation Kit.
 
@@ -281,7 +300,7 @@ Then send a few bytes and read them back. E.g.
 ```
 > uart 6 0 0x11 0x22 0x33 0x44 0x55 0xaa
 OK.
-> uart 6 1 6
+> uart 6 1
 OK. Data: 0x11 0x22 0x33 0x44 0x55 0xaa
 >
 ```

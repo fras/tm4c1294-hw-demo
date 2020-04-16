@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 07 Feb 2020
-// Rev.: 15 Apr 2020
+// Rev.: 16 Apr 2020
 //
 // Hardware demo for the TI Tiva TM4C1294 Connected LaunchPad Evaluation Kit.
 //
@@ -17,7 +17,9 @@
 #include "inc/hw_memmap.h"
 #include "driverlib/i2c.h"
 #include "driverlib/rom_map.h"
+#include "driverlib/ssi.h"
 #include "driverlib/sysctl.h"
+#include "driverlib/uart.h"
 #include "utils/uartstdio.h"
 #include "hw/adc/adc.h"
 #include "hw/gpio/gpio.h"
@@ -65,7 +67,13 @@ int I2CDetect(char *pcCmd, char *pcParam);
 int TemperatureRead(char *pcCmd, char *pcParam);
 int IlluminanceRead(char *pcCmd, char *pcParam);
 int SsiAccess(char *pcCmd, char *pcParam);
+int SsiPortCheck(uint8_t ui8SsiPort, tSSI **psSsi);
+int SsiSetup(char *pcCmd, char *pcParam);
+void SsiSetupHelp(void);
 int UartAccess(char *pcCmd, char *pcParam);
+int UartPortCheck(uint8_t ui8UartPort, tUART **psUart);
+int UartSetup(char *pcCmd, char *pcParam);
+void UartSetupHelp(void);
 
 
 
@@ -127,7 +135,7 @@ int main(void)
 
     // Initialize the UART on the Educational BoosterPack MKII.
     g_sUart6.ui32UartClk = ui32SysClock;
-    g_sUart6.bLoopback = true;        // Enable loopback for testing.
+//    g_sUart6.bLoopback = true;        // Enable loopback for testing.
     UartInit(&g_sUart6);
 
     // Initialize the LCD on the Educational BoosterPack MKII.
@@ -193,9 +201,13 @@ int main(void)
         // SSI based functions.
         } else if (!strcasecmp(pcUartCmd, "ssi")) {
             SsiAccess(pcUartCmd, pcUartParam);
+        } else if (!strcasecmp(pcUartCmd, "ssi-set")) {
+            SsiSetup(pcUartCmd, pcUartParam);
         // UART based functions.
         } else if (!strcasecmp(pcUartCmd, "uart")) {
             UartAccess(pcUartCmd, pcUartParam);
+        } else if (!strcasecmp(pcUartCmd, "uart-s")) {
+            UartSetup(pcUartCmd, pcUartParam);
 //        } else if (!strcasecmp(pcUartCmd, "sysclk")) {
 //            pcUartParam = strtok(NULL, UI_STR_DELIMITER);
 //            if (pcUartParam == NULL) {
@@ -232,8 +244,10 @@ void Help(void)
     UARTprintf("  led     VALUE                       Set the Leds.\n");
     UARTprintf("  rgb     VALUE                       Set the RGB LED.\n");
     UARTprintf("  ssi     PORT R/W NUM|DATA           SSI/SPI access (R/W: 0 = write, 1 = read).\n");
+    UARTprintf("  ssi-set PORT FREQ [MODE] [WIDTH]    Setup the SSI port.\n");
     UARTprintf("  temp    [COUNT]                     Read temperature sensor info.\n");
-    UARTprintf("  uart    PORT R/W NUM|DATA           UART access (R/W: 0 = write, 1 = read).");
+    UARTprintf("  uart    PORT R/W NUM|DATA           UART access (R/W: 0 = write, 1 = read).\n");
+    UARTprintf("  uart-s  PORT BAUD [LOOP] [PARITY]   Setup the UART port.");
 }
 
 
@@ -511,7 +525,7 @@ int I2CAccess(char *pcCmd, char *pcParam)
             if (pcParam == NULL) {
                 UARTprintf("%s: I2C port number required after command `%s'.\n", UI_STR_ERROR, pcCmd);
                 I2CAccessHelp();
-                break;
+                return -1;
             } else {
                 ui8I2CPort = (uint8_t) strtoul(pcParam, (char **) NULL, 0) & 0xff;
             }
@@ -519,7 +533,7 @@ int I2CAccess(char *pcCmd, char *pcParam)
             if (pcParam == NULL) {
                 UARTprintf("%s: I2C slave address required after command `%s'.\n", UI_STR_ERROR, pcCmd);
                 I2CAccessHelp();
-                break;
+                return -1;
             } else {
                 ui8I2CSlaveAddr = (uint8_t) strtoul(pcParam, (char **) NULL, 0) & 0xff;
             }
@@ -527,7 +541,7 @@ int I2CAccess(char *pcCmd, char *pcParam)
             if (pcParam == NULL) {
                 UARTprintf("%s: I2C access mode required after command `%s'.\n", UI_STR_ERROR, pcCmd);
                 I2CAccessHelp();
-                break;
+                return -1;
             } else {
                 ui8I2CAccMode = (uint8_t) strtoul(pcParam, (char **) NULL, 0) & 0x0f;
                 ui8I2CRw = ui8I2CAccMode & 0x1;
@@ -600,7 +614,8 @@ void I2CAccessHelp(void)
 
 
 
-// Check if the I2C port number is valid. If so, set the psI2C pointer to the selected I2C port struct.
+// Check if the I2C port number is valid. If so, set the psI2C pointer to the
+// selected I2C port struct.
 int I2CPortCheck(uint8_t ui8I2CPort, tI2C **psI2C)
 {
     switch (ui8I2CPort) {
@@ -632,7 +647,7 @@ int I2CDetect(char *pcCmd, char *pcParam)
         if (i == 0) {
             if (pcParam == NULL) {
                 UARTprintf("%s: I2C port number required after command `%s'.", UI_STR_ERROR, pcCmd);
-                break;
+                return -1;
             } else {
                 ui8I2CPort = (uint8_t) strtoul(pcParam, (char **) NULL, 0) & 0xff;
             }
@@ -767,14 +782,14 @@ int SsiAccess(char *pcCmd, char *pcParam)
         if (i == 0) {
             if (pcParam == NULL) {
                 UARTprintf("%s: SSI port number required after command `%s'.", UI_STR_ERROR, pcCmd);
-                break;
+                return -1;
             } else {
                 ui8SsiPort = (uint8_t) strtoul(pcParam, (char **) NULL, 0) & 0xff;
             }
         } else if (i == 1) {
             if (pcParam == NULL) {
                 UARTprintf("%s: SSI read/write required after command `%s'.", UI_STR_ERROR, pcCmd);
-                break;
+                return -1;
             } else {
                 ui8SsiRw = (uint8_t) strtoul(pcParam, (char **) NULL, 0) & 0x01;
             }
@@ -784,18 +799,12 @@ int SsiAccess(char *pcCmd, char *pcParam)
                 return -1;
             }
             if (pcParam == NULL) break;
-            else pui32SsiData[i-2] = (uint8_t) strtoul(pcParam, (char **) NULL, 0) & 0xff;
+            else pui32SsiData[i-2] = (uint32_t) strtoul(pcParam, (char **) NULL, 0) & 0xffff;
         }
     }
     if (i < 2) return -1;
-    // Check if the SSI port number is valid.
-    switch (ui8SsiPort) {
-        case 2: psSsi = &g_sSsi2; break;
-        case 3: psSsi = &g_sSsi3; break;
-        default:
-            UARTprintf("%s: Only SSI port numbers 2 and 3 are supported!", UI_STR_ERROR);
-            return -1;
-    }
+    // Check if the SSI port number is valid. If so, set the psSsi pointer to the selected SSI port struct.
+    if (SsiPortCheck(ui8SsiPort, &psSsi)) return -1;
     // SSI write.
     if (ui8SsiRw == 0) {
         i32SsiStatus = SsiMasterWrite(psSsi, pui32SsiData, i - 2);
@@ -812,7 +821,7 @@ int SsiAccess(char *pcCmd, char *pcParam)
             for (int iCnt = 0; ; iCnt++) {
                 i32SsiStatus = SsiMasterRead(psSsi, pui32SsiData, 1);
                 if (i32SsiStatus != 1) {
-                    if (iCnt == 0) UARTprintf("%s: No data available.", UI_STR_ERROR);
+                    if (iCnt == 0) UARTprintf("%s: No data available.", UI_STR_WARNING);
                     break;
                 } else {
                     if (iCnt == 0) UARTprintf("%s. Data:", UI_STR_OK);
@@ -828,7 +837,7 @@ int SsiAccess(char *pcCmd, char *pcParam)
             i32SsiStatus = SsiMasterRead(psSsi, pui32SsiData, ui8SsiDataNum);
             // Check the SSI status.
             if (i32SsiStatus != ui8SsiDataNum) {
-                UARTprintf("%s: Could only read %d data bytes from the SSI master %d instead of %d.", UI_STR_ERROR, i32SsiStatus, ui8SsiPort, ui8SsiDataNum);
+                UARTprintf("%s: Could only read %d data bytes from the SSI master %d instead of %d.", UI_STR_WARNING, i32SsiStatus, ui8SsiPort, ui8SsiDataNum);
             } else {
                 UARTprintf("%s.", UI_STR_OK);
             }
@@ -840,6 +849,117 @@ int SsiAccess(char *pcCmd, char *pcParam)
     }
 
     return 0;
+}
+
+
+
+// Check if the SSI port number is valid. If so, set the psSsi pointer to the
+// selected SSI port struct.
+int SsiPortCheck(uint8_t ui8SsiPort, tSSI **psSsi)
+{
+    switch (ui8SsiPort) {
+        case 2: *psSsi = &g_sSsi2; break;
+        case 3: *psSsi = &g_sSsi3; break;
+        default:
+            *psSsi = NULL;
+            UARTprintf("%s: Only SSI port numbers 2 and 3 are supported!", UI_STR_ERROR);
+            return -1;
+    }
+    return 0;
+}
+
+
+
+// Setup the SSI.
+int SsiSetup(char *pcCmd, char *pcParam)
+{
+    int i;
+    uint8_t ui8SsiPort = 0;
+    uint32_t ui32SsiBitRate;
+    uint32_t ui32SsiProtocol;
+    uint32_t ui32SsiDataWidth;
+    tSSI *psSsi;
+    // Parse parameters.
+    for (i = 0; i <= 3; i++) {
+        if (i != 0) pcParam = strtok(NULL, UI_STR_DELIMITER);
+        if (i == 0) {
+            if (pcParam == NULL) {
+                UARTprintf("%s: SSI port number required after command `%s'.\n", UI_STR_ERROR, pcCmd);
+                SsiSetupHelp();
+                return -1;
+            } else {
+                ui8SsiPort = (uint8_t) strtoul(pcParam, (char **) NULL, 0) & 0xff;
+            }
+        } else if (i == 1) {
+            if (pcParam == NULL) {
+                UARTprintf("%s: SSI bit rate required after command `%s'.\n", UI_STR_ERROR, pcCmd);
+                SsiSetupHelp();
+                return -1;
+            } else {
+                ui32SsiBitRate = (uint32_t) strtoul(pcParam, (char **) NULL, 0);
+                if ((ui32SsiBitRate < SSI_FREQ_MIN) || (ui32SsiBitRate > SSI_FREQ_MAX)) {
+                    UARTprintf("%s: SSI bit rate %d outside of valid range %d..%d.", UI_STR_ERROR, ui32SsiBitRate, SSI_FREQ_MIN, SSI_FREQ_MAX);
+                    return -1;
+                }
+            }
+        } else if (i == 2) {
+            if (pcParam == NULL) {
+                ui32SsiProtocol = SSI_FRF_MOTO_MODE_0;
+            } else {
+                ui32SsiProtocol = strtoul(pcParam, (char **) NULL, 0) & 0x07;
+                switch (ui32SsiProtocol) {
+                    case 0: ui32SsiProtocol = SSI_FRF_MOTO_MODE_0; break;
+                    case 1: ui32SsiProtocol = SSI_FRF_MOTO_MODE_1; break;
+                    case 2: ui32SsiProtocol = SSI_FRF_MOTO_MODE_2; break;
+                    case 3: ui32SsiProtocol = SSI_FRF_MOTO_MODE_3; break;
+                    case 4: ui32SsiProtocol = SSI_FRF_TI; break;
+                    case 5: ui32SsiProtocol = SSI_FRF_NMW; break;
+                    default:
+                        UARTprintf("%s: Invalid SSI mode setting %d.", UI_STR_ERROR, ui32SsiProtocol);
+                        return -1;
+                }
+            }
+        } else if (i == 3) {
+            if (pcParam == NULL) {
+                ui32SsiDataWidth = 8;
+            } else {
+                ui32SsiDataWidth = strtoul(pcParam, (char **) NULL, 0);
+                if ((ui32SsiDataWidth < SSI_DATAWIDTH_MIN) || (ui32SsiDataWidth > SSI_DATAWIDTH_MAX)) {
+                    UARTprintf("%s: SSI data width %d outside of valid range %d..%d.", UI_STR_ERROR, ui32SsiDataWidth, SSI_DATAWIDTH_MIN, SSI_DATAWIDTH_MAX);
+                    return -1;
+                }
+            }
+        }
+    }
+    if (i < 1) return -1;
+    // Check if the SSI port number is valid. If so, set the psSsi pointer to the selected SSI port struct.
+    if (SsiPortCheck(ui8SsiPort, &psSsi)) return -1;
+    // Setup the SSI port.
+    psSsi->ui32BitRate = ui32SsiBitRate;
+    psSsi->ui32Protocol = ui32SsiProtocol;
+    psSsi->ui32DataWidth = ui32SsiDataWidth;
+    SsiMasterInit(psSsi);
+    UARTprintf("%s.", UI_STR_OK);
+
+    return 0;
+}
+
+
+
+// Show help on SSI setup command.
+void SsiSetupHelp(void)
+{
+    UARTprintf("SSI setup command:\n");
+    UARTprintf("  ssi-set PORT FREQ [MODE] [WIDTH]    Setup the SSI port.\n");
+    UARTprintf("SSI bit rate: %d..%d\n", SSI_FREQ_MIN, SSI_FREQ_MAX);
+    UARTprintf("SSI modes:\n");
+    UARTprintf("  0: SPI frame format, polarity = 0, phase = 0.\n");
+    UARTprintf("  1: SPI frame format, polarity = 0, phase = 1.\n");
+    UARTprintf("  2: SPI frame format, polarity = 1, phase = 0.\n");
+    UARTprintf("  3: SPI frame format, polarity = 1, phase = 1.\n");
+    UARTprintf("  4: TI frame format.\n");
+    UARTprintf("  5: National MicroWire frame format.\n");
+    UARTprintf("SSI data width: %d..%d", SSI_DATAWIDTH_MIN, SSI_DATAWIDTH_MAX);
 }
 
 
@@ -860,14 +980,14 @@ int UartAccess(char *pcCmd, char *pcParam)
         if (i == 0) {
             if (pcParam == NULL) {
                 UARTprintf("%s: UART port number required after command `%s'.", UI_STR_ERROR, pcCmd);
-                break;
+                return -1;
             } else {
                 ui8UartPort = (uint8_t) strtoul(pcParam, (char **) NULL, 0) & 0xff;
             }
         } else if (i == 1) {
             if (pcParam == NULL) {
                 UARTprintf("%s: UART read/write required after command `%s'.", UI_STR_ERROR, pcCmd);
-                break;
+                return -1;
             } else {
                 ui8UartRw = (uint8_t) strtoul(pcParam, (char **) NULL, 0) & 0x01;
             }
@@ -881,13 +1001,8 @@ int UartAccess(char *pcCmd, char *pcParam)
         }
     }
     if (i < 2) return -1;
-    // Check if the UART port number is valid.
-    switch (ui8UartPort) {
-        case 6: psUart = &g_sUart6; break;
-        default:
-            UARTprintf("%s: Only UART port number 6 is supported!", UI_STR_ERROR);
-            return -1;
-    }
+    // Check if the UART port number is valid. If so, set the psUart pointer to the selected UART port struct.
+    if (UartPortCheck(ui8UartPort, &psUart)) return -1;
     // UART write.
     if (ui8UartRw == 0) {
         i32UartStatus = UartWrite(psUart, pui8UartData, i - 2);
@@ -905,7 +1020,7 @@ int UartAccess(char *pcCmd, char *pcParam)
             for (int iCnt = 0; ; iCnt++) {
                 i32UartStatus = UartRead(psUart, pui8UartData, 1);
                 if (i32UartStatus != 1) {
-                    if (iCnt == 0) UARTprintf("%s: No data available.", UI_STR_ERROR);
+                    if (iCnt == 0) UARTprintf("%s: No data available.", UI_STR_WARNING);
                     break;
                 } else {
                     if (iCnt == 0) UARTprintf("%s. Data:", UI_STR_OK);
@@ -921,7 +1036,7 @@ int UartAccess(char *pcCmd, char *pcParam)
             i32UartStatus = UartRead(psUart, pui8UartData, ui8UartDataNum);
             // Check the UART status.
             if (i32UartStatus != ui8UartDataNum) {
-                UARTprintf("%s: Could only read %d data bytes from the UART %d instead of %d.", UI_STR_ERROR, i32UartStatus, ui8UartPort, ui8UartDataNum);
+                UARTprintf("%s: Could only read %d data bytes from the UART %d instead of %d.", UI_STR_WARNING, i32UartStatus, ui8UartPort, ui8UartDataNum);
             } else {
                 UARTprintf("%s.", UI_STR_OK);
             }
@@ -933,5 +1048,111 @@ int UartAccess(char *pcCmd, char *pcParam)
     }
 
     return 0;
+}
+
+
+
+// Check if the UART port number is valid. If so, set the psUart pointer to the
+// selected UART port struct.
+int UartPortCheck(uint8_t ui8UartPort, tUART **psUart)
+{
+    switch (ui8UartPort) {
+        case 6: *psUart = &g_sUart6; break;
+        default:
+            *psUart = NULL;
+            UARTprintf("%s: Only UART port number 6 is supported!", UI_STR_ERROR);
+            return -1;
+    }
+    return 0;
+}
+
+
+
+// Setup the UART.
+int UartSetup(char *pcCmd, char *pcParam)
+{
+    int i;
+    uint8_t ui8UartPort = 0;
+    uint32_t ui32UartBaud;
+    uint32_t ui32UartParity;
+    bool bUartLoopback;
+    tUART *psUart;
+    // Parse parameters.
+    for (i = 0; i <= 3; i++) {
+        if (i != 0) pcParam = strtok(NULL, UI_STR_DELIMITER);
+        if (i == 0) {
+            if (pcParam == NULL) {
+                UARTprintf("%s: UART port number required after command `%s'.\n", UI_STR_ERROR, pcCmd);
+                UartSetupHelp();
+                return -1;
+            } else {
+                ui8UartPort = (uint8_t) strtoul(pcParam, (char **) NULL, 0) & 0xff;
+            }
+        } else if (i == 1) {
+            if (pcParam == NULL) {
+                UARTprintf("%s: UART baud rate required after command `%s'.\n", UI_STR_ERROR, pcCmd);
+                UartSetupHelp();
+                return -1;
+            } else {
+                ui32UartBaud = (uint32_t) strtoul(pcParam, (char **) NULL, 0);
+                if ((ui32UartBaud < UART_BAUD_MIN) || (ui32UartBaud > UART_BAUD_MAX)) {
+                    UARTprintf("%s: UART baud rate %d outside of valid range %d..%d.", UI_STR_ERROR, ui32UartBaud, UART_BAUD_MIN, UART_BAUD_MAX);
+                    return -1;
+                }
+            }
+        } else if (i == 2) {
+            if (pcParam == NULL) {
+                bUartLoopback = false;
+            } else {
+                bUartLoopback = (bool) strtoul(pcParam, (char **) NULL, 0) & 0x01;
+            }
+        } else if (i == 3) {
+            if (pcParam == NULL) {
+                ui32UartParity = UART_CONFIG_PAR_NONE;
+            } else {
+                ui32UartParity = strtoul(pcParam, (char **) NULL, 0) & 0x07;
+                switch (ui32UartParity) {
+                    case 0: ui32UartParity = UART_CONFIG_PAR_NONE; break;
+                    case 1: ui32UartParity = UART_CONFIG_PAR_EVEN; break;
+                    case 2: ui32UartParity = UART_CONFIG_PAR_ODD; break;
+                    case 3: ui32UartParity = UART_CONFIG_PAR_ONE; break;
+                    case 4: ui32UartParity = UART_CONFIG_PAR_ZERO; break;
+                    default:
+                        UARTprintf("%s: Invalid UART parity setting %d.", UI_STR_ERROR, ui32UartParity);
+                        return -1;
+                }
+            }
+        }
+    }
+    if (i < 1) return -1;
+    // Check if the UART port number is valid. If so, set the psUart pointer to the selected UART port struct.
+    if (UartPortCheck(ui8UartPort, &psUart)) return -1;
+    // Setup the UART.
+    psUart->ui32Baud = ui32UartBaud;
+    psUart->bLoopback = bUartLoopback;
+    UartInit(psUart);
+    UARTParityModeSet(psUart->ui32BaseUart, ui32UartParity);
+    UARTprintf("%s.", UI_STR_OK);
+
+    return 0;
+}
+
+
+
+// Show help on UART setup command.
+void UartSetupHelp(void)
+{
+    UARTprintf("UART setup command:\n");
+    UARTprintf("  uart-s  PORT BAUD [LOOP] [PARITY]   Setup the UART.\n");
+    UARTprintf("UART baud rate: %d..%d\n", UART_BAUD_MIN, UART_BAUD_MAX);
+    UARTprintf("UART loopback options:\n");
+    UARTprintf("  0: No loopback.\n");
+    UARTprintf("  1: Enable internal loopback mode.\n");
+    UARTprintf("UART partiy options:\n");
+    UARTprintf("  0: None.\n");
+    UARTprintf("  1: Even.\n");
+    UARTprintf("  2: Odd.\n");
+    UARTprintf("  3: One.\n");
+    UARTprintf("  4: Zero.");
 }
 

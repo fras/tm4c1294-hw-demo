@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 09 Apr 2020
-// Rev.: 11 Apr 2020
+// Rev.: 16 Apr 2020
 //
 // IO peripheral definitions of the hardware demo for the TI Tiva TM4C1294
 // Connected LaunchPad Evaluation Kit.
@@ -173,7 +173,7 @@ tSSI g_sSsi2 = {
     SSI_MODE_MASTER,        // ui32Mode
     15000000,               // ui32BitRate
     8,                      // ui32DataWidth
-    100                     // ui32Timeout
+    500                     // ui32Timeout
 };
 
 // SSI 3 for BoosterPack 2.
@@ -195,7 +195,7 @@ tSSI g_sSsi3 = {
     SSI_MODE_MASTER,        // ui32Mode
     15000000,               // ui32BitRate
     8,                      // ui32DataWidth
-    100                     // ui32Timeout
+    500                     // ui32Timeout
 };
 
 

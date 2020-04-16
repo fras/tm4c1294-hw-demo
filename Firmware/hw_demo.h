@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 07 Feb 2020
-// Rev.: 15 Apr 2020
+// Rev.: 16 Apr 2020
 //
 // Header file of the hardware demo for the TI Tiva TM4C1294 Connected
 // LaunchPad Evaluation Kit.
@@ -19,8 +19,8 @@
 // Firmware parameters.
 // ******************************************************************
 #define FW_NAME                     "hw_demo"
-#define FW_VERSION                  "0.1.8"
-#define FW_RELEASEDATE              "15 Apr 2020"
+#define FW_VERSION                  "0.2.0"
+#define FW_RELEASEDATE              "16 Apr 2020"
 
 
 
@@ -29,6 +29,7 @@
 // ******************************************************************
 #define SYSTEM_CLOCK_SETTINGS       (SYSCTL_XTAL_25MHZ | SYSCTL_OSC_MAIN | SYSCTL_USE_PLL | SYSCTL_CFG_VCO_480)
 #define SYSTEM_CLOCK_FREQ           120000000
+
 
 
 // ******************************************************************
@@ -53,6 +54,16 @@
 // I2C parameters.
 #define EDUMKII_I2C_TMP006_SLV_ADR  0x40
 #define EDUMKII_I2C_OPT3001_SLV_ADR 0x44
+
+// SSI parameters.
+#define SSI_FREQ_MIN                2000
+#define SSI_FREQ_MAX                50000000
+#define SSI_DATAWIDTH_MIN           4
+#define SSI_DATAWIDTH_MAX           16
+
+// UART parameters.
+#define UART_BAUD_MIN               150
+#define UART_BAUD_MAX               15000000
 
 // LCD settings.
 #define LCD_COLOR_BLACK             0x000000
