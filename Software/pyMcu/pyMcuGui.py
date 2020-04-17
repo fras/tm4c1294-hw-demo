@@ -23,6 +23,7 @@ import time
 # GUI: tkinter
 from tkinter import *
 from tkinter import messagebox
+from tkinter.scrolledtext import ScrolledText
 
 # Hardware classes.
 import Adc
@@ -67,15 +68,20 @@ class PyMcuGui(Frame):
         self.master.title(self.titleMain)
         self.master.resizable(True, True)
         self.grid(padx=5, pady=5)
+        # Main frames.
+        self.frame0 = Frame(self, bd=0, padx=5, pady=5)
+        self.frame0.grid(row=0, column=0, sticky=W+E)
+        self.frame1 = Frame(self, bd=0, padx=5, pady=5)
+        self.frame1.grid(row=0, column=1, sticky=N+W+E)
         # ***** Firmware info. *****
-        self.frameFwInfo = Frame(self, bd=2, relief=GROOVE, padx=5, pady=5)
+        self.frameFwInfo = Frame(self.frame0, bd=2, relief=GROOVE, padx=5, pady=5)
         self.frameFwInfo.grid(row=0, column=0, sticky=W+E, pady=2)
         self.labelFwInfo = Label(self.frameFwInfo, text="", anchor=W, justify=LEFT)
         self.labelFwInfo.grid(row=0, column=0, sticky=W+E)
         self.buttonFwInfoUpdate = Button(self.frameFwInfo, text="Update\nFW Info", command=self.mcu_fw_info)
         self.buttonFwInfoUpdate.grid(row=0, column=1, sticky=W+E, padx=10)
         # ***** GPIO buttons. *****
-        self.frameButton = Frame(self, bd=2, relief=GROOVE, padx=5, pady=5)
+        self.frameButton = Frame(self.frame0, bd=2, relief=GROOVE, padx=5, pady=5)
         self.frameButton.grid(row=1, column=0, sticky=W+E, pady=2)
         self.labelButton = Label(self.frameButton, text="Button", anchor=CENTER, justify=CENTER)
         self.labelButton.grid(row=0, column=0, sticky=W+E)
@@ -105,7 +111,7 @@ class PyMcuGui(Frame):
         self.checkbuttonButtonUpdate = Checkbutton(self.frameButton, text="Auto Update", variable=self.varButtonAutoUpdate)
         self.checkbuttonButtonUpdate.grid(row=3, column=4, sticky=W, padx=5)
         # ***** GPIO LEDs. *****
-        self.frameLed = Frame(self, bd=2, relief=GROOVE, padx=5, pady=5)
+        self.frameLed = Frame(self.frame0, bd=2, relief=GROOVE, padx=5, pady=5)
         self.frameLed.grid(row=2, column=0, sticky=W+E, pady=2)
         self.labelGpioLed = Label(self.frameLed, text="GPIO LEDs", anchor=W, width=10)
         self.labelGpioLed.grid(row=0, column=0, sticky=W+E)
@@ -133,7 +139,7 @@ class PyMcuGui(Frame):
         self.buttonRgbLedTest = Button(self.frameLed, text="Test RGB LED", command=self.rgb_led_test)
         self.buttonRgbLedTest.grid(row=1, column=5, sticky=W+E, padx=0)
         # ***** Analog (ADC) values. *****
-        self.frameAnalog = Frame(self, bd=2, relief=GROOVE, padx=5, pady=5)
+        self.frameAnalog = Frame(self.frame0, bd=2, relief=GROOVE, padx=5, pady=5)
         self.frameAnalog.grid(row=3, column=0, sticky=W+E, pady=2)
         self.labelAnalogX = Label(self.frameAnalog, text="X")
         self.labelAnalogX.grid(row=0, column=1, sticky=W+E)
@@ -161,7 +167,7 @@ class PyMcuGui(Frame):
         self.checkbuttonAnalogUpdate = Checkbutton(self.frameAnalog, text="Auto Update", variable=self.varAnalogAutoUpdate)
         self.checkbuttonAnalogUpdate.grid(row=2, column=4, sticky=W, padx=5)
         # ***** Sensors. *****
-        self.frameSensor = Frame(self, bd=2, relief=GROOVE, padx=5, pady=5)
+        self.frameSensor = Frame(self.frame0, bd=2, relief=GROOVE, padx=5, pady=5)
         self.frameSensor.grid(row=4, column=0, sticky=W+E, pady=2)
         self.labelSensorManufacturerId = Label(self.frameSensor, text="Manuf. ID")
         self.labelSensorManufacturerId.grid(row=0, column=1, sticky=W+E)
@@ -190,31 +196,44 @@ class PyMcuGui(Frame):
         self.varSensorAutoUpdate = IntVar()
         self.checkbuttonSensorUpdate = Checkbutton(self.frameSensor, text="Auto Update", variable=self.varSensorAutoUpdate)
         self.checkbuttonSensorUpdate.grid(row=2, column=4, sticky=W, padx=5)
+        # ***** Execute MCU commands. ******
+        self.frameMcuCmd = Frame(self.frame1, bd=2, relief=GROOVE, padx=5, pady=5)
+        self.frameMcuCmd.grid(row=0, column=0, sticky=W+E, pady=2)
+        self.labelMcuCmd = Label(self.frameMcuCmd, text="MCU command:", anchor=W)
+        self.labelMcuCmd.grid(row=0, column=0, sticky=W+E)
+        self.entryMcuCmd = Entry(self.frameMcuCmd, width=50, justify=LEFT)
+        self.entryMcuCmd.grid(row=0, column=1, sticky=W+E)
+        self.entryMcuCmd.insert(0, "help")
+        self.entryMcuCmd.bind('<Return>', self.mcu_exec_cmd_enter)
+        self.textMcuCmdResponse = ScrolledText(self.frameMcuCmd, width=81, height=4)
+        self.textMcuCmdResponse.grid(row=1, column=0, columnspan=3, sticky=W+E, pady=(5, 0))
+        self.buttonMcuCmdExec= Button(self.frameMcuCmd, text="Execute", command=self.mcu_exec_cmd)
+        self.buttonMcuCmdExec.grid(row=0, column=2, sticky=W+E, padx=(10, 0))
         # ***** I2C. ******
-        self.frameI2C = Frame(self, bd=2, relief=GROOVE, padx=5, pady=5)
-        self.frameI2C.grid(row=5, column=0, sticky=W+E, pady=2)
-        self.labelI2CBus = Label(self.frameI2C, text="I2C Bus", anchor=CENTER, padx=5)
-        self.labelI2CBus.grid(row=0, column=0, sticky=W+E)
+        self.frameI2C = Frame(self.frame1, bd=2, relief=GROOVE, padx=5, pady=5)
+        self.frameI2C.grid(row=1, column=0, sticky=W+E, pady=2)
+        self.labelI2CPort = Label(self.frameI2C, text="I2C Bus", anchor=CENTER, padx=5)
+        self.labelI2CPort.grid(row=0, column=0, sticky=W+E)
         self.labelI2CSlaveAdr = Label(self.frameI2C, text="Slave Adr.", anchor=CENTER, padx=5)
         self.labelI2CSlaveAdr.grid(row=0, column=1, sticky=W+E)
         self.labelI2CDataWr = Label(self.frameI2C, text="Data Write", anchor=CENTER, padx=5)
         self.labelI2CDataWr.grid(row=0, column=2, sticky=W+E)
         self.labelI2CDataRd = Label(self.frameI2C, text="Data Read", anchor=CENTER, padx=5)
         self.labelI2CDataRd.grid(row=0, column=3, sticky=W+E)
-        self.varI2CBus = IntVar()
-        self.optionMenuI2CBus = OptionMenu(self.frameI2C, self.varI2CBus, 0, 2)
-        self.optionMenuI2CBus.grid(row=1, column=0, sticky=W+E)
-        self.varI2CBus.set(2)
+        self.varI2CPort = IntVar()
+        self.optionMenuI2CPort = OptionMenu(self.frameI2C, self.varI2CPort, 0, 2)
+        self.optionMenuI2CPort.grid(row=1, column=0, sticky=W+E)
+        self.varI2CPort.set(2)
         self.entryI2CSlaveAdr = Entry(self.frameI2C, width=5, justify=CENTER)
         self.entryI2CSlaveAdr.grid(row=1, column=1, sticky=W+E)
         self.entryI2CSlaveAdr.insert(0, "0x40")
-        self.entryI2CDataWr = Entry(self.frameI2C, width=18, justify=LEFT)
+        self.entryI2CDataWr = Entry(self.frameI2C, width=20, justify=LEFT)
         self.entryI2CDataWr.grid(row=1, column=2, sticky=W+E)
         self.entryI2CDataWr.insert(0, "0x00")
-        self.entryI2CDataRd = Entry(self.frameI2C, width=18, justify=LEFT, state="readonly")
+        self.entryI2CDataRd = Entry(self.frameI2C, width=20, justify=LEFT, state="readonly")
         self.entryI2CDataRd.grid(row=1, column=3, sticky=W+E)
         self.buttonI2CAccess = Button(self.frameI2C, text="Execute", command=self.i2c_access)
-        self.buttonI2CAccess.grid(row=1, column=4, sticky=W+E, padx=10)
+        self.buttonI2CAccess.grid(row=1, column=4, sticky=W+E, padx=(10, 5))
         self.frameI2CDetail = Frame(self.frameI2C, bd=0, padx=5, pady=5)
         self.frameI2CDetail.grid(row=2, column=0, columnspan=5, sticky=W+E)
         self.varI2CRead = IntVar()
@@ -237,13 +256,73 @@ class PyMcuGui(Frame):
         self.checkbuttonI2CQuickCommand.grid(row=0, column=5, sticky=W+E, padx=5)
         self.frameI2CExtra = Frame(self.frameI2C, bd=0, padx=5, pady=5)
         self.frameI2CExtra.grid(row=3, column=0, columnspan=5, sticky=W+E)
-        self.entryI2CDetect = Entry(self.frameI2CExtra, width=60, justify=LEFT, state="readonly")
+        self.entryI2CDetect = Entry(self.frameI2CExtra, width=64, justify=LEFT, state="readonly")
         self.entryI2CDetect.grid(row=0, column=0, sticky=W+E)
         self.buttonI2CDetect = Button(self.frameI2CExtra, text="Detect Devices", command=self.i2c_detect)
         self.buttonI2CDetect.grid(row=0, column=1, sticky=W+E, padx=10)
+        # ***** UART. ******
+        self.frameUart = Frame(self.frame1, bd=2, relief=GROOVE, padx=5, pady=5)
+        self.frameUart.grid(row=2, column=0, sticky=W+E, pady=2)
+        self.frameUartSetup = Frame(self.frameUart, bd=0, padx=5, pady=5)
+        self.frameUartSetup.grid(row=0, column=0, sticky=W+E)
+        self.labelUartPort = Label(self.frameUartSetup, text="UART", anchor=CENTER, padx=5)
+        self.labelUartPort.grid(row=0, column=0, sticky=W+E)
+        self.labelUartBaud = Label(self.frameUartSetup, text="Baud Rate", anchor=CENTER, padx=5)
+        self.labelUartBaud.grid(row=0, column=1, sticky=W+E)
+        self.labelUartParity = Label(self.frameUartSetup, text="Parity", anchor=CENTER, padx=5)
+        self.labelUartParity.grid(row=0, column=2, sticky=W+E)
+        self.labelUartLoopback = Label(self.frameUartSetup, text="Loopback", anchor=CENTER, padx=5)
+        self.labelUartLoopback.grid(row=0, column=3, sticky=W+E)
+        self.varUartPort = IntVar()
+        self.optionMenuUartPort = OptionMenu(self.frameUartSetup, self.varUartPort, 6)
+        self.optionMenuUartPort.grid(row=1, column=0, sticky=W+E)
+        self.varUartPort.set(6)
+        self.entryUartBaud = Entry(self.frameUartSetup, width=10)
+        self.entryUartBaud.grid(row=1, column=1)
+        self.entryUartBaud.insert(0, "11520")
+        self.optionsUartPartiy = McuUart.McuUart.hwParity
+        self.varUartParity = StringVar()
+        self.optionMenuUartParity = OptionMenu(self.frameUartSetup, self.varUartParity, *self.optionsUartPartiy)
+        self.optionMenuUartParity.grid(row=1, column=2, sticky=W+E)
+        self.varUartParity.set(self.optionsUartPartiy[0])
+        self.varUartLoopback = StringVar()
+        self.optionsUartLoopback = ["off", "on"]
+        self.optionMenuUartLoopback = OptionMenu(self.frameUartSetup, self.varUartLoopback, *self.optionsUartLoopback)
+        self.optionMenuUartLoopback.grid(row=1, column=3, sticky=W+E)
+        self.varUartLoopback.set(self.optionsUartLoopback[0])
+        self.buttonUartSetup = Button(self.frameUartSetup, text="Set up UART", command=self.uart_setup)
+        self.buttonUartSetup.grid(row=1, column=4, sticky=W+E, padx=10)
+        self.frameUartData = Frame(self.frameUart, bd=0, padx=5, pady=5)
+        self.frameUartData.grid(row=1, column=0, sticky=W+E)
+        self.labelUartDataWrString = Label(self.frameUartData, text="String", anchor=CENTER, padx=5)
+        self.labelUartDataWrString.grid(row=0, column=0, sticky=W+E)
+        self.labelUartDataWrBytes = Label(self.frameUartData, text="Bytes", anchor=CENTER, padx=5)
+        self.labelUartDataWrBytes.grid(row=1, column=0, sticky=W+E)
+        self.labelUartDataRdString = Label(self.frameUartData, text="String", anchor=CENTER, padx=5)
+        self.labelUartDataRdString.grid(row=2, column=0, sticky=W+E)
+        self.labelUartDataRdBytes = Label(self.frameUartData, text="Bytes", anchor=CENTER, padx=5)
+        self.labelUartDataRdBytes.grid(row=3, column=0, sticky=W+E)
+        self.entryUartDataWrString = Entry(self.frameUartData, width=60, justify=LEFT)
+        self.entryUartDataWrString.grid(row=0, column=1, sticky=W+E)
+        self.entryUartDataWrString.insert(0, "Hello world!")
+        self.entryUartDataWrBytes = Entry(self.frameUartData, width=60, justify=LEFT)
+        self.entryUartDataWrBytes.grid(row=1, column=1, sticky=W+E)
+        self.entryUartDataWrBytes.insert(0, "0x01 0x02 0x04 0x08 0x10 0x20 0x40 0x80")
+        self.entryUartDataRdString = Entry(self.frameUartData, width=60, justify=LEFT, state="readonly")
+        self.entryUartDataRdString.grid(row=2, column=1, sticky=W)
+        self.entryUartDataRdBytes = Entry(self.frameUartData, width=60, justify=LEFT, state="readonly")
+        self.entryUartDataRdBytes.grid(row=3, column=1, sticky=W)
+        self.frameUartDataCmd = Frame(self.frameUartData, bd=0, padx=0, pady=0)
+        self.frameUartDataCmd.grid(row=0, rowspan=4, column=2, sticky=W+E)
+        self.buttonUartDataWrString = Button(self.frameUartDataCmd, text="Send String", command=self.uart_send_string)
+        self.buttonUartDataWrString.grid(row=0, column=0, sticky=W+E, padx=(10, 0))
+        self.buttonUartDataWrBytes = Button(self.frameUartDataCmd, text="Send Bytes", command=self.uart_send_bytes)
+        self.buttonUartDataWrBytes.grid(row=1, column=0, sticky=W+E, padx=(10, 0))
+        self.buttonUartDataRd = Button(self.frameUartDataCmd, text="Read Data", command=self.uart_read_data)
+        self.buttonUartDataRd.grid(row=2, column=0, sticky=W+E, padx=(10, 0))
         # ***** Quit button. *****
         self.buttonQuit = Button(self, text="Quit", command=self.quit)
-        self.buttonQuit.grid(row=6, column=0, columnspan=5, sticky=W+E, pady=2)
+        self.buttonQuit.grid(row=1, column=0, columnspan=2, sticky=W+E, pady=2)
 
     # Initialize the hardware.
     def init_hw(self, dev):
@@ -381,16 +460,35 @@ class PyMcuGui(Frame):
         except Exception as e:
             messagebox.showerror(self.titleError, self.prefixError + "\nError updating the sensor values:\n" + str(e))
 
+    # Execute an MCU command.
+    def mcu_exec_cmd(self):
+        try:
+            # Temporarily read more lines for commands with longer output.
+            mcuReadLineMaxBackup = self.mcuSer.mcuReadLineMax
+            self.mcuSer.mcuReadLineMax = 10000
+            self.mcuSer.send(self.entryMcuCmd.get())
+            self.mcuSer.mcuReadLineMax = mcuReadLineMaxBackup
+            self.textMcuCmdResponse['state'] = NORMAL
+            self.textMcuCmdResponse.delete(1.0, END)
+            self.textMcuCmdResponse.insert(END, self.mcuSer.get_full())
+            self.textMcuCmdResponse['state'] = DISABLED
+        except Exception as e:
+            messagebox.showerror(self.titleError, self.prefixError + "\nError executing MCU command:\n" + str(e))
+
+    # For binding of the enter (return) button to self.entryMcuCmd.
+    def mcu_exec_cmd_enter(self, event):
+        self.mcu_exec_cmd()
+
     # Perform an I2C access.
     def i2c_access(self):
         try:
             # Get I2C options.
-            if self.varI2CBus.get() == 0:
+            if self.varI2CPort.get() == 0:
                 mcuI2C = self.mcuI2C0
-            elif self.varI2CBus.get() == 2:
+            elif self.varI2CPort.get() == 2:
                 mcuI2C = self.mcuI2C2
             else:
-                messagebox.showerror(self.titleError, "{0:s}:\nI2C bus {1:d} not supported!".format(self.prefixError, self.varI2CBus.get()))
+                messagebox.showerror(self.titleError, "{0:s}:\nI2C bus {1:d} not supported!".format(self.prefixError, self.varI2CPort.get()))
                 return -1
             i2cSlaveAdr = int(self.entryI2CSlaveAdr.get(), 0)
             i2cDataWr = [int(i, 0) for i in filter(None, self.entryI2CDataWr.get().split(" "))]
@@ -420,21 +518,61 @@ class PyMcuGui(Frame):
     # Detect devices on the I2C bus.
     def i2c_detect(self):
         try:
-            if (self.varI2CBus.get() != 0) and (self.varI2CBus.get() != 2):
-                messagebox.showerror(self.titleError, "{0:s}:\nI2C bus {1:d} not supported!".format(self.prefixError, self.varI2CBus.get()))
+            if (self.varI2CPort.get() != 0) and (self.varI2CPort.get() != 2):
+                messagebox.showerror(self.titleError, "{0:s}:\nI2C bus {1:d} not supported!".format(self.prefixError, self.varI2CPort.get()))
                 return -1
-            cmd = "i2c-det {0:d}".format(self.varI2CBus.get())
+            cmd = "i2c-det {0:d}".format(self.varI2CPort.get())
             # Temporarily increase the timeout of the serial device.
             serTimeoutBackup = self.mcuSer.ser.timeout
             self.mcuSer.ser.timeout = 0.01
             self.mcuSer.send(cmd)
             self.mcuSer.ser.timeout = serTimeoutBackup
             if self.mcuSer.eval():
-                messagebox.showerror(self.titleError, "{0:s}:\nDetection of I2C devices on bus {1:d} failed!".format(self.prefixError, self.varI2CBus.get()))
+                messagebox.showerror(self.titleError, "{0:s}:\nDetection of I2C devices on bus {1:d} failed!".format(self.prefixError, self.varI2CPort.get()))
                 return -1
             self.entry_readonly_set_text(self.entryI2CDetect, self.mcuSer.get().lstrip(' \t').strip(' \n\r'))
         except Exception as e:
             messagebox.showerror(self.titleError, self.prefixError + "\nError detecting I2C devices:\n" + str(e))
+
+    # Set up the UART port.
+    def uart_setup(self):
+        try:
+            self.mcuUart6.setup(
+                int(self.entryUartBaud.get().strip(), 0),
+                self.optionsUartPartiy.index(self.varUartParity.get()),
+                self.optionsUartLoopback.index(self.varUartLoopback.get()))
+        except Exception as e:
+            messagebox.showerror(self.titleError, self.prefixError +
+                "\nError setting up the UART port {0:d}:\n".format(self.varUartPort.get()) + str(e))
+
+    # Send a string to the UART.
+    def uart_send_string(self):
+        try:
+            self.mcuUart6.write_str(self.entryUartDataWrString.get())
+        except Exception as e:
+            messagebox.showerror(self.titleError, self.prefixError +
+                "\nError sending string to the UART port {0:d}:\n".format(self.varUartPort.get()) + str(e))
+
+    # Send bytes to the UART.
+    def uart_send_bytes(self):
+        try:
+            uartDataWr = [int(i, 0) for i in filter(None, self.entryUartDataWrBytes.get().split(" "))]
+            self.mcuUart6.write(uartDataWr)
+        except Exception as e:
+            messagebox.showerror(self.titleError, self.prefixError +
+                "\nError sending bytes to the UART port {0:d}:\n".format(self.varUartPort.get()) + str(e))
+
+    # Read data from the UART.
+    def uart_read_data(self):
+        try:
+            uartDataRd = self.mcuUart6.read_all()
+            uartDataRdString = ''.join([chr(x) for x in uartDataRd])
+            self.entry_readonly_set_text(self.entryUartDataRdString, uartDataRdString)
+            uartDataRdBytes = ''.join(["0x{0:02x} ".format(x) for x in uartDataRd]).strip()
+            self.entry_readonly_set_text(self.entryUartDataRdBytes, uartDataRdBytes)
+        except Exception as e:
+            messagebox.showerror(self.titleError, self.prefixError +
+                "\nError reading data from the UART port {0:d}:\n".format(self.varUartPort.get()) + str(e))
 
     # Quit.
     def quit(self):
