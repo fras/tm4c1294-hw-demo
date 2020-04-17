@@ -23,16 +23,18 @@ class GpioButton:
     # Debug configuration.
     debugLevel = 0                 # Debug verbosity.
 
+    # Hardware parameters.
+    buttonNum = 4
+    strButtonStatus = "status:"
+    strButtonPressedCnt = "pressed count:"
+    strButtonReleasedCnt = "released count:"
+
 
 
     # Initialize the GPIO buttons.
     def __init__(self, mcuSer):
         self.mcuSer = mcuSer
-        self.buttonNum = 4
         self.errorCount = 0
-        self.strButtonStatus = "status:"
-        self.strButtonPressedCnt = "pressed count:"
-        self.strButtonReleasedCnt = "released count:"
 
 
 

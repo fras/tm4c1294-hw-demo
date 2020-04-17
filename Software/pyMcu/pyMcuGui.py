@@ -4,7 +4,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 30 Mar 2020
-# Rev.: 15 Apr 2020
+# Rev.: 17 Apr 2020
 #
 # Python GUI for accessing the TM4C1294NCPDT MCU on the TM4C1294 Connected
 # LaunchPad Evaluation Kit over a serial port (UART).
@@ -26,6 +26,7 @@ from tkinter import messagebox
 
 # Hardware classes.
 import Adc
+import GpioButton
 import GpioLed
 import I2CTmp006
 import I2COpt3001
@@ -41,8 +42,8 @@ class PyMcuGui(Frame):
 
     # Software version.
     swName      = "pyMCU"
-    swVersion   = "0.1.0"
-    swDate      = "15 Apr 2020"
+    swVersion   = "0.1.1"
+    swDate      = "17 Apr 2020"
 
     # Window titles.
     titleMain   = swName + " GUI - v" + swVersion + " - " + swDate
@@ -55,6 +56,8 @@ class PyMcuGui(Frame):
     # Debug configuration.
     debugLevel = 0                 # Debug verbosity.
 
+
+
     def __init__(self, master=None):
         Frame.__init__(self, master)
         self.master = master
@@ -64,16 +67,46 @@ class PyMcuGui(Frame):
         self.master.title(self.titleMain)
         self.master.resizable(True, True)
         self.grid(padx=5, pady=5)
-        # ---
+        # ***** Firmware info. *****
         self.frameFwInfo = Frame(self, bd=2, relief=GROOVE, padx=5, pady=5)
         self.frameFwInfo.grid(row=0, column=0, sticky=W+E, pady=2)
         self.labelFwInfo = Label(self.frameFwInfo, text="", anchor=W, justify=LEFT)
         self.labelFwInfo.grid(row=0, column=0, sticky=W+E)
         self.buttonFwInfoUpdate = Button(self.frameFwInfo, text="Update\nFW Info", command=self.mcu_fw_info)
         self.buttonFwInfoUpdate.grid(row=0, column=1, sticky=W+E, padx=10)
-        # ---
+        # ***** GPIO buttons. *****
+        self.frameButton = Frame(self, bd=2, relief=GROOVE, padx=5, pady=5)
+        self.frameButton.grid(row=1, column=0, sticky=W+E, pady=2)
+        self.labelButton = Label(self.frameButton, text="Button", anchor=CENTER, justify=CENTER)
+        self.labelButton.grid(row=0, column=0, sticky=W+E)
+        self.labelButtonStatus = Label(self.frameButton, text="Status", anchor=CENTER, justify=CENTER)
+        self.labelButtonStatus.grid(row=0, column=1, sticky=W+E)
+        self.labelButtonPressedCnt = Label(self.frameButton, text="Pressed Count", anchor=CENTER, justify=CENTER)
+        self.labelButtonPressedCnt.grid(row=0, column=2, sticky=W+E)
+        self.labelButtonReleasedCnt = Label(self.frameButton, text="Released Count", anchor=CENTER, justify=CENTER)
+        self.labelButtonReleasedCnt.grid(row=0, column=3, sticky=W+E)
+        self.labelButtonName = []
+        buttonNames = ["USR_SW1", "USR_SW2", "EDU_S1", "EDU_S2"]
+        self.entryButtonStatus = []
+        self.entryButtonPressedCnt = []
+        self.entryButtonReleasedCnt = []
+        for i in range (0, GpioButton.GpioButton.buttonNum):
+            self.labelButtonName.append(Label(self.frameButton, text=buttonNames[i] + " ({0:d})".format(i), anchor=W, justify=LEFT, width = 12))
+            self.labelButtonName[i].grid(row=i+1, column=0, sticky=W+E)
+            self.entryButtonStatus.append(Entry(self.frameButton, width=10, justify=RIGHT, state="readonly"))
+            self.entryButtonStatus[i].grid(row=i+1, column=1, sticky=W+E)
+            self.entryButtonPressedCnt.append(Entry(self.frameButton, width=14, justify=RIGHT, state="readonly"))
+            self.entryButtonPressedCnt[i].grid(row=i+1, column=2, sticky=W+E)
+            self.entryButtonReleasedCnt.append(Entry(self.frameButton, width=14, justify=RIGHT, state="readonly"))
+            self.entryButtonReleasedCnt[i].grid(row=i+1, column=3, sticky=W+E)
+        self.buttonButtonGet = Button(self.frameButton, text="Get Button Status", command=self.gpio_button_get)
+        self.buttonButtonGet.grid(row=1, rowspan=2, column=4, sticky=W+E, padx=10)
+        self.varButtonAutoUpdate = IntVar()
+        self.checkbuttonButtonUpdate = Checkbutton(self.frameButton, text="Auto Update", variable=self.varButtonAutoUpdate)
+        self.checkbuttonButtonUpdate.grid(row=3, column=4, sticky=W, padx=5)
+        # ***** GPIO LEDs. *****
         self.frameLed = Frame(self, bd=2, relief=GROOVE, padx=5, pady=5)
-        self.frameLed.grid(row=1, column=0, sticky=W+E, pady=2)
+        self.frameLed.grid(row=2, column=0, sticky=W+E, pady=2)
         self.labelGpioLed = Label(self.frameLed, text="GPIO LEDs", anchor=W, width=10)
         self.labelGpioLed.grid(row=0, column=0, sticky=W+E)
         self.entryGpioLed = Entry(self.frameLed, width=5)
@@ -83,7 +116,7 @@ class PyMcuGui(Frame):
         self.buttonGpioLedSet.grid(row=0, column=4, sticky=W+E, padx=10)
         self.buttonGpioLedTest = Button(self.frameLed, text="Test LEDs", command=self.gpio_led_test)
         self.buttonGpioLedTest.grid(row=0, column=5, sticky=W+E, padx=0)
-        # ---
+        # ***** RGB LED using PWM. *****
         self.labelRgbLed = Label(self.frameLed, text="RGB LED", anchor=W)
         self.labelRgbLed.grid(row=1, column=0, sticky=W+E)
         self.entryRgbLedR = Entry(self.frameLed, width=5)
@@ -99,9 +132,9 @@ class PyMcuGui(Frame):
         self.buttonRgbLedSet.grid(row=1, column=4, sticky=W+E, padx=10)
         self.buttonRgbLedTest = Button(self.frameLed, text="Test RGB LED", command=self.rgb_led_test)
         self.buttonRgbLedTest.grid(row=1, column=5, sticky=W+E, padx=0)
-        # ---
+        # ***** Analog (ADC) values. *****
         self.frameAnalog = Frame(self, bd=2, relief=GROOVE, padx=5, pady=5)
-        self.frameAnalog.grid(row=2, column=0, sticky=W+E, pady=2)
+        self.frameAnalog.grid(row=3, column=0, sticky=W+E, pady=2)
         self.labelAnalogX = Label(self.frameAnalog, text="X")
         self.labelAnalogX.grid(row=0, column=1, sticky=W+E)
         self.labelAnalogY = Label(self.frameAnalog, text="Y")
@@ -126,10 +159,10 @@ class PyMcuGui(Frame):
         self.buttonAnalogUpdate.grid(row=1, column=4, sticky=W+E, padx=10)
         self.varAnalogAutoUpdate = IntVar()
         self.checkbuttonAnalogUpdate = Checkbutton(self.frameAnalog, text="Auto Update", variable=self.varAnalogAutoUpdate)
-        self.checkbuttonAnalogUpdate.grid(row=2, column=4, sticky=W+E, padx=5)
-        # ---
+        self.checkbuttonAnalogUpdate.grid(row=2, column=4, sticky=W, padx=5)
+        # ***** Sensors. *****
         self.frameSensor = Frame(self, bd=2, relief=GROOVE, padx=5, pady=5)
-        self.frameSensor.grid(row=3, column=0, sticky=W+E, pady=2)
+        self.frameSensor.grid(row=4, column=0, sticky=W+E, pady=2)
         self.labelSensorManufacturerId = Label(self.frameSensor, text="Manuf. ID")
         self.labelSensorManufacturerId.grid(row=0, column=1, sticky=W+E)
         self.labelSensorDeviceId = Label(self.frameSensor, text="Device ID")
@@ -156,10 +189,10 @@ class PyMcuGui(Frame):
         self.buttonSensorUpdate.grid(row=1, column=4, sticky=W+E, padx=10)
         self.varSensorAutoUpdate = IntVar()
         self.checkbuttonSensorUpdate = Checkbutton(self.frameSensor, text="Auto Update", variable=self.varSensorAutoUpdate)
-        self.checkbuttonSensorUpdate.grid(row=2, column=4, sticky=W+E, padx=5)
-        # ---
+        self.checkbuttonSensorUpdate.grid(row=2, column=4, sticky=W, padx=5)
+        # ***** I2C. ******
         self.frameI2C = Frame(self, bd=2, relief=GROOVE, padx=5, pady=5)
-        self.frameI2C.grid(row=4, column=0, sticky=W+E, pady=2)
+        self.frameI2C.grid(row=5, column=0, sticky=W+E, pady=2)
         self.labelI2CBus = Label(self.frameI2C, text="I2C Bus", anchor=CENTER, padx=5)
         self.labelI2CBus.grid(row=0, column=0, sticky=W+E)
         self.labelI2CSlaveAdr = Label(self.frameI2C, text="Slave Adr.", anchor=CENTER, padx=5)
@@ -208,9 +241,9 @@ class PyMcuGui(Frame):
         self.entryI2CDetect.grid(row=0, column=0, sticky=W+E)
         self.buttonI2CDetect = Button(self.frameI2CExtra, text="Detect Devices", command=self.i2c_detect)
         self.buttonI2CDetect.grid(row=0, column=1, sticky=W+E, padx=10)
-        # ---
+        # ***** Quit button. *****
         self.buttonQuit = Button(self, text="Quit", command=self.quit)
-        self.buttonQuit.grid(row=5, column=0, columnspan=5, sticky=W+E, pady=2)
+        self.buttonQuit.grid(row=6, column=0, columnspan=5, sticky=W+E, pady=2)
 
     # Initialize the hardware.
     def init_hw(self, dev):
@@ -228,6 +261,8 @@ class PyMcuGui(Frame):
         self.mcuUart6.debugLevel = 1
         self.adc = Adc.Adc(self.mcuSer)
         self.adc.debugLevel = 1
+        self.gpioButton = GpioButton.GpioButton(self.mcuSer)
+        self.gpioButton.debugLevel = 1
         self.gpioLED = GpioLed.GpioLed(self.mcuSer)
         self.gpioLED.debugLevel = 1
         self.rgbLED = RgbLed.RgbLed(self.mcuSer)
@@ -238,11 +273,34 @@ class PyMcuGui(Frame):
         self.i2cOpt3001.debugLevel = 1
         self.mcu_fw_info()
 
+    # Auxiliary function to set the text of a tkinter Entry element that is read-only.
+    def entry_readonly_set_text(self, entry, text):
+        try:
+            entry['state'] = NORMAL
+            entry.delete(0, END)
+            entry.insert(0, text)
+            entry['state'] = 'readonly'
+        except Exception as e:
+            messagebox.showerror(self.titleError, self.prefixError + "\nError setting the text of a tkinter Entry element:\n" + str(e))
+
     # Read and show the MCU firmware info.
     def mcu_fw_info(self):
         self.mcuSer.clear()
         self.mcuSer.send("info")
         self.labelFwInfo['text'] = "Firmware info:\n" + self.mcuSer.get().replace('\r', '')
+
+    # Get the GPIO button status.
+    def gpio_button_get(self):
+        try:
+            for i in range(0, self.gpioButton.buttonNum):
+                buttonStatus = self.gpioButton.get(i)
+                if len(buttonStatus) != 3:
+                    raise Exception("Unable to get the full status of button {0:d}.".format(i))
+                self.entry_readonly_set_text(self.entryButtonStatus[i], "0x{0:01x}".format(buttonStatus[0]))
+                self.entry_readonly_set_text(self.entryButtonPressedCnt[i], "{0:d}".format(buttonStatus[1]))
+                self.entry_readonly_set_text(self.entryButtonReleasedCnt[i], "{0:d}".format(buttonStatus[2]))
+        except Exception as e:
+            messagebox.showerror(self.titleError, self.prefixError + "\nError getting the GPIO button status:\n" + str(e))
 
     # Set the GPIO LEDs.
     def gpio_led_set(self):
@@ -303,56 +361,23 @@ class PyMcuGui(Frame):
     def analog_update(self):
         try:
             self.adc.read()
-            self.entryJoystickX['state'] = NORMAL
-            self.entryJoystickY['state'] = NORMAL
-            self.entryAccelX['state'] = NORMAL
-            self.entryAccelY['state'] = NORMAL
-            self.entryAccelZ['state'] = NORMAL
-            self.entryJoystickX.delete(0, END)
-            self.entryJoystickY.delete(0, END)
-            self.entryAccelX.delete(0, END)
-            self.entryAccelY.delete(0, END)
-            self.entryAccelZ.delete(0, END)
-            self.entryJoystickX.insert(0, "{0:4d}".format(self.adc.joystickX))
-            self.entryJoystickY.insert(0, "{0:4d}".format(self.adc.joystickY))
-            self.entryAccelX.insert(0, "{0:4d}".format(self.adc.accelX))
-            self.entryAccelY.insert(0, "{0:4d}".format(self.adc.accelY))
-            self.entryAccelZ.insert(0, "{0:4d}".format(self.adc.accelZ))
-            self.entryJoystickX['state'] = "readonly"
-            self.entryJoystickY['state'] = "readonly"
-            self.entryAccelX['state'] = "readonly"
-            self.entryAccelY['state'] = "readonly"
-            self.entryAccelZ['state'] = "readonly"
+            self.entry_readonly_set_text(self.entryJoystickX, "{0:4d}".format(self.adc.joystickX))
+            self.entry_readonly_set_text(self.entryJoystickY, "{0:4d}".format(self.adc.joystickY))
+            self.entry_readonly_set_text(self.entryAccelX, "{0:4d}".format(self.adc.accelX))
+            self.entry_readonly_set_text(self.entryAccelY, "{0:4d}".format(self.adc.accelY))
+            self.entry_readonly_set_text(self.entryAccelZ, "{0:4d}".format(self.adc.accelZ))
         except Exception as e:
             messagebox.showerror(self.titleError, self.prefixError + "\nError updating the analog values:\n" + str(e))
 
     # Update the sensor values.
     def sensor_update(self):
         try:
-            self.entrySensorTmp006ManId['state'] = NORMAL
-            self.entrySensorTmp006DevId['state'] = NORMAL
-            self.entrySensorTmp006Value['state'] = NORMAL
-            self.entrySensorOpt3001ManId['state'] = NORMAL
-            self.entrySensorOpt3001DevId['state'] = NORMAL
-            self.entrySensorOpt3001Value['state'] = NORMAL
-            self.entrySensorTmp006ManId.delete(0, END)
-            self.entrySensorTmp006DevId.delete(0, END)
-            self.entrySensorTmp006Value.delete(0, END)
-            self.entrySensorOpt3001ManId.delete(0, END)
-            self.entrySensorOpt3001DevId.delete(0, END)
-            self.entrySensorOpt3001Value.delete(0, END)
-            self.entrySensorTmp006ManId.insert(0, "0x{0:04x}".format(self.i2cTmp006.read_manufacturer_id()))
-            self.entrySensorTmp006DevId.insert(0, "0x{0:04x}".format(self.i2cTmp006.read_device_id()))
-            self.entrySensorTmp006Value.insert(0, "{0:9.5f} degC".format(self.i2cTmp006.read_temperature()))
-            self.entrySensorOpt3001ManId.insert(0, "0x{0:04x}".format(self.i2cOpt3001.read_manufacturer_id()))
-            self.entrySensorOpt3001DevId.insert(0, "0x{0:04x}".format(self.i2cOpt3001.read_device_id()))
-            self.entrySensorOpt3001Value.insert(0, "{0:9.5f} lux".format(self.i2cOpt3001.read_illuminance()))
-            self.entrySensorTmp006ManId['state'] = "readonly"
-            self.entrySensorTmp006DevId['state'] = "readonly"
-            self.entrySensorTmp006Value['state'] = "readonly"
-            self.entrySensorOpt3001ManId['state'] = "readonly"
-            self.entrySensorOpt3001DevId['state'] = "readonly"
-            self.entrySensorOpt3001Value['state'] = "readonly"
+            self.entry_readonly_set_text(self.entrySensorTmp006ManId, "0x{0:04x}".format(self.i2cTmp006.read_manufacturer_id()))
+            self.entry_readonly_set_text(self.entrySensorTmp006DevId, "0x{0:04x}".format(self.i2cTmp006.read_device_id()))
+            self.entry_readonly_set_text(self.entrySensorTmp006Value, "{0:9.5f} degC".format(self.i2cTmp006.read_temperature()))
+            self.entry_readonly_set_text(self.entrySensorOpt3001ManId, "0x{0:04x}".format(self.i2cOpt3001.read_manufacturer_id()))
+            self.entry_readonly_set_text(self.entrySensorOpt3001DevId, "0x{0:04x}".format(self.i2cOpt3001.read_device_id()))
+            self.entry_readonly_set_text(self.entrySensorOpt3001Value, "{0:9.5f} lux".format(self.i2cOpt3001.read_illuminance()))
         except Exception as e:
             messagebox.showerror(self.titleError, self.prefixError + "\nError updating the sensor values:\n" + str(e))
 
@@ -386,10 +411,7 @@ class PyMcuGui(Frame):
                 for i in range(0, len(i2cDataRd)):
                     if i > 0: i2cDataRdStr += " "
                     i2cDataRdStr += "0x{0:02x}".format(i2cDataRd[i])
-                self.entryI2CDataRd['state'] = NORMAL
-                self.entryI2CDataRd.delete(0, END)
-                self.entryI2CDataRd.insert(0, i2cDataRdStr)
-                self.entryI2CDataRd['state'] = "readonly"
+                self.entry_readonly_set_text(self.entryI2CDataRd, i2cDataRdStr)
             else:
                 mcuI2C.ms_write_adv(i2cSlaveAdr, i2cDataWr, i2cRepeatedStart, i2cStopCondition)
         except Exception as e:
@@ -410,10 +432,7 @@ class PyMcuGui(Frame):
             if self.mcuSer.eval():
                 messagebox.showerror(self.titleError, "{0:s}:\nDetection of I2C devices on bus {1:d} failed!".format(self.prefixError, self.varI2CBus.get()))
                 return -1
-            self.entryI2CDetect['state'] = NORMAL
-            self.entryI2CDetect.delete(0, END)
-            self.entryI2CDetect.insert(0, self.mcuSer.get().lstrip(' \t').strip(' \n\r'))
-            self.entryI2CDetect['state'] = "readonly"
+            self.entry_readonly_set_text(self.entryI2CDetect, self.mcuSer.get().lstrip(' \t').strip(' \n\r'))
         except Exception as e:
             messagebox.showerror(self.titleError, self.prefixError + "\nError detecting I2C devices:\n" + str(e))
 
@@ -432,10 +451,17 @@ def launch_gui(dev):
     while pyMcuGui.winfo_exists():
         root.update_idletasks()
         root.update()
+        if pyMcuGui.varButtonAutoUpdate.get():
+            pyMcuGui.gpio_button_get()
         if pyMcuGui.varAnalogAutoUpdate.get():
             pyMcuGui.analog_update()
         if pyMcuGui.varSensorAutoUpdate.get():
             pyMcuGui.sensor_update()
+        # Lower CPU load when idle.
+        if (not pyMcuGui.varButtonAutoUpdate.get() and
+                not pyMcuGui.varAnalogAutoUpdate.get() and
+                not pyMcuGui.varSensorAutoUpdate.get()):
+            time.sleep(0.01)
 
 
 

@@ -23,12 +23,14 @@ class GpioLed:
     # Debug configuration.
     debugLevel = 0                 # Debug verbosity.
 
+    # Hardware parameters.
+    ledMask = 0x0f
+
 
 
     # Initialize the GPIO LEDs.
     def __init__(self, mcuSer):
         self.mcuSer = mcuSer
-        self.ledMask = 0x0f
         self.errorCount = 0
 
 
