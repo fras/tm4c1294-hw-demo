@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 30 Mar 2020
-# Rev.: 31 Mar 2020
+# Rev.: 17 Apr 2020
 #
 # Python class for setting the LEDs connected to GPIO ports of the
 # TM4C1294NCPDT MCU.
@@ -37,7 +37,7 @@ class GpioLed:
     def set(self, val):
         led = val & self.ledMask
         if self.debugLevel >= 1:
-            print(self.prefixDebug + "Setting the LEDs to 0x{0:02x}: ".format(led))
+            print(self.prefixDebug + "Setting the LEDs to 0x{0:02x}.".format(led))
         cmd = "led 0x{0:02x}".format(led)
         # Debug: Show command.
         if self.debugLevel >= 3:

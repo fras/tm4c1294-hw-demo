@@ -4,7 +4,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 24 Mar 2020
-# Rev.: 16 Apr 2020
+# Rev.: 17 Apr 2020
 #
 # Python script to test hardware features of the TM4C1294NCPDT MCU on the
 # TM4C1294 Connected LaunchPad Evaluation Kit over a serial port (UART).
@@ -26,6 +26,7 @@ import time
 
 # Hardware classes.
 import Adc
+import GpioButton
 import GpioLed
 import I2CTmp006
 import I2COpt3001
@@ -41,6 +42,8 @@ separatorTests        = "-----"
 # Preset all to fales.
 testFwInfo          = False
 testMcuSerial_0     = False
+testGpioButton      = False
+testGpioButtonRaw   = False
 testGpioLed         = False
 testGpioLedRaw      = False
 testRgbLed          = False
@@ -51,17 +54,19 @@ testTmp006          = False
 testOpt3001         = False
 testMcuSerial_1     = False
 # Set the tests to true that you want to run.
-#testFwInfo          = True
-#testMcuSerial_0     = True
-#testGpioLed         = True
-#testGpioLedRaw      = True
-#testRgbLed          = True
-#testI2C             = True
+testFwInfo          = True
+testMcuSerial_0     = True
+testGpioButton      = True
+testGpioButtonRaw   = True
+testGpioLed         = True
+testGpioLedRaw      = True
+testRgbLed          = True
+testI2C             = True
 testUart            = True
-#testAdc             = True
-#testTmp006          = True
-#testOpt3001         = True
-#testMcuSerial_1     = True
+testAdc             = True
+testTmp006          = True
+testOpt3001         = True
+testMcuSerial_1     = True
 
 
 
@@ -97,6 +102,8 @@ def run_test(dev):
     mcuUart6.debugLevel = 1
     adc = Adc.Adc(mcuSer)
     adc.debugLevel = 1
+    gpioButton = GpioButton.GpioButton(mcuSer)
+    gpioButton.debugLevel = 1
     gpioLED = GpioLed.GpioLed(mcuSer)
     gpioLED.debugLevel = 1
     rgbLED = RgbLed.RgbLed(mcuSer)
@@ -125,6 +132,29 @@ def run_test(dev):
 
 
 
+    # Get the status of the buttons.
+    if testGpioButton:
+        print("Get GPIO button status.")
+        for i in range(0, 4):
+            buttonStatus = gpioButton.get(i)
+            print("Button {0:d}: Status = 0x{1:01x}, pressed count = {2:d}, released count = {3:d}".format(
+                i, buttonStatus[0], buttonStatus[1], buttonStatus[2]))
+        print(separatorTests)
+
+
+
+    # Get the status of the buttons (raw).
+    if testGpioButtonRaw:
+        print("Get GPIO button status (raw).")
+        mcuSer.send("button")
+        print(mcuSer.get())
+        for i in range(0, 4):
+            mcuSer.send("button {0:d}".format(i))
+            print(mcuSer.get())
+        print(separatorTests)
+
+
+
     # Blink the LEDs.
     if testGpioLed:
         print("LED running light.")
@@ -134,12 +164,16 @@ def run_test(dev):
             time.sleep(0.1)
             led <<= 1
         print(separatorTests)
+
+
+
+    # Raw access of the LEDs.
     if testGpioLedRaw:
         print("LED running light (raw).")
         led = 0x1
         for i in range(0, 5):
             mcuSer.send("led 0x%x" % led)
-        #    print(mcuSer.get())
+#            print(mcuSer.get())
             print(mcuSer.get_full())
             if mcuSer.eval(): print("Error!")
             led <<= 1
@@ -167,9 +201,9 @@ def run_test(dev):
     # I2C test.
     if testI2C:
         print("I2C master port {0:d} test.".format(mcuI2C2.port))
-    #    for i in range(0, 200):
-    #        mcuI2C2.ms_write(0x40, [0x00, 0x34])
-    #        mcuI2C2.ms_read(0x40, 2)
+#        for i in range(0, 200):
+#            mcuI2C2.ms_write(0x40, [0x00, 0x34])
+#            mcuI2C2.ms_read(0x40, 2)
         # Standard access.
         mcuI2C2.ms_write(0x40, [0x01, 0x12, 0x34])
         data = mcuI2C2.ms_read(0x40, 2)
@@ -193,9 +227,9 @@ def run_test(dev):
         print("UART port {0:d} test.".format(mcuUart6.port))
         # Setup the UART.
         mcuUart6.setup(11520, 1, 0)     # 11520 baud, loopback enabled, no parity.
-    #    for i in range(0, 100):
-    #        mcuUart6.write([i])
-    #        mcuUart6.read(1)
+#        for i in range(0, 100):
+#            mcuUart6.write([i])
+#            mcuUart6.read(1)
         # Binary write/read.
         mcuUart6.clear()
         mcuUart6.write([0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07])
@@ -216,7 +250,7 @@ def run_test(dev):
     # ADC test.
     if testAdc:
         print("ADC test.")
-    #    for i in range(0, 200):
+#        for i in range(0, 200):
         for i in range(0, 10):
             adc.read()
             print("ADC values:", end='')
@@ -235,8 +269,8 @@ def run_test(dev):
     # Read info from the TPM006 temperature sensor.
     if testTmp006:
         print("Read info from the TPM006 temperature sensor.")
-    #    i2cTmp006.reset()
-    #    time.sleep(1.0)
+#        i2cTmp006.reset()
+#        time.sleep(1.0)
         i2cTmp006.init()
         print("Manufacturer ID : 0x{0:04x}".format(i2cTmp006.read_manufacturer_id()))
         print("Device ID       : 0x{0:04x}".format(i2cTmp006.read_device_id()))
@@ -250,8 +284,8 @@ def run_test(dev):
     # Read info from the OPT3001 ambient light sensor.
     if testOpt3001:
         print("Read info from the OPT3001 ambient light sensor.")
-    #    i2cOpt3001.reset()
-    #    time.sleep(1.0)
+#        i2cOpt3001.reset()
+#        time.sleep(1.0)
         i2cOpt3001.init()
         print("Manufacturer ID : 0x{0:04x}".format(i2cOpt3001.read_manufacturer_id()))
         print("Device ID       : 0x{0:04x}".format(i2cOpt3001.read_device_id()))

@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 31 Mar 2020
-# Rev.: 16 Apr 2020
+# Rev.: 17 Apr 2020
 #
 # Python class for using the UART ports of the TM4C1294NCPDT MCU.
 #
@@ -174,7 +174,7 @@ class McuUart:
                 print(self.mcuSer.get_full())
             return []
         dataStr = ret[dataPos:].rstrip()
-        dataStrList = dataStr.split(" ")
+        dataStrList = list(filter(None, dataStr.split(" ")))
         data = []
         for i in range(0, len(dataStrList)):
             data.append(int(dataStrList[i], 0))
@@ -209,7 +209,7 @@ class McuUart:
         if dataPos < 0:
             return []
         dataStr = ret[dataPos:].rstrip()
-        dataStrList = dataStr.split(" ")
+        dataStrList = list(filter(None,dataStr.split(" ")))
         data = []
         for i in range(0, len(dataStrList)):
             data.append(int(dataStrList[i], 0))

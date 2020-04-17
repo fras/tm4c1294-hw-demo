@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 07 Feb 2020
-// Rev.: 16 Apr 2020
+// Rev.: 17 Apr 2020
 //
 // Header file of the hardware demo for the TI Tiva TM4C1294 Connected
 // LaunchPad Evaluation Kit.
@@ -19,8 +19,8 @@
 // Firmware parameters.
 // ******************************************************************
 #define FW_NAME                     "hw_demo"
-#define FW_VERSION                  "0.2.1"
-#define FW_RELEASEDATE              "16 Apr 2020"
+#define FW_VERSION                  "0.2.2"
+#define FW_RELEASEDATE              "17 Apr 2020"
 
 
 

@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 24 Mar 2020
-# Rev.: 16 Apr 2020
+# Rev.: 17 Apr 2020
 #
 # Python class for communicating with the TM4C1294NCPDT MCU over a serial port
 # (UART).
@@ -117,7 +117,7 @@ class McuSerial:
     def get_full(self):
         if self.simulateHwAccess:
             return self.simulateHwAccessMsg
-        s = self.mcuResponse.rstrip('\n')
+        s = self.mcuResponse.rstrip('\n\r')
         if self.debugLevel >= 3:
             print(self.prefixDebug + "Full MCU response:\n" + s)
         return s
@@ -138,7 +138,10 @@ class McuSerial:
             s = self.mcuResponse[len(self.mcuResponseFatal) + 1:]
         else:
             s = self.mcuResponse
-        s = s.rstrip('\n')
+        # Remove trailing space, newline and carriage return characters.
+        s = s.rstrip(' \n\r')
+        # Remove leading and trailing white spaces.
+        s = s.strip()
         if self.debugLevel >= 3:
             print(self.prefixDebug + "MCU response:\n" + s)
         return s
@@ -212,7 +215,7 @@ class McuSerial:
                 elif cnt > self.mcuReadLineMax:
                     return 1
                 elif line != "":
-                    self.mcuResponse += line.strip('\r').strip('\n')
+                    self.mcuResponse += line.rstrip('\n\r')
                     if line.find('\n') > 0:
                         self.mcuResponse += '\n'
             return 0

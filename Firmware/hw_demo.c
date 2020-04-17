@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 07 Feb 2020
-// Rev.: 16 Apr 2020
+// Rev.: 17 Apr 2020
 //
 // Hardware demo for the TI Tiva TM4C1294 Connected LaunchPad Evaluation Kit.
 //
@@ -54,8 +54,9 @@ void __error__(char *pcFilename, uint32_t ui32Line)
 // Function prototypes.
 void Help(void);
 void Info(void);
-int DelayUs(char *pcCmd, char *pcParam, uint32_t ui32SysClock);
 int AdcRead(char *pcCmd, char *pcParam);
+int ButtonGet(char *pcCmd, char *pcParam);
+int DelayUs(char *pcCmd, char *pcParam, uint32_t ui32SysClock);
 int LcdCmd(char *pcCmd, char *pcParam, tLcdFwInfo *psLcdFwInfo);
 int LcdCheckParamCnt(char *pcLcdCmd, int iLcdParamCntActual, int iLcdParamCntTarget);
 void LcdHelp(void);
@@ -180,12 +181,15 @@ int main(void)
         // Show info.
         } else if (!strcasecmp(pcUartCmd, "info")) {
             Info();
-        // Delay execution for a given number of microseconds.
-        } else if (!strcasecmp(pcUartCmd, "delay")) {
-            DelayUs(pcUartCmd, pcUartParam, ui32SysClock);
         // ADC based functions.
         } else if (!strcasecmp(pcUartCmd, "adc")) {
             AdcRead(pcUartCmd, pcUartParam);
+        // GPIO button based functions.
+        } else if (!strcasecmp(pcUartCmd, "button")) {
+            ButtonGet(pcUartCmd, pcUartParam);
+        // Delay execution for a given number of microseconds.
+        } else if (!strcasecmp(pcUartCmd, "delay")) {
+            DelayUs(pcUartCmd, pcUartParam, ui32SysClock);
         // I2C based functions.
         } else if (!strcasecmp(pcUartCmd, "i2c")) {
             I2CAccess(pcUartCmd, pcUartParam);
@@ -198,7 +202,7 @@ int main(void)
         // LCD based functions.
         } else if (!strcasecmp(pcUartCmd, "lcd")) {
             LcdCmd(pcUartCmd, pcUartParam, &sLcdFwInfo);
-        // GPIO based functions.
+        // GPIO LED based functions.
         } else if (!strcasecmp(pcUartCmd, "led")) {
             LedSet(pcUartCmd, pcUartParam);
         // PWM based functions.
@@ -241,6 +245,7 @@ void Help(void)
     UARTprintf("Available commands:\n");
     UARTprintf("  help                                Show this help text.\n");
     UARTprintf("  adc     [COUNT]                     Read ADC values.\n");
+    UARTprintf("  button  [INDEX]                     Get the status of the buttons.\n");
     UARTprintf("  delay   MICROSECONDS                Delay execution.\n");
     UARTprintf("  i2c     PORT SLV-ADR ACC NUM|DATA   I2C access (ACC bits: R/W, Sr, nP, Q).\n");
     UARTprintf("  i2c-det PORT [MODE]                 I2C detect devices (MODE: 0 = auto,\n");
@@ -337,6 +342,34 @@ int AdcRead(char *pcCmd, char *pcParam)
         }
     }
 
+    return 0;
+}
+
+
+
+// Get the status of the GPIO buttons.
+int ButtonGet(char *pcCmd, char *pcParam)
+{
+    uint32_t ui32ButtonIndex;
+
+    if (pcParam == NULL) {
+        UARTprintf("%s. ", UI_STR_OK);
+        UARTprintf("Button %d..0 status: 0x", GPIO_BUTTON_NUM - 1);
+        for (int i = GPIO_BUTTON_NUM - 1; i >= 0; i--) {
+            UARTprintf("%1x", (g_ui8GpioButtonStatus[i] == GPIO_BUTTON_PRESSED) ? 1 : 0);
+        }
+    } else {
+        ui32ButtonIndex = strtoul(pcParam, (char **) NULL, 0);
+        if (ui32ButtonIndex >= GPIO_BUTTON_NUM) {
+            UARTprintf("%s: Button index %d outside of valid range 0..%d.", UI_STR_ERROR, ui32ButtonIndex, GPIO_BUTTON_NUM - 1);
+            return -1;
+        }
+        UARTprintf("%s. ", UI_STR_OK);
+        UARTprintf("Button %d status: 0x%1x, pressed count: %d, released count: %d",
+                   ui32ButtonIndex, g_ui8GpioButtonStatus[ui32ButtonIndex],
+                   g_ui32GpioButtonPressedCnt[ui32ButtonIndex],
+                   g_ui32GpioButtonReleasedCnt[ui32ButtonIndex]);
+    }
     return 0;
 }
 

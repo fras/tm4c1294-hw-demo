@@ -3,7 +3,7 @@
 Auth: M. Fras, Electronics Division, MPI for Physics, Munich  
 Mod.: M. Fras, Electronics Division, MPI for Physics, Munich  
 Date: 07 Feb 2020  
-Rev.: 16 Apr 2020  
+Rev.: 17 Apr 2020  
 
 
 
@@ -141,7 +141,7 @@ Rev.: 16 Apr 2020
     Example minicom session:
     ```
     *******************************************************************************
-    TIVA TM4C1294 `hw_demo' firmware version 0.2.1, release date: 16 Apr 2020
+    TIVA TM4C1294 `hw_demo' firmware version 0.2.2, release date: 17 Apr 2020
     *******************************************************************************
     
     Type `help' to get an overview of available commands.
@@ -149,6 +149,7 @@ Rev.: 16 Apr 2020
     Available commands:
       help                                Show this help text.
       adc     [COUNT]                     Read ADC values.
+      button  [INDEX]                     Get the status of the buttons.
       delay   MICROSECONDS                Delay execution.
       i2c     PORT SLV-ADR ACC NUM|DATA   I2C access (ACC bits: R/W, Sr, nP, Q).
       i2c-det PORT [MODE]                 I2C detect devices (MODE: 0 = auto,
@@ -164,8 +165,14 @@ Rev.: 16 Apr 2020
       uart    PORT R/W NUM|DATA           UART access (R/W: 0 = write, 1 = read).
       uart-s  PORT BAUD [LOOP] [PARITY]   Setup the UART port.
     > info
-    TIVA TM4C1294 `hw_demo' firmware version 0.2.1, release date: 16 Apr 2020
-    It was compiled using gcc 6.3.1 20170620 at 17:50:04 on Apr 16 2020.
+    TIVA TM4C1294 `hw_demo' firmware version 0.2.2, release date: 17 Apr 2020
+    It was compiled using gcc 6.3.1 20170620 at 17:01:19 on Apr 17 2020.
+    > button
+    OK. Button 3..0 status: 0x0000
+    > button 0
+    OK. Button 0 status: 0x0, pressed count: 1, released count: 1
+    > button 0
+    OK. Button 0 status: 0x1, pressed count: 2, released count: 1
     > led 0xf
     OK: LEDs set to 0x0f.
     > i2c-det 2

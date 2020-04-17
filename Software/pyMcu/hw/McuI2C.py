@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 28 Mar 2020
-# Rev.: 15 Apr 2020
+# Rev.: 17 Apr 2020
 #
 # Python class for using the I2C ports of the TM4C1294NCPDT MCU.
 #
@@ -132,7 +132,7 @@ class McuI2C:
         # Send command.
         if self.ms_send_cmd(cmd):
             return []
-        # Get response.
+        # Get and parse response from MCU.
         ret = self.mcuSer.get()
         dataPos = ret.find("0x")
         if dataPos < 0:
@@ -144,7 +144,7 @@ class McuI2C:
                 print(self.mcuSer.get_full())
             return []
         dataStr = ret[dataPos:].rstrip()
-        dataStrList = dataStr.split(" ")
+        dataStrList = list(filter(None, dataStr.split(" ")))
         data = []
         for i in range(0, len(dataStrList)):
             data.append(int(dataStrList[i], 0))
