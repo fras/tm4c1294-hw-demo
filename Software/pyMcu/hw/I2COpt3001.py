@@ -32,9 +32,9 @@ class I2COpt3001:
         self.slaveAddr = slaveAddr
         self.errorCount = 0
         self.accessRead = 0
-        self.accessWrite = 0        
+        self.accessWrite = 0
         self.bytesRead = 0
-        self.bytesWritten = 0        
+        self.bytesWritten = 0
 
 
 
@@ -78,13 +78,13 @@ class I2COpt3001:
         print("I2C master port: {0:d}".format(self.mcuI2C.port), end='')
         print(self.separatorDetails + "Slave address: 0x{0:02x}".format(self.slaveAddr), end='')
         if self.debugLevel >= 1:
-            print(self.separatorDetails + "Error count: {0:d}".format(self.errorCount), end='')                
+            print(self.separatorDetails + "Error count: {0:d}".format(self.errorCount), end='')
         if self.debugLevel >= 2:
             print(self.separatorDetails + "Read access count: {0:d}".format(self.accessRead), end='')
             print(self.separatorDetails + "Write access countn: {0:d}".format(self.accessWrite), end='')
         if self.debugLevel >= 2:
             print(self.separatorDetails + "Bytes read: {0:d}".format(self.bytesRead), end='')
-            print(self.separatorDetails + "Bytes written: {0:d}".format(self.bytesWritten), end='')        
+            print(self.separatorDetails + "Bytes written: {0:d}".format(self.bytesWritten), end='')
         print()
 
 
@@ -131,7 +131,7 @@ class I2COpt3001:
 
 
     # Read the light illuminance from the OPT3001 sensor IC.
-    # Returns the light illuminance in lux.    
+    # Returns the light illuminance in lux.
     def read_illuminance(self):
         # Debug info.
         if self.debugLevel >= 1:

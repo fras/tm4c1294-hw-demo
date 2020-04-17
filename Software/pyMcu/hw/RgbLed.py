@@ -40,7 +40,7 @@ class RgbLed:
         cmd = "rgb 0x{0:02x}".format(rgb)
         # Debug: Show command.
         if self.debugLevel >= 3:
-            print(self.prefixDebug + "Sending command for RGB LED: " + cmd)        
+            print(self.prefixDebug + "Sending command for RGB LED: " + cmd)
         # Send command.
         self.mcuSer.send(cmd)
         # Debug: Show response.

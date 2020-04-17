@@ -92,9 +92,9 @@ def run_test(dev):
     mcuSer.debugLevel = 0
     mcuSer.simulateHwAccess = False
     mcuSer.clear()
-    
-    
-    
+
+
+
     # Define the MCU peripherals.
     mcuI2C2 = McuI2C.McuI2C(mcuSer, 2)
     mcuI2C2.debugLevel = 1
@@ -226,7 +226,7 @@ def run_test(dev):
     if testUart:
         print("UART port {0:d} test.".format(mcuUart6.port))
         # Setup the UART.
-        mcuUart6.setup(11520, 1, 0)     # 11520 baud, loopback enabled, no parity.
+        mcuUart6.setup(11520, 0, 1)     # 11520 baud, no parity, internal loopback enabled.
 #        for i in range(0, 100):
 #            mcuUart6.write([i])
 #            mcuUart6.read(1)

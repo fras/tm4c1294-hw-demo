@@ -25,7 +25,7 @@
 // Initialize an SSI master.
 void SsiMasterInit(tSSI *psSsi)
 {
-    // Setup the IO pins for the SSI master.
+    // Set up the IO pins for the SSI master.
     SysCtlPeripheralEnable(psSsi->ui32PeripheralGpio);
     GPIOPinConfigure(psSsi->ui32PinConfigClk);
     GPIOPinConfigure(psSsi->ui32PinConfigFss);
@@ -37,7 +37,7 @@ void SsiMasterInit(tSSI *psSsi)
                    psSsi->ui8PinGpioRx  |
                    psSsi->ui8PinGpioTx);
 
-    // Setup the SSI master.
+    // Set up the SSI master.
     SysCtlPeripheralDisable(psSsi->ui32PeripheralSsi);
     SysCtlPeripheralReset(psSsi->ui32PeripheralSsi);
     SysCtlPeripheralEnable(psSsi->ui32PeripheralSsi);

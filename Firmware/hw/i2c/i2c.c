@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 11 Feb 2020
-// Rev.: 14 Apr 2020
+// Rev.: 17 Apr 2020
 //
 // I2C functions on the TI Tiva TM4C1294 Connected LaunchPad Evaluation Kit.
 //
@@ -21,14 +21,14 @@
 // Initialize an I2C master.
 void I2CMasterInit(tI2C *psI2C)
 {
-    // Setup the IO pins for the I2C master.
+    // Set up the IO pins for the I2C master.
     SysCtlPeripheralEnable(psI2C->ui32PeripheralGpio);
     GPIOPinConfigure(psI2C->ui32PinConfigScl);
     GPIOPinConfigure(psI2C->ui32PinConfigSda);
     GPIOPinTypeI2CSCL(psI2C->ui32PortGpioBase, psI2C->ui8PinGpioScl);   // SCL
     GPIOPinTypeI2C(psI2C->ui32PortGpioBase, psI2C->ui8PinGpioSda);      // SDA
 
-    // Setup the I2C master.
+    // Set up the I2C master.
     SysCtlPeripheralDisable(psI2C->ui32PeripheralI2C);
     SysCtlPeripheralReset(psI2C->ui32PeripheralI2C);
     SysCtlPeripheralEnable(psI2C->ui32PeripheralI2C);

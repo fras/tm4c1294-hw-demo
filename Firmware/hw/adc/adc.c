@@ -31,11 +31,11 @@ void AdcReset(tADC *psAdc)
 // Initialize an ADC.
 void AdcInit(tADC *psAdc)
 {
-    // Setup the IO pins for the I2C master.
+    // Set up the IO pins for the I2C master.
     SysCtlPeripheralEnable(psAdc->ui32PeripheralGpio);
     GPIOPinTypeADC(psAdc->ui32PortGpioBase, psAdc->ui8PinGpio);
 
-    // Setup the ADC.
+    // Set up the ADC.
     SysCtlPeripheralEnable(psAdc->ui32PeripheralAdc);
     // CAUTION:
     // Do *not* call "SysCtlPeripheralReset(psAdc->ui32PeripheralAdc);" here!

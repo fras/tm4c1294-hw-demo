@@ -19,7 +19,7 @@
 // Firmware parameters.
 // ******************************************************************
 #define FW_NAME                     "hw_demo"
-#define FW_VERSION                  "0.2.2"
+#define FW_VERSION                  "0.3.0"
 #define FW_RELEASEDATE              "17 Apr 2020"
 
 

@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 18 Feb 2020
-// Rev.: 11 Apr 2020
+// Rev.: 17 Apr 2020
 //
 // UART functions on the TI Tiva TM4C1294 Connected LaunchPad Evaluation Kit.
 //
@@ -21,13 +21,13 @@
 // Initialize an UART.
 void UartInit(tUART *psUart)
 {
-    // Setup the IO pins for the UART.
+    // Set up the IO pins for the UART.
     SysCtlPeripheralEnable(psUart->ui32PeripheralGpio);
     GPIOPinConfigure(psUart->ui32PinConfigRx);
     GPIOPinConfigure(psUart->ui32PinConfigTx);
     GPIOPinTypeUART(psUart->ui32PortGpioBase, psUart->ui8PinGpioRx | psUart->ui8PinGpioTx);
 
-    // Setup the UART.
+    // Set up the UART.
     SysCtlPeripheralDisable(psUart->ui32PeripheralUart);
     SysCtlPeripheralReset(psUart->ui32PeripheralUart);
     SysCtlPeripheralEnable(psUart->ui32PeripheralUart);

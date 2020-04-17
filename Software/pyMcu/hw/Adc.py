@@ -43,7 +43,7 @@ class Adc:
         cmd = "adc"
         # Debug: Show command.
         if self.debugLevel >= 3:
-            print(self.prefixDebug + "Sending command for ADC values: " + cmd)        
+            print(self.prefixDebug + "Sending command for ADC values: " + cmd)
         # Send command.
         self.mcuSer.send(cmd)
         # Debug: Show response.

@@ -87,7 +87,7 @@ int main(void)
     char *pcUartCmd;
     char *pcUartParam;
 
-    // Setup the system clock.
+    // Set up the system clock.
     ui32SysClock = MAP_SysCtlClockFreqSet(SYSTEM_CLOCK_SETTINGS, SYSTEM_CLOCK_FREQ);
 
     // Initialize the UART for the user interface.
@@ -256,10 +256,10 @@ void Help(void)
     UARTprintf("  led     VALUE                       Set the Leds.\n");
     UARTprintf("  rgb     VALUE                       Set the RGB LED.\n");
     UARTprintf("  ssi     PORT R/W NUM|DATA           SSI/SPI access (R/W: 0 = write, 1 = read).\n");
-    UARTprintf("  ssi-set PORT FREQ [MODE] [WIDTH]    Setup the SSI port.\n");
+    UARTprintf("  ssi-set PORT FREQ [MODE] [WIDTH]    Set up the SSI port.\n");
     UARTprintf("  temp    [COUNT]                     Read temperature sensor info.\n");
     UARTprintf("  uart    PORT R/W NUM|DATA           UART access (R/W: 0 = write, 1 = read).\n");
-    UARTprintf("  uart-s  PORT BAUD [LOOP] [PARITY]   Setup the UART port.");
+    UARTprintf("  uart-s  PORT BAUD [PARITY] [LOOP]   Set up the UART port.");
 }
 
 
@@ -932,7 +932,7 @@ int SsiPortCheck(uint8_t ui8SsiPort, tSSI **psSsi)
 
 
 
-// Setup the SSI.
+// Set up the SSI interface.
 int SsiSetup(char *pcCmd, char *pcParam)
 {
     int i;
@@ -996,7 +996,7 @@ int SsiSetup(char *pcCmd, char *pcParam)
     if (i < 1) return -1;
     // Check if the SSI port number is valid. If so, set the psSsi pointer to the selected SSI port struct.
     if (SsiPortCheck(ui8SsiPort, &psSsi)) return -1;
-    // Setup the SSI port.
+    // Set up the SSI port.
     psSsi->ui32BitRate = ui32SsiBitRate;
     psSsi->ui32Protocol = ui32SsiProtocol;
     psSsi->ui32DataWidth = ui32SsiDataWidth;
@@ -1009,11 +1009,11 @@ int SsiSetup(char *pcCmd, char *pcParam)
 
 
 
-// Show help on SSI setup command.
+// Show help on the SSI setup command.
 void SsiSetupHelp(void)
 {
     UARTprintf("SSI setup command:\n");
-    UARTprintf("  ssi-set PORT FREQ [MODE] [WIDTH]    Setup the SSI port.\n");
+    UARTprintf("  ssi-set PORT FREQ [MODE] [WIDTH]    Set up the SSI port.\n");
     UARTprintf("SSI bit rate: %d..%d\n", SSI_FREQ_MIN, SSI_FREQ_MAX);
     UARTprintf("SSI modes:\n");
     UARTprintf("  0: SPI frame format, polarity = 0, phase = 0.\n");
@@ -1131,7 +1131,7 @@ int UartPortCheck(uint8_t ui8UartPort, tUART **psUart)
 
 
 
-// Setup the UART.
+// Set up the UART port.
 int UartSetup(char *pcCmd, char *pcParam)
 {
     int i;
@@ -1165,12 +1165,6 @@ int UartSetup(char *pcCmd, char *pcParam)
             }
         } else if (i == 2) {
             if (pcParam == NULL) {
-                bUartLoopback = false;
-            } else {
-                bUartLoopback = (bool) strtoul(pcParam, (char **) NULL, 0) & 0x01;
-            }
-        } else if (i == 3) {
-            if (pcParam == NULL) {
                 ui32UartParity = UART_CONFIG_PAR_NONE;
             } else {
                 ui32UartParity = strtoul(pcParam, (char **) NULL, 0) & 0x07;
@@ -1185,12 +1179,18 @@ int UartSetup(char *pcCmd, char *pcParam)
                         return -1;
                 }
             }
+        } else if (i == 3) {
+            if (pcParam == NULL) {
+                bUartLoopback = false;
+            } else {
+                bUartLoopback = (bool) strtoul(pcParam, (char **) NULL, 0) & 0x01;
+            }
         }
     }
     if (i < 1) return -1;
     // Check if the UART port number is valid. If so, set the psUart pointer to the selected UART port struct.
     if (UartPortCheck(ui8UartPort, &psUart)) return -1;
-    // Setup the UART.
+    // Set up the UART.
     psUart->ui32Baud = ui32UartBaud;
     psUart->bLoopback = bUartLoopback;
     UartInit(psUart);
@@ -1203,20 +1203,20 @@ int UartSetup(char *pcCmd, char *pcParam)
 
 
 
-// Show help on UART setup command.
+// Show help on the UART setup command.
 void UartSetupHelp(void)
 {
     UARTprintf("UART setup command:\n");
-    UARTprintf("  uart-s  PORT BAUD [LOOP] [PARITY]   Setup the UART.\n");
+    UARTprintf("  uart-s  PORT BAUD [PARITY] [LOOP]   Set up the UART port.");
     UARTprintf("UART baud rate: %d..%d\n", UART_BAUD_MIN, UART_BAUD_MAX);
-    UARTprintf("UART loopback options:\n");
-    UARTprintf("  0: No loopback.\n");
-    UARTprintf("  1: Enable internal loopback mode.\n");
     UARTprintf("UART partiy options:\n");
     UARTprintf("  0: None.\n");
     UARTprintf("  1: Even.\n");
     UARTprintf("  2: Odd.\n");
     UARTprintf("  3: One.\n");
     UARTprintf("  4: Zero.");
+    UARTprintf("UART loopback options:\n");
+    UARTprintf("  0: No loopback.\n");
+    UARTprintf("  1: Enable internal loopback mode.\n");
 }
 

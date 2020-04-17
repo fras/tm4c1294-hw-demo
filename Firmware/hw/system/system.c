@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 11 Feb 2020
-// Rev.: 11 Feb 2020
+// Rev.: 17 Feb 2020
 //
 // System functions on the TI Tiva TM4C1294 Connected LaunchPad Evaluation Kit.
 //
@@ -19,7 +19,7 @@
 
 
 
-// Setup the DIVSCLK pin (PQ4) to drive the system clock.
+// Set up the DIVSCLK pin (PQ4) to drive the system clock.
 // CAUTION: When enabled at boot up, this will cause further flashing to fail!
 //          When enabling it at run time, it will cause the MCU to reset.
 //          For details see here:
@@ -29,7 +29,7 @@
 //          again.
 void ClockOutputEnable(uint32_t ui32Div)
 {
-    // Setup the DIVSCLK pin (PQ4) to drive the system clock.
+    // Set up the DIVSCLK pin (PQ4) to drive the system clock.
     SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOQ);
     GPIOPadConfigSet(GPIO_PORTQ_BASE, GPIO_PIN_4, GPIO_STRENGTH_2MA, GPIO_PIN_TYPE_STD);
     GPIOPinConfigure(GPIO_PQ4_DIVSCLK);

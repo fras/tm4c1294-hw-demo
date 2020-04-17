@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 07 Feb 2020
-// Rev.: 11 Apr 2020
+// Rev.: 17 Apr 2020
 //
 // UART user interface (UI) for the TI Tiva TM4C1294 Connected LaunchPad
 // Evaluation Kit.
@@ -25,7 +25,7 @@ void UartUiInit(tUartUi *psUartUi)
     // Enable the GPIO Peripheral used by the UART.
     SysCtlPeripheralEnable(psUartUi->ui32PeripheralGpio);
 
-    // Setup the UART.
+    // Set up the UART.
     SysCtlPeripheralDisable(psUartUi->ui32PeripheralUart);
     SysCtlPeripheralReset(psUartUi->ui32PeripheralUart);
     SysCtlPeripheralEnable(psUartUi->ui32PeripheralUart);

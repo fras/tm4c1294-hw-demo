@@ -141,7 +141,7 @@ Rev.: 17 Apr 2020
     Example minicom session:
     ```
     *******************************************************************************
-    TIVA TM4C1294 `hw_demo' firmware version 0.2.2, release date: 17 Apr 2020
+    TIVA TM4C1294 `hw_demo' firmware version 0.3.0, release date: 17 Apr 2020
     *******************************************************************************
     
     Type `help' to get an overview of available commands.
@@ -160,13 +160,13 @@ Rev.: 17 Apr 2020
       led     VALUE                       Set the Leds.
       rgb     VALUE                       Set the RGB LED.
       ssi     PORT R/W NUM|DATA           SSI/SPI access (R/W: 0 = write, 1 = read).
-      ssi-set PORT FREQ [MODE] [WIDTH]    Setup the SSI port.
+      ssi-set PORT FREQ [MODE] [WIDTH]    Set up the SSI port.
       temp    [COUNT]                     Read temperature sensor info.
       uart    PORT R/W NUM|DATA           UART access (R/W: 0 = write, 1 = read).
-      uart-s  PORT BAUD [LOOP] [PARITY]   Setup the UART port.
+      uart-s  PORT BAUD [PARITY] [LOOP]   Set up the UART port.
     > info
-    TIVA TM4C1294 `hw_demo' firmware version 0.2.2, release date: 17 Apr 2020
-    It was compiled using gcc 6.3.1 20170620 at 17:01:19 on Apr 17 2020.
+    TIVA TM4C1294 `hw_demo' firmware version 0.3.0, release date: 17 Apr 2020
+    It was compiled using gcc 6.3.1 20170620 at 22:27:55 on Apr 17 2020.
     > button
     OK. Button 3..0 status: 0x0000
     > button 0
@@ -181,7 +181,7 @@ Rev.: 17 Apr 2020
     OK.
     > i2c 2 0x40 1 2
     OK. Data: 0x74 0x80
-    > uart-s 6 11520 1 0
+    > uart-s 6 11520 0 1
     OK.
     > uart 6 0 0x11 0x22 0x33
     OK.
@@ -294,11 +294,12 @@ configuration of the UART in the file ```hw_demo.c```.
 sUartBoosterPack2.bLoopback = true;
 ```
 
-Since firmware version 0.2.0, you can set the baud rate, the loopback mode and
-the parity with the command ```uart-s```.  
-Example for a baud rate of 11520, internal loopback and no parity on UART port 6:
+Since firmware version 0.2.0, you can set the baud rate, the parity and the
+loopback mode with the command ```uart-s```.  
+Example for a baud rate of 11520, no parity and internal loopback mode on UART
+port 6:
 ```
-uart-s 6 11520 1 0
+uart-s 6 11520 0 1
 ```
 
 Alternatively, put a jumper across the pins ```PP0``` and ```PP1``` on the

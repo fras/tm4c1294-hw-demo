@@ -49,7 +49,7 @@ class GpioButton:
         cmd = "button {0:d}".format(index)
         # Debug: Show command.
         if self.debugLevel >= 3:
-            print(self.prefixDebug + "Sending command for buttons: " + cmd)        
+            print(self.prefixDebug + "Sending command for buttons: " + cmd)
         # Send command.
         self.mcuSer.send(cmd)
         # Debug: Show response.

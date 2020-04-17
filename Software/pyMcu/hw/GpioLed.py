@@ -43,7 +43,7 @@ class GpioLed:
         cmd = "led 0x{0:02x}".format(led)
         # Debug: Show command.
         if self.debugLevel >= 3:
-            print(self.prefixDebug + "Sending command for LEDs: " + cmd)        
+            print(self.prefixDebug + "Sending command for LEDs: " + cmd)
         # Send command.
         self.mcuSer.send(cmd)
         # Debug: Show response.

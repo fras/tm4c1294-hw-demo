@@ -17,7 +17,7 @@ class McuUart:
 
     # Message prefixes and separators.
     prefixDetails       = " - "
-    separatorDetails    = " - "    
+    separatorDetails    = " - "
     prefixError         = "ERROR: {0:s}: ".format(__file__)
     prefixDebug         = "DEBUG: {0:s}: ".format(__file__)
 
@@ -72,7 +72,7 @@ class McuUart:
         print(self.prefixDetails, end='')
         print("UART port: {0:d}".format(self.port), end='')
         if self.debugLevel >= 1:
-            print(self.separatorDetails + "Error count: {0:d}".format(self.errorCount), end='')        
+            print(self.separatorDetails + "Error count: {0:d}".format(self.errorCount), end='')
         if self.debugLevel >= 1:
             print(self.separatorDetails + "Read access count: {0:d}".format(self.accessRead), end='')
             print(self.separatorDetails + "Write access countn: {0:d}".format(self.accessWrite), end='')
@@ -80,6 +80,29 @@ class McuUart:
             print(self.separatorDetails + "Bytes read: {0:d}".format(self.bytesRead), end='')
             print(self.separatorDetails + "Bytes written: {0:d}".format(self.bytesWritten), end='')
         print()
+
+
+
+    # Setup the UART port.
+    def setup(self, baud, parity, loopback):
+        if baud < self.hwBaudMin or baud > self.hwBaudMax:
+            self.errorCount += 1
+            print(self.prefixError + "UART baud rate {0:d} outside of valid range {1:d}..{2:d}!".format(baud, self.hwBaudMin, self.hwBaudMax))
+            return -1
+        if parity < 0 or parity > len(self.hwParity) - 1:
+            self.errorCount += 1
+            print(self.prefixError + "UART parity {0:d} outside of valid range {1:d}..{2:d}!".format(parity, 0, len(self.hwParity)-1))
+            return -1
+        cmd = "uart-s {0:d} {1:d} {2:d} {3:d}".format(self.port, baud, parity, loopback & 0x1)
+        if self.debugLevel >= 2:
+            print(self.prefixDebug + "Setting up the UART port {0:d}.".format(self.port), end='')
+            print(self.separatorDetails + "Baud rate: {0:d}".format(baud), end='')
+            print(self.separatorDetails + "Parity: {0:s}".format(self.hwParity[parity]), end='')
+            print(self.separatorDetails + "Loopback: {0:d}".format(loopback & 0x1), end='')
+            print()
+        # Send command.
+        ret = self.send_cmd(cmd)
+        return ret
 
 
 
@@ -97,29 +120,6 @@ class McuUart:
         self.mcuSer.send(cmd)
         self.mcuSer.debugLevel = mcuSerDebugLevelBak
         return 0
-
-
-
-    # Setup the UART port.
-    def setup(self, baud, loopback, parity):
-        if baud < self.hwBaudMin or baud > self.hwBaudMax:
-            self.errorCount += 1
-            print(self.prefixError + "UART baud rate {0:d} outside of valid range {1:d}..{2:d}!".format(baud, self.hwBaudMin, self.hwBaudMax))
-            return -1
-        if parity < 0 or parity > len(self.hwParity) - 1:
-            self.errorCount += 1
-            print(self.prefixError + "UART parity {0:d} outside of valid range {1:d}..{2:d}!".format(parity, 0, len(self.hwParity)-1))
-            return -1
-        cmd = "uart-s {0:d} {1:d} {2:d} {3:d}".format(self.port, baud, loopback & 0x1, parity)
-        if self.debugLevel >= 2:
-            print(self.prefixDebug + "Setting up the UART port {0:d}.".format(self.port), end='')
-            print(self.separatorDetails + "Baud rate: {0:d}".format(baud), end='')
-            print(self.separatorDetails + "Loopback: {0:d}".format(loopback & 0x1), end='')
-            print(self.separatorDetails + "Parity: {0:s}".format(self.hwParity[parity]), end='')
-            print()
-        # Send command.
-        ret = self.send_cmd(cmd)
-        return ret
 
 
 
@@ -145,6 +145,13 @@ class McuUart:
         self.accessWrite += 1
         self.bytesWritten += len(data)
         return ret
+
+
+
+    # Write a string to the UART port.
+    def write_str(self, s):
+        data = [ord(x) for x in list(s)]
+        self.write(data)
 
 
 
@@ -191,17 +198,22 @@ class McuUart:
 
     # Read all data from the UART port.
     def read_all(self):
-        # Read the full UART RX buffer of 255 = 0xff bytes.
-        cmd = "uart {0:d} 1 {1:d}".format(self.port, 0xff)
+        # Read all data available in the UART RX buffer.
+        cmd = "uart {0:d} 1".format(self.port)
         if self.debugLevel >= 2:
             print(self.prefixDebug + "Reading all data from the UART port {0:d}.".format(self.port))
         # Send command.
-        # CAUTION: Do not check for errors here, as this command will return an
-        #          error, when it tries to read more bytes than available.
-        mcuSerDebugLevelBak = self.mcuSer.debugLevel
-        self.mcuSer.debugLevel = 0
         self.mcuSer.send(cmd)
-        self.mcuSer.debugLevel = mcuSerDebugLevelBak
+        # Evaluate response.
+        # CAUTION: When no data are available, the command will return a
+        #          warning, i.e. return code 1. This must be ignored.
+        if self.mcuSer.eval() > 1:
+            print(self.prefixError + "Error reading all data from the UART port {0:d}!".format(self.port))
+            if self.debugLevel >= 1:
+                print(self.prefixError + "Command sent to MCU: " + cmd)
+                print(self.prefixError + "Response from MCU:")
+                print(self.mcuSer.get_full())
+            return []
         # Get response.
         ret = self.mcuSer.get()
         dataPos = ret.find("0x")
@@ -224,15 +236,9 @@ class McuUart:
 
 
 
-    # Write a string to the UART port.
-    def write_str(self, s):
-        data = [ord(x) for x in list(s)]
-        self.write(data)
-
-
-
     # Read a string from the UART port.
     def read_str(self, cnt):
+        # If the data count argument is 0 or negative, read all available data.
         if cnt <= 0:
             data = self.read_all()
         else:
