@@ -417,6 +417,7 @@ int LcdCmd(char *pcCmd, char *pcParam, tLcdFwInfo *psLcdFwInfo)
     // Show help on LCD commands.
     if (!strcasecmp(pcLcdCmd, "help")) {
         LcdHelp();
+        return 0;
     // Show info.
     } else if (!strcasecmp(pcLcdCmd, "info")) {
         if ((iRet = LcdCheckParamCnt(pcLcdCmd, iLcdParamCnt, 0)) < 0) return iRet;
