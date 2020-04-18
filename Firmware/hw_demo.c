@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 07 Feb 2020
-// Rev.: 17 Apr 2020
+// Rev.: 18 Apr 2020
 //
 // Hardware demo for the TI Tiva TM4C1294 Connected LaunchPad Evaluation Kit.
 //
@@ -283,6 +283,8 @@ int DelayUs(char *pcCmd, char *pcParam, uint32_t ui32SysClock)
         return -1;
     }
     ui32DelayUs = strtoul(pcParam, (char **) NULL, 0);
+    // Limit the delay to max. 10 seconds.
+    if (ui32DelayUs > 1e7) ui32DelayUs = 1e7;
     // CAUTION: Calling SysCtlDelay(0) will hang the system.
     if (ui32DelayUs > 0)
         // Note: The SysCtlDelay executes a simple 3 instruction cycle loop.
@@ -426,54 +428,56 @@ int LcdCmd(char *pcCmd, char *pcParam, tLcdFwInfo *psLcdFwInfo)
     } else if (!strcasecmp(pcLcdCmd, "circle")) {
         if ((iRet = LcdCheckParamCnt(pcLcdCmd, iLcdParamCnt, 5)) < 0) return iRet;
         LcdDrawCircle(psLcdFwInfo->psContext,
-                      strtoul(pcLcdParam[0], (char **) NULL, 0),
-                      strtoul(pcLcdParam[1], (char **) NULL, 0),
-                      strtoul(pcLcdParam[2], (char **) NULL, 0),
-                      strtoul(pcLcdParam[3], (char **) NULL, 0),
-                      strtoul(pcLcdParam[4], (char **) NULL, 0));
+                      strtol(pcLcdParam[0], (char **) NULL, 0),     // i32X
+                      strtol(pcLcdParam[1], (char **) NULL, 0),     // i32Y
+                      strtol(pcLcdParam[2], (char **) NULL, 0),     // iRadius
+                      strtoul(pcLcdParam[3], (char **) NULL, 0),    // ui32Color
+                      strtoul(pcLcdParam[4], (char **) NULL, 0));   // bFill
     // Fill the display with a color.
     } else if (!strcasecmp(pcLcdCmd, "clear")) {
         if ((iRet = LcdCheckParamCnt(pcLcdCmd, iLcdParamCnt, 1)) < 0) return iRet;
-        LcdClear(psLcdFwInfo->psContext, strtoul(pcLcdParam[0], (char **) NULL, 0));
+        LcdClear(psLcdFwInfo->psContext,
+                 strtoul(pcLcdParam[0], (char **) NULL, 0));        // ui32Color
     // Draw a line.
     } else if (!strcasecmp(pcLcdCmd, "line")) {
         if ((iRet = LcdCheckParamCnt(pcLcdCmd, iLcdParamCnt, 5)) < 0) return iRet;
         LcdDrawLine(psLcdFwInfo->psContext,
-                    strtoul(pcLcdParam[0], (char **) NULL, 0),
-                    strtoul(pcLcdParam[1], (char **) NULL, 0),
-                    strtoul(pcLcdParam[2], (char **) NULL, 0),
-                    strtoul(pcLcdParam[3], (char **) NULL, 0),
-                    strtoul(pcLcdParam[4], (char **) NULL, 0));
+                    strtol(pcLcdParam[0], (char **) NULL, 0),       // i32X1
+                    strtol(pcLcdParam[1], (char **) NULL, 0),       // i32Y1
+                    strtol(pcLcdParam[2], (char **) NULL, 0),       // i32X2
+                    strtol(pcLcdParam[3], (char **) NULL, 0),       // i32Y2
+                    strtoul(pcLcdParam[4], (char **) NULL, 0));     // ui32Color
     // Change the orientation of the display.
     } else if (!strcasecmp(pcLcdCmd, "orient")) {
         if ((iRet = LcdCheckParamCnt(pcLcdCmd, iLcdParamCnt, 1)) < 0) return iRet;
-        LcdSetOrientation(psLcdFwInfo->psContext, strtoul(pcLcdParam[0], (char **) NULL, 0));
+        LcdSetOrientation(psLcdFwInfo->psContext,
+                          strtoul(pcLcdParam[0], (char **) NULL, 0));   // ui8Orientation
     // Draw a pixel.
     } else if (!strcasecmp(pcLcdCmd, "pixel")) {
         if ((iRet = LcdCheckParamCnt(pcLcdCmd, iLcdParamCnt, 3)) < 0) return iRet;
         LcdDrawPixel(psLcdFwInfo->psContext,
-                     strtoul(pcLcdParam[0], (char **) NULL, 0),
-                     strtoul(pcLcdParam[1], (char **) NULL, 0),
-                     strtoul(pcLcdParam[3], (char **) NULL, 0));
+                     strtol(pcLcdParam[0], (char **) NULL, 0),      // i32X
+                     strtol(pcLcdParam[1], (char **) NULL, 0),      // i32Y
+                     strtoul(pcLcdParam[2], (char **) NULL, 0));    // ui32Color
     // Draw a rectangle.
     } else if (!strcasecmp(pcLcdCmd, "rect")) {
         if ((iRet = LcdCheckParamCnt(pcLcdCmd, iLcdParamCnt, 6)) < 0) return iRet;
         LcdDrawRect(psLcdFwInfo->psContext,
-                    strtoul(pcLcdParam[0], (char **) NULL, 0),
-                    strtoul(pcLcdParam[1], (char **) NULL, 0),
-                    strtoul(pcLcdParam[2], (char **) NULL, 0),
-                    strtoul(pcLcdParam[3], (char **) NULL, 0),
-                    strtoul(pcLcdParam[4], (char **) NULL, 0),
-                    strtoul(pcLcdParam[5], (char **) NULL, 0));
+                    strtol(pcLcdParam[0], (char **) NULL, 0),       // i16X1
+                    strtol(pcLcdParam[1], (char **) NULL, 0),       // i16Y1
+                    strtol(pcLcdParam[2], (char **) NULL, 0),       // i16X2
+                    strtol(pcLcdParam[3], (char **) NULL, 0),       // i16Y2
+                    strtoul(pcLcdParam[4], (char **) NULL, 0),      // ui32Color
+                    strtoul(pcLcdParam[5], (char **) NULL, 0));     // bFill
     // Draw a text.
     } else if (!strcasecmp(pcLcdCmd, "text")) {
         if ((iRet = LcdCheckParamCnt(pcLcdCmd, iLcdParamCnt, 5)) < 0) return iRet;
         LcdDrawText(psLcdFwInfo->psContext,
                     pcLcdText,       // The text message.
-                    strtoul(pcLcdParam[0], (char **) NULL, 0),
-                    strtoul(pcLcdParam[1], (char **) NULL, 0),
-                    strtoul(pcLcdParam[2], (char **) NULL, 0),
-                    strtoul(pcLcdParam[3], (char **) NULL, 0));
+                    strtol(pcLcdParam[0], (char **) NULL, 0),       // i32X
+                    strtol(pcLcdParam[1], (char **) NULL, 0),       // i32Y
+                    strtoul(pcLcdParam[2], (char **) NULL, 0),      // ui32Color
+                    strtoul(pcLcdParam[3], (char **) NULL, 0));     // bCenter
     } else {
         UARTprintf("%s: Unknown LCD command `%s'!\n", UI_STR_ERROR, pcLcdCmd);
         LcdHelp();

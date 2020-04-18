@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 03 Apr 2020
-// Rev.: 11 Apr 2020
+// Rev.: 18 Apr 2020
 //
 // Functions for the LCD on the Educational BoosterPack MKII connected to the
 // BoosterPack 2 socket of the TI Tiva TM4C1294 Connected LaunchPad Evaluation
@@ -140,11 +140,16 @@ void LcdDrawCircle(tContext *psContext, int32_t i32X, int32_t i32Y,
     // Set foreground color.
     GrContextForegroundSet(psContext, ui32Color);
 
+    // Limit the radius, as large radii take a *long* time to draw.
+    int32_t i32RadiusLimited = i32Radius;
+    if (i32RadiusLimited < -1e6) i32RadiusLimited = -1e6;
+    if (i32RadiusLimited > 1e6) i32RadiusLimited = 1e6;
+
     // Draw a circle.
     if (bFill) {
-        GrCircleFill(psContext, i32X, i32Y, i32Radius);
+        GrCircleFill(psContext, i32X, i32Y, i32RadiusLimited);
     } else{
-        GrCircleDraw(psContext, i32X, i32Y, i32Radius);
+        GrCircleDraw(psContext, i32X, i32Y, i32RadiusLimited);
     }
 
     // Flush any cached drawing operations.

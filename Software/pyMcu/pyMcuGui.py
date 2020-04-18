@@ -4,7 +4,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 30 Mar 2020
-# Rev.: 17 Apr 2020
+# Rev.: 18 Apr 2020
 #
 # Python GUI for accessing the TM4C1294NCPDT MCU on the TM4C1294 Connected
 # LaunchPad Evaluation Kit over a serial port (UART).
@@ -43,7 +43,7 @@ class PyMcuGui(Frame):
 
     # Software version.
     swName      = "pyMCU"
-    swVersion   = "0.2.0"
+    swVersion   = "0.2.1"
     swDate      = "18 Apr 2020"
 
     # Window titles.
@@ -80,7 +80,7 @@ class PyMcuGui(Frame):
         self.labelFwInfo = Label(self.frameFwInfo, text="", anchor=W, justify=LEFT)
         self.labelFwInfo.grid(row=0, column=0, sticky=W+E)
         self.buttonFwInfoUpdate = Button(self.frameFwInfo, text="Update\nFW Info", command=self.mcu_fw_info)
-        self.buttonFwInfoUpdate.grid(row=0, column=1, sticky=W+E, padx=10)
+        self.buttonFwInfoUpdate.grid(row=0, column=1, sticky=W+E, padx=(10, 5))
         # ***** GPIO buttons. *****
         self.frameButton = Frame(self.frame0, bd=2, relief=GROOVE, padx=5, pady=5)
         self.frameButton.grid(row=1, column=0, sticky=W+E, pady=2)
@@ -200,7 +200,7 @@ class PyMcuGui(Frame):
         # ***** LCD. ******
         self.frameLcd = Frame(self.frame0, bd=2, relief=GROOVE, padx=5, pady=5)
         self.frameLcd.grid(row=5, column=0, sticky=W+E, pady=2)
-        self.labelLcdCmd = Label(self.frameLcd, text="LCD command", anchor=W, width=13)
+        self.labelLcdCmd = Label(self.frameLcd, text="LCD command", anchor=W, width=21)
         self.labelLcdCmd.grid(row=0, column=0, sticky=W+E)
         self.varLcdCmds = StringVar()
         self.optionsLcdCmds = ["info - Show firmware info.",
@@ -219,12 +219,12 @@ class PyMcuGui(Frame):
         for i in range (0, 6):
             self.labelLcdCmdParam.append(Label(self.frameLcd, text="Parameter {0:d}".format(i), anchor=W))
             self.labelLcdCmdParam[i].grid(row=i+1, column=0, sticky=W+E)
-            self.entryLcdCmdParam.append(Entry(self.frameLcd, width=45, justify=LEFT))
+            self.entryLcdCmdParam.append(Entry(self.frameLcd, width=41, justify=LEFT))
             self.entryLcdCmdParam[i].grid(row=i+1, column=1, sticky=W+E)
             self.entryLcdCmdParam[i].bind('<Return>', self.lcd_exec_cmd_enter)
         self.lcd_update_labels(self.optionsLcdCmds[0])
         self.buttonLcdCmd= Button(self.frameLcd, text="Execute", command=self.lcd_exec_cmd)
-        self.buttonLcdCmd.grid(row=0, column=2, sticky=W+E, padx=(10, 0))
+        self.buttonLcdCmd.grid(row=0, column=2, sticky=W+E, padx=(10, 5))
         # ***** Execute MCU commands. ******
         self.frameMcuCmd = Frame(self.frame1, bd=2, relief=GROOVE, padx=5, pady=5)
         self.frameMcuCmd.grid(row=0, column=0, sticky=W+E, pady=2)
@@ -395,9 +395,12 @@ class PyMcuGui(Frame):
 
     # Read and show the MCU firmware info.
     def mcu_fw_info(self):
-        self.mcuSer.clear()
-        self.mcuSer.send("info")
-        self.labelFwInfo['text'] = "Firmware info:\n" + self.mcuSer.get().replace('\r', '')
+        try:
+            self.mcuSer.clear()
+            self.mcuSer.send("info")
+            self.labelFwInfo['text'] = "Firmware info:\n" + self.mcuSer.get().replace('\r', '')
+        except Exception as e:
+            messagebox.showerror(self.titleError, self.prefixError + "\nError reading the MCU firmware info:\n" + str(e))
 
     # Get the GPIO button status.
     def gpio_button_get(self):
@@ -406,9 +409,11 @@ class PyMcuGui(Frame):
                 buttonStatus = self.gpioButton.get(i)
                 if len(buttonStatus) != 3:
                     raise Exception("Unable to get the full status of button {0:d}.".format(i))
+                    return -1
                 self.entry_readonly_set_text(self.entryButtonStatus[i], "0x{0:01x}".format(buttonStatus[0]))
                 self.entry_readonly_set_text(self.entryButtonPressedCnt[i], "{0:d}".format(buttonStatus[1]))
                 self.entry_readonly_set_text(self.entryButtonReleasedCnt[i], "{0:d}".format(buttonStatus[2]))
+            return 0
         except Exception as e:
             messagebox.showerror(self.titleError, self.prefixError + "\nError getting the GPIO button status:\n" + str(e))
 
@@ -416,66 +421,84 @@ class PyMcuGui(Frame):
     def gpio_led_set(self):
         try:
             led = int(self.entryGpioLed.get(), 0)
-            self.gpioLED.set(led)
+            ret = self.gpioLED.set(led)
+            if ret:
+                messagebox.showerror(self.titleError, self.prefixError + "\nError setting the GPIO LEDs.")
+            return ret
         except Exception as e:
             messagebox.showerror(self.titleError, self.prefixError + "\nError setting the GPIO LEDs:\n" + str(e))
 
     # Test the GPIO LEDs.
     def gpio_led_test(self):
         try:
+            ret = 0
             led = 0x1
             for i in range(0, 5):
-                self.gpioLED.set(led)
+                ret |= self.gpioLED.set(led)
                 time.sleep(0.1)
                 led <<= 1
             for i in range(0, 3):
-                self.gpioLED.set(0xf)
+                ret |= self.gpioLED.set(0xf)
                 time.sleep(0.1)
-                self.gpioLED.set(0x0)
+                ret |= self.gpioLED.set(0x0)
                 time.sleep(0.1)
+            if ret:
+                messagebox.showerror(self.titleError, self.prefixError + "\nError testing the GPIO LED.")
+            return ret
         except Exception as e:
             messagebox.showerror(self.titleError, self.prefixError + "\nError testing the GPIO LEDs:\n" + str(e))
 
     # Set the RGB LED.
     def rgb_led_set(self):
         try:
-            self.rgbLED.set(
+            ret = self.rgbLED.set(
                 int(self.entryRgbLedR.get(), 0),
                 int(self.entryRgbLedG.get(), 0),
                 int(self.entryRgbLedB.get(), 0))
+            if ret:
+                messagebox.showerror(self.titleError, self.prefixError + "\nError setting the RGB LED.")
+            return ret
         except Exception as e:
             messagebox.showerror(self.titleError, self.prefixError + "\nError setting the RGB LED:\n" + str(e))
 
     # Test the RGB LED.
     def rgb_led_test(self):
         try:
+            ret = 0
             for i in range(0, 0x80, 2):
-                self.rgbLED.set(i, 0x00, 0x00)
+                ret |= self.rgbLED.set(i, 0x00, 0x00)
             for i in range(0, 0x80, 2):
-                self.rgbLED.set(0x00, i, 0x00)
+                ret |= self.rgbLED.set(0x00, i, 0x00)
             for i in range(0, 0x80, 2):
-                self.rgbLED.set(0x00, 0x00, i)
+                ret |= self.rgbLED.set(0x00, 0x00, i)
             for i in range(0, 0x80, 2):
-                self.rgbLED.set(i, i, 0x00)
+                ret |= self.rgbLED.set(i, i, 0x00)
             for i in range(0, 0x80, 2):
-                self.rgbLED.set(i, 0x00, i)
+                ret |= self.rgbLED.set(i, 0x00, i)
             for i in range(0, 0x80, 2):
-                self.rgbLED.set(0x00, i, i)
+                ret |= self.rgbLED.set(0x00, i, i)
             for i in range(0, 0x80, 2):
-                self.rgbLED.set(i, i, i)
-            self.rgbLED.set(0x00, 0x00, 0x00)
+                ret |= self.rgbLED.set(i, i, i)
+            ret |= self.rgbLED.set(0x00, 0x00, 0x00)
+            if ret:
+                messagebox.showerror(self.titleError, self.prefixError + "\nError testing the RGB LED.")
+            return ret
         except Exception as e:
             messagebox.showerror(self.titleError, self.prefixError + "\nError testing the RGB LED:\n" + str(e))
 
     # Update the analog values.
     def analog_update(self):
         try:
-            self.adc.read()
+            ret = self.adc.read()
+            if ret:
+                messagebox.showerror(self.titleError, self.prefixError + "\nError updating the analog values.")
+                return ret
             self.entry_readonly_set_text(self.entryJoystickX, "{0:4d}".format(self.adc.joystickX))
             self.entry_readonly_set_text(self.entryJoystickY, "{0:4d}".format(self.adc.joystickY))
             self.entry_readonly_set_text(self.entryAccelX, "{0:4d}".format(self.adc.accelX))
             self.entry_readonly_set_text(self.entryAccelY, "{0:4d}".format(self.adc.accelY))
             self.entry_readonly_set_text(self.entryAccelZ, "{0:4d}".format(self.adc.accelZ))
+            return 0
         except Exception as e:
             messagebox.showerror(self.titleError, self.prefixError + "\nError updating the analog values:\n" + str(e))
 
@@ -500,37 +523,37 @@ class PyMcuGui(Frame):
             if lcdCmd == "info":
                 None
             elif lcdCmd == "circle":
-                self.labelLcdCmdParam[0]['text'] = "X"
-                self.labelLcdCmdParam[1]['text'] = "Y"
+                self.labelLcdCmdParam[0]['text'] = "X (center)"
+                self.labelLcdCmdParam[1]['text'] = "Y (center)"
                 self.labelLcdCmdParam[2]['text'] = "Radius"
-                self.labelLcdCmdParam[3]['text'] = "Color"
-                self.labelLcdCmdParam[4]['text'] = "Fill"
+                self.labelLcdCmdParam[3]['text'] = "Color (RGB: 0xRRGGBB)"
+                self.labelLcdCmdParam[4]['text'] = "Fill (0: no, 1: yes)"
             elif lcdCmd == "clear":
-                self.labelLcdCmdParam[0]['text'] = "Color"
+                self.labelLcdCmdParam[0]['text'] = "Color (RGB: 0xRRGGBB)"
             elif lcdCmd == "line":
-                self.labelLcdCmdParam[0]['text'] = "X1"
-                self.labelLcdCmdParam[1]['text'] = "Y1"
-                self.labelLcdCmdParam[2]['text'] = "X2"
-                self.labelLcdCmdParam[3]['text'] = "Y2"
-                self.labelLcdCmdParam[4]['text'] = "Color"
+                self.labelLcdCmdParam[0]['text'] = "X1 (start point)"
+                self.labelLcdCmdParam[1]['text'] = "Y1 (start point)"
+                self.labelLcdCmdParam[2]['text'] = "X2 (end point)"
+                self.labelLcdCmdParam[3]['text'] = "Y2 (end point)"
+                self.labelLcdCmdParam[4]['text'] = "Color (RGB: 0xRRGGBB)"
             elif lcdCmd == "orient":
-                self.labelLcdCmdParam[0]['text'] = "Orientation"
+                self.labelLcdCmdParam[0]['text'] = "Orientation (0..3)"
             elif lcdCmd == "pixel":
-                self.labelLcdCmdParam[0]['text'] = "X"
-                self.labelLcdCmdParam[1]['text'] = "Y"
-                self.labelLcdCmdParam[2]['text'] = "Color"
+                self.labelLcdCmdParam[0]['text'] = "X (position)"
+                self.labelLcdCmdParam[1]['text'] = "Y (position)"
+                self.labelLcdCmdParam[2]['text'] = "Color (RGB: 0xRRGGBB)"
             elif lcdCmd == "rect":
-                self.labelLcdCmdParam[0]['text'] = "X1"
-                self.labelLcdCmdParam[1]['text'] = "Y1"
-                self.labelLcdCmdParam[2]['text'] = "X2"
-                self.labelLcdCmdParam[3]['text'] = "Y2"
-                self.labelLcdCmdParam[4]['text'] = "Color"
-                self.labelLcdCmdParam[5]['text'] = "Fill"
+                self.labelLcdCmdParam[0]['text'] = "X1 (corner 1)"
+                self.labelLcdCmdParam[1]['text'] = "Y1 (corner 1)"
+                self.labelLcdCmdParam[2]['text'] = "X2 (corner 2)"
+                self.labelLcdCmdParam[3]['text'] = "Y2 (corner 2)"
+                self.labelLcdCmdParam[4]['text'] = "Color (RGB: 0xRRGGBB)"
+                self.labelLcdCmdParam[5]['text'] = "Fill (0: no, 1: yes)"
             elif lcdCmd == "text":
-                self.labelLcdCmdParam[0]['text'] = "X"
-                self.labelLcdCmdParam[1]['text'] = "Y"
-                self.labelLcdCmdParam[2]['text'] = "Color"
-                self.labelLcdCmdParam[3]['text'] = "Center"
+                self.labelLcdCmdParam[0]['text'] = "X (position)"
+                self.labelLcdCmdParam[1]['text'] = "Y (position)"
+                self.labelLcdCmdParam[2]['text'] = "Color (RGB: 0xRRGGBB)"
+                self.labelLcdCmdParam[3]['text'] = "Align (0: left, 1: center)"
                 self.labelLcdCmdParam[4]['text'] = "Text"
         except Exception as e:
             messagebox.showerror(self.titleError, self.prefixError + "\nError updating the LCD parameter labels:\n" + str(e))
@@ -567,8 +590,13 @@ class PyMcuGui(Frame):
             # Debug: Show command
             if self.debugLevel >= 2:
                 print(self.prefixDebug + "Executing LCD command: {0:s}".format(cmd))
+            # Temporarily increase the timeout, as the LCD command can take longer.
+            mcuSerTimeoutBackup = self.mcuSer.ser.timeout
+            self.mcuSer.ser.timeout = 0.1
             # Send command.
             self.mcuSer.send(cmd)
+            # Restore original timeout value.
+            self.mcuSer.ser.timeout = mcuSerTimeoutBackup
              # Debug: Show response.
             if self.debugLevel >= 3:
                 print(self.prefixDebug + "Response from MCU:")
@@ -594,10 +622,10 @@ class PyMcuGui(Frame):
     def mcu_exec_cmd(self):
         try:
             # Temporarily read more lines for commands with longer output.
-            mcuReadLineMaxBackup = self.mcuSer.mcuReadLineMax
+            mcuSerReadLineMaxBackup = self.mcuSer.mcuReadLineMax
             self.mcuSer.mcuReadLineMax = 10000
             self.mcuSer.send(self.entryMcuCmd.get())
-            self.mcuSer.mcuReadLineMax = mcuReadLineMaxBackup
+            self.mcuSer.mcuReadLineMax = mcuSerReadLineMaxBackup
             self.textMcuCmdResponse['state'] = NORMAL
             self.textMcuCmdResponse.delete(1.0, END)
             self.textMcuCmdResponse.insert(END, self.mcuSer.get_full())
@@ -647,6 +675,8 @@ class PyMcuGui(Frame):
             if ret or len(i2cDataRd) == 0:
                 messagebox.showerror(self.titleError, self.prefixError +
                     "\nError during I2C access on port {0:d}. See console for details.".format(self.varI2CPort.get()))
+                return -1
+            return 0
         except Exception as e:
             messagebox.showerror(self.titleError, self.prefixError +
                 "\nError during I2C access on port {0:d}:\n".format(self.varI2CPort.get()) + str(e))
@@ -664,11 +694,13 @@ class PyMcuGui(Frame):
             self.mcuSer.send(cmd)
             self.mcuSer.ser.timeout = serTimeoutBackup
             if self.mcuSer.eval():
-                messagebox.showerror(self.titleError, "{0:s}:\nDetection of I2C devices on bus {1:d} failed!".format(self.prefixError, self.varI2CPort.get()))
+                messagebox.showerror(self.titleError, "{0:s}:\nDetection of I2C devices on port {1:d} failed!".format(self.prefixError, self.varI2CPort.get()))
                 return -1
             self.entry_readonly_set_text(self.entryI2CDetect, self.mcuSer.get().lstrip(' \t').strip(' \n\r'))
+            return 0
         except Exception as e:
-            messagebox.showerror(self.titleError, self.prefixError + "\nError detecting I2C devices:\n" + str(e))
+            messagebox.showerror(self.titleError, self.prefixError +
+                "\nError detecting I2C devices on port {0:d}:\n".format(self.varI2CPort.get()) + str(e))
 
     # Set up the UART port.
     def uart_setup(self):
@@ -680,6 +712,7 @@ class PyMcuGui(Frame):
             if ret:
                 messagebox.showerror(self.titleError, self.prefixError +
                     "\nError setting up the UART port {0:d}.\n".format(self.varUartPort.get()))
+            return ret
         except Exception as e:
             messagebox.showerror(self.titleError, self.prefixError +
                 "\nError setting up the UART port {0:d}:\n".format(self.varUartPort.get()) + str(e))
@@ -691,6 +724,7 @@ class PyMcuGui(Frame):
             if ret:
                 messagebox.showerror(self.titleError, self.prefixError +
                     "\nError sending string to the UART port {0:d}.\n".format(self.varUartPort.get()))
+            return ret
         except Exception as e:
             messagebox.showerror(self.titleError, self.prefixError +
                 "\nError sending string to the UART port {0:d}:\n".format(self.varUartPort.get()) + str(e))
@@ -707,6 +741,7 @@ class PyMcuGui(Frame):
             if ret:
                 messagebox.showerror(self.titleError, self.prefixError +
                     "\nError sending bytes to the UART port {0:d}.\n".format(self.varUartPort.get()))
+            return ret
         except Exception as e:
             messagebox.showerror(self.titleError, self.prefixError +
                 "\nError sending bytes to the UART port {0:d}:\n".format(self.varUartPort.get()) + str(e))
@@ -726,6 +761,8 @@ class PyMcuGui(Frame):
             if len(uartDataRd) == 0:
                 messagebox.showerror(self.titleError, self.prefixError +
                     "\nError reading data from the UART port {0:d}.\n".format(self.varUartPort.get()))
+                return -1
+            return 0
         except Exception as e:
             messagebox.showerror(self.titleError, self.prefixError +
                 "\nError reading data from the UART port {0:d}:\n".format(self.varUartPort.get()) + str(e))

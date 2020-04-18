@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 28 Mar 2020
-# Rev.: 17 Apr 2020
+# Rev.: 18 Apr 2020
 #
 # Python class for using the I2C ports of the TM4C1294NCPDT MCU.
 #
@@ -23,6 +23,9 @@ class McuI2C:
 
     # Debug configuration.
     debugLevel = 0                 # Debug verbosity.
+
+    # Hardware parameters.
+    hwDataMark          = "Data:"
 
 
 
@@ -134,7 +137,7 @@ class McuI2C:
             return []
         # Get and parse response from MCU.
         ret = self.mcuSer.get()
-        dataPos = ret.find("0x")
+        dataPos = ret.find(self.hwDataMark)
         if dataPos < 0:
             self.errorCount += 1
             print(self.prefixError + "Error parsing data read from the I2C master port {0:d}!".format(self.port))
@@ -143,11 +146,11 @@ class McuI2C:
                 print(self.prefixError + "Response from MCU:")
                 print(self.mcuSer.get_full())
             return []
-        dataStr = ret[dataPos:].rstrip()
-        dataStrList = list(filter(None, dataStr.split(" ")))
-        data = []
-        for i in range(0, len(dataStrList)):
-            data.append(int(dataStrList[i], 0))
+        # Get sub-string containing the data. Add the length of hwDataMark to
+        # point beyond the data mark.
+        dataStr = ret[dataPos+len(self.hwDataMark):].strip()
+        # Convert data string to list of data bytes.
+        data = [int(i, 0) for i in filter(None, dataStr.split(" "))]
         if self.debugLevel >= 2:
             print(self.prefixDebug + "Data read:", end='')
             for i in range(0, len(data)):

@@ -3,7 +3,7 @@
 Auth: M. Fras, Electronics Division, MPI for Physics, Munich  
 Mod.: M. Fras, Electronics Division, MPI for Physics, Munich  
 Date: 07 Feb 2020  
-Rev.: 17 Apr 2020  
+Rev.: 18 Apr 2020  
 
 
 
@@ -141,7 +141,7 @@ Rev.: 17 Apr 2020
     Example minicom session:
     ```
     *******************************************************************************
-    TIVA TM4C1294 `hw_demo' firmware version 0.3.0, release date: 17 Apr 2020
+    TIVA TM4C1294 `hw_demo' firmware version 0.3.1, release date: 18 Apr 2020
     *******************************************************************************
     
     Type `help' to get an overview of available commands.
@@ -165,8 +165,8 @@ Rev.: 17 Apr 2020
       uart    PORT R/W NUM|DATA           UART access (R/W: 0 = write, 1 = read).
       uart-s  PORT BAUD [PARITY] [LOOP]   Set up the UART port.
     > info
-    TIVA TM4C1294 `hw_demo' firmware version 0.3.0, release date: 17 Apr 2020
-    It was compiled using gcc 6.3.1 20170620 at 22:27:55 on Apr 17 2020.
+    TIVA TM4C1294 `hw_demo' firmware version 0.3.1, release date: 18 Apr 2020
+    It was compiled using gcc 6.3.1 20170620 at 13:33:05 on Apr 18 2020.
     > button
     OK. Button 3..0 status: 0x0000
     > button 0
