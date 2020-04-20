@@ -20,7 +20,7 @@ sys.path.append(os.path.dirname(__file__) + '/hw')
 # MCU test script.
 import pyMcuTest
 
-# MCU GUI
+# MCU GUI.
 import pyMcuGui
 
 
@@ -29,23 +29,24 @@ import pyMcuGui
 import argparse
 parser = argparse.ArgumentParser(description='Access to Process some integers.')
 parser.add_argument('-d', '--device', action='store', type=str,
-                    dest='serial_device', default='/dev/ttyUSB0',
+                    dest='serialDevice', default='/dev/ttyUSB0',
                     help='Serial device to access the MCU.')
 parser.add_argument('-g', '--gui', action='store_true',
-                    dest='launch_gui', default=False,
+                    dest='launchGui', default=False,
                     help='Launch the hardware test GUI.')
 parser.add_argument('-t', '--test', action='store_true',
-                    dest='run_test', default=False,
+                    dest='runTest', default=False,
                     help='Run a hardware feature test.')
 args = parser.parse_args()
 
 
 
 # Run the hardware test.
-if args.run_test:
-    pyMcuTest.run_test(args.serial_device)
-elif args.launch_gui:
-    pyMcuGui.launch_gui(args.serial_device)
+if args.runTest:
+    pyMcuTest.run_test(args.serialDevice)
+# Launch the GUI.
+elif args.launchGui:
+    pyMcuGui.launch_gui(args.serialDevice)
 else:
     print("Please use one of these options:")
     print("   --test")

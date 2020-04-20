@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 28 Mar 2020
-# Rev.: 18 Apr 2020
+# Rev.: 20 Apr 2020
 #
 # Python class for using the I2C ports of the TM4C1294NCPDT MCU.
 #
@@ -25,7 +25,8 @@ class McuI2C:
     debugLevel = 0                 # Debug verbosity.
 
     # Hardware parameters.
-    hwDataMark          = "Data:"
+    hwMarkData          = "Data:"
+    hwMarkDevAdr        = "I2C device(s) found at slave address:"
 
 
 
@@ -53,14 +54,15 @@ class McuI2C:
             print(self.prefixDebug + "Response from MCU:")
             print(self.mcuSer.get_full())
         # Evaluate response.
-        if self.mcuSer.eval():
+        ret = self.mcuSer.eval()
+        if ret:
             self.errorCount += 1
             print(self.prefixError + "Error sending command to the I2C master port {0:d}!".format(self.port))
             if self.debugLevel >= 1:
                 print(self.prefixError + "Command sent to MCU: " + cmd)
                 print(self.prefixError + "Response from MCU:")
                 print(self.mcuSer.get_full())
-            return -1
+            return ret
         return 0
 
 
@@ -78,6 +80,7 @@ class McuI2C:
             print(self.separatorDetails + "Bytes read: {0:d}".format(self.bytesRead), end='')
             print(self.separatorDetails + "Bytes written: {0:d}".format(self.bytesWritten), end='')
         print()
+        return 0
 
 
 
@@ -97,14 +100,14 @@ class McuI2C:
             return -1
         accMode = 0x00 | (0x02 if repeatedStart else 0) | (0x04 if not stop else 0)
         cmd = "i2c {0:d} 0x{1:02x} 0x{2:02x}".format(self.port, slaveAddr & 0x7f, accMode)
-        for i in range(0, len(data)):
-            cmd += " 0x{0:02x}".format(data[i] & 0xff)
+        for datum in data:
+            cmd += " 0x{0:02x}".format(datum & 0xff)
         if self.debugLevel >= 2:
             print(self.prefixDebug + "Writing data to the I2C master port {0:d}.".format(self.port), end='')
             print(self.separatorDetails + "Slave address: 0x{0:02x}".format(slaveAddr), end='')
             print(self.separatorDetails + "Data:", end='')
-            for i in range(0, len(data)):
-                print(" 0x{0:02x}".format(data[i] & 0xff), end='')
+            for datum in data:
+                print(" 0x{0:02x}".format(datum & 0xff), end='')
             print()
         # Send command.
         ret = self.ms_send_cmd(cmd)
@@ -127,17 +130,18 @@ class McuI2C:
             print(self.prefixError + "Error reading from the I2C master port {0:d}!".format(self.port))
             if self.debugLevel >= 1:
                 print(self.prefixError + "At least one data byte must be read!")
-            return []
+            return -1, []
         accMode = 0x01 | (0x02 if repeatedStart else 0) | (0x04 if not stop else 0)
         cmd = "i2c {0:d} 0x{1:02x} 0x{2:02x} {3:d}".format(self.port, slaveAddr & 0x7f, accMode, cnt)
         if self.debugLevel >= 2:
             print(self.prefixDebug + "Reading data from the I2C master port {0:d}.".format(self.port))
         # Send command.
-        if self.ms_send_cmd(cmd):
-            return []
+        ret = self.ms_send_cmd(cmd)
+        if ret:
+            return ret, []
         # Get and parse response from MCU.
-        ret = self.mcuSer.get()
-        dataPos = ret.find(self.hwDataMark)
+        dataStr = self.mcuSer.get()
+        dataPos = dataStr.find(self.hwMarkData)
         if dataPos < 0:
             self.errorCount += 1
             print(self.prefixError + "Error parsing data read from the I2C master port {0:d}!".format(self.port))
@@ -145,20 +149,20 @@ class McuI2C:
                 print(self.prefixError + "Command sent to MCU: " + cmd)
                 print(self.prefixError + "Response from MCU:")
                 print(self.mcuSer.get_full())
-            return []
-        # Get sub-string containing the data. Add the length of hwDataMark to
+            return -1, []
+        # Get sub-string containing the data. Add the length of hwMarkData to
         # point beyond the data mark.
-        dataStr = ret[dataPos+len(self.hwDataMark):].strip()
+        dataStr = dataStr[dataPos+len(self.hwMarkData):].strip()
         # Convert data string to list of data bytes.
         data = [int(i, 0) for i in filter(None, dataStr.split(" "))]
         if self.debugLevel >= 2:
             print(self.prefixDebug + "Data read:", end='')
-            for i in range(0, len(data)):
-                print(" 0x{0:02x}".format(data[i]), end='')
+            for datum in data:
+                print(" 0x{0:02x}".format(datum), end='')
             print()
         self.accessRead += 1
         self.bytesRead += len(data)
-        return data
+        return 0, data
 
 
 
@@ -179,7 +183,48 @@ class McuI2C:
             print()
         # Send command.
         ret = self.ms_send_cmd(cmd)
-        if read: self.accessRead += 1
-        else: self.accessWrite += 1
+        if read:
+            self.accessRead += 1
+        else:
+            self.accessWrite += 1
         return ret
+
+
+
+    # Detect devices on the I2C bus.
+    def ms_detect_devices(self):
+        cmd = "i2c-det {0:d}".format(self.port)
+        if self.debugLevel >= 2:
+            print(self.prefixDebug + "Detecting devices on I2C master port {0:d}.".format(self.port), end='')
+            print()
+        # Temporarily increase the timeout of the serial device.
+        serTimeoutBackup = self.mcuSer.ser.timeout
+        self.mcuSer.ser.timeout = 0.01
+        self.ms_send_cmd(cmd)
+        self.mcuSer.ser.timeout = serTimeoutBackup
+        ret = self.mcuSer.eval()
+        if ret:
+            return ret, []
+        # Get and parse response from MCU.
+        devAdrStr = self.mcuSer.get()
+        devAdrPos = devAdrStr.find(self.hwMarkDevAdr)
+        if devAdrPos < 0:
+            self.errorCount += 1
+            print(self.prefixError + "Error parsing device addresses while detecting I2C devices on the I2C master port {0:d}!".format(self.port))
+            if self.debugLevel >= 1:
+                print(self.prefixError + "Command sent to MCU: " + cmd)
+                print(self.prefixError + "Response from MCU:")
+                print(self.mcuSer.get_full())
+            return -1, []
+        # Get sub-string containing the data. Add the length of hwMarkDevAdr to
+        # point beyond the data mark.
+        devAdrStr = devAdrStr[devAdrPos+len(self.hwMarkDevAdr):].strip()
+        # Convert device address string to list of address bytes.
+        devAdr = [int(i, 0) for i in filter(None, devAdrStr.split(" "))]
+        if self.debugLevel >= 2:
+            print(self.prefixDebug + "I2C device{0:s} found at slave address:".format('' if len(devAdr) == 1 else 's'), end='')
+            for adr in devAdr:
+                print(" 0x{0:02x}".format(adr), end='')
+            print()
+        return 0, devAdr
 

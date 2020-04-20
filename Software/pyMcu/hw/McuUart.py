@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 31 Mar 2020
-# Rev.: 18 Apr 2020
+# Rev.: 20 Apr 2020
 #
 # Python class for using the UART ports of the TM4C1294NCPDT MCU.
 #
@@ -28,7 +28,7 @@ class McuUart:
     hwBaudMin           = 150
     hwBaudMax           = 15000000
     hwParity            = ['none', 'even', 'odd', 'one', 'zero']
-    hwDataMark          = "Data:"
+    hwMarkData          = "Data:"
 
 
 
@@ -56,14 +56,15 @@ class McuUart:
             print(self.prefixDebug + "Response from MCU:")
             print(self.mcuSer.get_full())
         # Evaluate response.
-        if self.mcuSer.eval():
+        ret = self.mcuSer.eval()
+        if ret:
             self.errorCount += 1
             print(self.prefixError + "Error sending command to the UART port {0:d}!".format(self.port))
             if self.debugLevel >= 1:
                 print(self.prefixError + "Command sent to MCU: " + cmd)
                 print(self.prefixError + "Response from MCU:")
                 print(self.mcuSer.get_full())
-            return -1
+            return ret
         return 0
 
 
@@ -81,6 +82,7 @@ class McuUart:
             print(self.separatorDetails + "Bytes read: {0:d}".format(self.bytesRead), end='')
             print(self.separatorDetails + "Bytes written: {0:d}".format(self.bytesWritten), end='')
         print()
+        return 0
 
 
 
@@ -114,8 +116,8 @@ class McuUart:
         if self.debugLevel >= 2:
             print(self.prefixDebug + "Clearing RX data from the UART port {0:d}.".format(self.port))
         # Send command.
-        # CAUTION: Do not check for errors here, as this command will return an
-        #          error, when it tries to read more bytes than available.
+        # CAUTION: Do not check for errors here, as this command will return a
+        #          warning, when it tries to read more bytes than available.
         mcuSerDebugLevelBak = self.mcuSer.debugLevel
         self.mcuSer.debugLevel = 0
         self.mcuSer.send(cmd)
@@ -133,13 +135,13 @@ class McuUart:
                 print(self.prefixError + "At least one data byte must be provided!")
             return -1
         cmd = "uart {0:d} 0".format(self.port)
-        for i in range(0, len(data)):
-            cmd += " 0x{0:02x}".format(data[i] & 0xff)
+        for datum in data:
+            cmd += " 0x{0:02x}".format(datum & 0xff)
         if self.debugLevel >= 2:
             print(self.prefixDebug + "Writing data to the UART port {0:d}.".format(self.port), end='')
             print(self.separatorDetails + "Data:", end='')
-            for i in range(0, len(data)):
-                print(" 0x{0:02x}".format(data[i] & 0xff), end='')
+            for datum in data:
+                print(" 0x{0:02x}".format(datum & 0xff), end='')
             print()
         # Send command.
         ret = self.send_cmd(cmd)
@@ -152,7 +154,7 @@ class McuUart:
     # Write a string to the UART port.
     def write_str(self, s):
         data = [ord(x) for x in list(s)]
-        self.write(data)
+        return self.write(data)
 
 
 
@@ -163,17 +165,18 @@ class McuUart:
             print(self.prefixError + "Error reading from the UART port {0:d}!".format(self.port))
             if self.debugLevel >= 1:
                 print(self.prefixError + "At least one data byte must be read!")
-            return []
+            return -1, []
         cmd = "uart {0:d} 1 {1:d}".format(self.port, cnt)
         if self.debugLevel >= 2:
             print(self.prefixDebug + "Reading data from the UART port {0:d}.".format(self.port))
         # Send command.
-        if self.send_cmd(cmd):
-            return []
+        ret = self.send_cmd(cmd)
+        if ret:
+            return ret, []
         # Get response.
-        ret = self.mcuSer.get()
+        dataStr = self.mcuSer.get()
         # Find position of data.
-        dataPos = ret.find(self.hwDataMark)
+        dataPos = dataStr.find(self.hwMarkData)
         # No data available.
         if dataPos < 0:
             self.errorCount += 1
@@ -182,20 +185,20 @@ class McuUart:
                 print(self.prefixError + "Command sent to MCU: " + cmd)
                 print(self.prefixError + "Response from MCU:")
                 print(self.mcuSer.get_full())
-            return []
-        # Get sub-string containing the data. Add the length of hwDataMark to
+            return -1, []
+        # Get sub-string containing the data. Add the length of hwMarkData to
         # point beyond the data mark.
-        dataStr = ret[dataPos+len(self.hwDataMark):].strip()
+        dataStr = dataStr[dataPos+len(self.hwMarkData):].strip()
         # Convert data string to list of data bytes.
         data = [int(i, 0) for i in filter(None, dataStr.split(" "))]
         if self.debugLevel >= 2:
             print(self.prefixDebug + "Data read:", end='')
-            for i in range(0, len(data)):
-                print(" 0x{0:02x}".format(data[i]), end='')
+            for datum in data:
+                print(" 0x{0:02x}".format(datum), end='')
             print()
         self.accessRead += 1
         self.bytesRead += len(data)
-        return data
+        return 0, data
 
 
 
@@ -209,34 +212,35 @@ class McuUart:
         self.mcuSer.send(cmd)
         # Evaluate response.
         # CAUTION: When no data are available, the command will return a
-        #          warning, i.e. return code 1. This must be ignored.
-        if self.mcuSer.eval() > 1:
+        #          warning. This must be ignored.
+        ret = self.mcuSer.eval()
+        if ret > self.mcuSer.mcuResponseCodeWarning:
             print(self.prefixError + "Error reading all data from the UART port {0:d}!".format(self.port))
             if self.debugLevel >= 1:
                 print(self.prefixError + "Command sent to MCU: " + cmd)
                 print(self.prefixError + "Response from MCU:")
                 print(self.mcuSer.get_full())
-            return []
+            return ret, []
         # Get response.
-        ret = self.mcuSer.get()
+        dataStr = self.mcuSer.get()
         # Find position of data.
-        dataPos = ret.find(self.hwDataMark)
+        dataPos = dataStr.find(self.hwMarkData)
         # No data available.
         if dataPos < 0:
-            return []
-        # Get sub-string containing the data. Add the length of hwDataMark to
+            return self.mcuSer.mcuResponseCodeWarning, []   # Return code indicating a warning.
+        # Get sub-string containing the data. Add the length of hwMarkData to
         # point beyond the data mark.
-        dataStr = ret[dataPos+len(self.hwDataMark):].strip()
+        dataStr = dataStr[dataPos+len(self.hwMarkData):].strip()
         # Convert data string to list of data bytes.
         data = [int(i, 0) for i in filter(None, dataStr.split(" "))]
         if self.debugLevel >= 2:
             print(self.prefixDebug + "Data read:", end='')
-            for i in range(0, len(data)):
-                print(" 0x{0:02x}".format(data[i]), end='')
+            for datum in data:
+                print(" 0x{0:02x}".format(datum), end='')
             print()
         self.accessRead += 1
         self.bytesRead += len(data)
-        return data
+        return 0, data
 
 
 
@@ -244,9 +248,9 @@ class McuUart:
     def read_str(self, cnt):
         # If the data count argument is 0 or negative, read all available data.
         if cnt <= 0:
-            data = self.read_all()
+            ret, data = self.read_all()
         else:
-            data = self.read(cnt)
+            ret, data = self.read(cnt)
         s = ''.join([chr(x) for x in data])
-        return s
+        return ret, s
 

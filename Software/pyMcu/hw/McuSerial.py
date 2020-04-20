@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 24 Mar 2020
-# Rev.: 18 Apr 2020
+# Rev.: 20 Apr 2020
 #
 # Python class for communicating with the TM4C1294NCPDT MCU over a serial port
 # (UART).
@@ -11,7 +11,6 @@
 
 
 import serial
-import time
 
 
 
@@ -19,12 +18,17 @@ class McuSerial:
 
     # MCU-specific variables and parameters.
     mcuCmdPrompt = "> "
-    mcuReadLineMax = 100
-    mcuResponse = ""
-    mcuResponseOk = "OK"
-    mcuResponseWarning = "WARNING"
-    mcuResponseError = "ERROR"
-    mcuResponseFatal = "FATAL"
+    mcuReadLineMax          = 100
+    mcuResponse             = ""
+    mcuResponseOk           = "OK"
+    mcuResponseWarning      = "WARNING"
+    mcuResponseError        = "ERROR"
+    mcuResponseFatal        = "FATAL"
+    mcuResponseCodeOk       = 0
+    mcuResponseCodeWarning  = 1
+    mcuResponseCodeError    = 2
+    mcuResponseCodeFatal    = 3
+    mcuResponseCodeUnknown  = -1
 
     # Message prefixes and separators.
     prefixDetails       = " - "
@@ -101,10 +105,9 @@ class McuSerial:
             return 0
         try:
             cnt = 0
-            line = ""
             while cnt < self.mcuReadLineMax:
                 cnt += 1
-                line = self.ser.readline()
+                self.ser.readline()
             return 0
         except Exception as e:
             self.errorCount += 1
@@ -154,17 +157,17 @@ class McuSerial:
         if self.simulateHwAccess:
             if self.debugLevel >= 3:
                 print(self.simulateHwAccessMsg)
-            return 0
+            return self.mcuResponseCodeOk
         if self.mcuResponse.find(self.mcuResponseOk, 0, len(self.mcuResponseOk)) == 0:
-            ret = 0
+            ret = self.mcuResponseCodeOk
         elif self.mcuResponse.find(self.mcuResponseWarning, 0, len(self.mcuResponseWarning)) == 0:
-            ret = 1
+            ret = self.mcuResponseCodeWarning
         elif self.mcuResponse.find(self.mcuResponseError, 0, len(self.mcuResponseError)) == 0:
-            ret = 2
+            ret = self.mcuResponseCodeError
         elif self.mcuResponse.find(self.mcuResponseFatal, 0, len(self.mcuResponseFatal)) == 0:
-            ret = 3
+            ret = self.mcuResponseCodeFatal
         else:
-            ret = -1
+            ret = self.mcuResponseCodeUnknown
         if self.debugLevel >= 3:
             print(self.prefixDebug + "Evaluation of MCU result: {0:d}".format(ret))
         return ret
@@ -224,5 +227,4 @@ class McuSerial:
             self.errorCount += 1
             print(self.prefixError + "Error reading from serial port `" + self.ser.portstr + "': " + str(e))
             return -1
-        return 0
 

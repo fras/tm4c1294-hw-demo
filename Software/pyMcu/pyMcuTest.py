@@ -4,7 +4,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 24 Mar 2020
-# Rev.: 17 Apr 2020
+# Rev.: 20 Apr 2020
 #
 # Python script to test hardware features of the TM4C1294NCPDT MCU on the
 # TM4C1294 Connected LaunchPad Evaluation Kit over a serial port (UART).
@@ -86,9 +86,9 @@ def mcuSerial_print_info(mcuSer):
 
 
 # Run the hardware test.
-def run_test(dev):
+def run_test(serialDevice):
     # Open the MCU serial interface.
-    mcuSer = McuSerial.McuSerial(dev)
+    mcuSer = McuSerial.McuSerial(serialDevice)
     mcuSer.debugLevel = 0
     mcuSer.simulateHwAccess = False
     mcuSer.clear()
@@ -136,9 +136,12 @@ def run_test(dev):
     if testGpioButton:
         print("Get GPIO button status.")
         for i in range(0, 4):
-            buttonStatus = gpioButton.get(i)
-            print("Button {0:d}: Status = 0x{1:01x}, pressed count = {2:d}, released count = {3:d}".format(
-                i, buttonStatus[0], buttonStatus[1], buttonStatus[2]))
+            ret, buttonStatus = gpioButton.get(i)
+            if ret:
+                print("Error getting the GPIO button {0:d} status.".format(i))
+            else:
+                print("Button {0:d}: Status = 0x{1:01x}, pressed count = {2:d}, released count = {3:d}".format(
+                    i, buttonStatus[0], buttonStatus[1], buttonStatus[2]))
         print(separatorTests)
 
 
@@ -175,7 +178,8 @@ def run_test(dev):
             mcuSer.send("led 0x%x" % led)
 #            print(mcuSer.get())
             print(mcuSer.get_full())
-            if mcuSer.eval(): print("Error!")
+            if mcuSer.eval():
+                print("Error!")
             led <<= 1
             time.sleep(0.1)
         print(separatorTests)
@@ -206,17 +210,17 @@ def run_test(dev):
 #            mcuI2C2.ms_read(0x40, 2)
         # Standard access.
         mcuI2C2.ms_write(0x40, [0x01, 0x12, 0x34])
-        data = mcuI2C2.ms_read(0x40, 2)
+        ret, data = mcuI2C2.ms_read(0x40, 2)
         print("I2C data read:", end='')
-        for i in range(0, len(data)):
-            print(" 0x{0:02x}".format(data[i]), end='')
+        for datum in data:
+            print(" 0x{0:02x}".format(datum), end='')
         print()
         # Advanced access.
-        mcuI2C2.ms_write_adv(0x40, [0x01], False, False)    # No repeated start, no stop condition.
-        data = mcuI2C2.ms_read_adv(0x40, 2, True, True)     # Repeated start, stop condition.
+        mcuI2C2.ms_write_adv(0x40, [0x01], False, False)        # No repeated start, no stop condition.
+        ret, data = mcuI2C2.ms_read_adv(0x40, 2, True, True)     # Repeated start, stop condition.
         print("I2C data read:", end='')
-        for i in range(0, len(data)):
-            print(" 0x{0:02x}".format(data[i]), end='')
+        for datum in data:
+            print(" 0x{0:02x}".format(datum), end='')
         print()
         print(separatorTests)
 
@@ -233,15 +237,15 @@ def run_test(dev):
         # Binary write/read.
         mcuUart6.clear()
         mcuUart6.write([0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07])
-        data = mcuUart6.read_all()
+        ret, data = mcuUart6.read_all()
         print("Data read from UART:", end='')
-        for i in range(0, len(data)):
-            print(" 0x{0:02x}".format(data[i]), end='')
+        for datum in data:
+            print(" 0x{0:02x}".format(datum), end='')
         print()
         # String write/read.
         mcuUart6.clear()
         mcuUart6.write_str("Hello world!")
-        s = mcuUart6.read_str(0)    # 0 = Read all data.
+        ret, s = mcuUart6.read_str(0)   # 0 = Read all data.
         print("String read from UART: {0:s}".format(s))
         print(separatorTests)
 
@@ -272,11 +276,11 @@ def run_test(dev):
 #        i2cTmp006.reset()
 #        time.sleep(1.0)
         i2cTmp006.init()
-        print("Manufacturer ID : 0x{0:04x}".format(i2cTmp006.read_manufacturer_id()))
-        print("Device ID       : 0x{0:04x}".format(i2cTmp006.read_device_id()))
-        for i in range (0, 1):
-            print("Sensor voltage  : {0:9.5f} uV".format(i2cTmp006.read_voltage() / 1e3))
-            print("Temperature     : {0:9.5f} degC".format(i2cTmp006.read_temperature()))
+        print("Manufacturer ID : 0x{0:04x}".format(i2cTmp006.read_manufacturer_id()[1]))
+        print("Device ID       : 0x{0:04x}".format(i2cTmp006.read_device_id()[1]))
+        for i in range(0, 1):
+            print("Sensor voltage  : {0:9.5f} uV".format(i2cTmp006.read_voltage()[1] / 1e3))
+            print("Temperature     : {0:9.5f} degC".format(i2cTmp006.read_temperature()[1]))
         print(separatorTests)
 
 
@@ -287,10 +291,10 @@ def run_test(dev):
 #        i2cOpt3001.reset()
 #        time.sleep(1.0)
         i2cOpt3001.init()
-        print("Manufacturer ID : 0x{0:04x}".format(i2cOpt3001.read_manufacturer_id()))
-        print("Device ID       : 0x{0:04x}".format(i2cOpt3001.read_device_id()))
-        for i in range (0, 1):
-            print("Illuminance     : {0:9.5f} lux".format(i2cOpt3001.read_illuminance()))
+        print("Manufacturer ID : 0x{0:04x}".format(i2cOpt3001.read_manufacturer_id()[1]))
+        print("Device ID       : 0x{0:04x}".format(i2cOpt3001.read_device_id()[1]))
+        for i in range(0, 1):
+            print("Illuminance     : {0:9.5f} lux".format(i2cOpt3001.read_illuminance()[1]))
         print(separatorTests)
 
 
@@ -305,12 +309,16 @@ def run_test(dev):
 
 # Execute the test.
 if __name__ == "__main__":
+    # Command line arguments.
     import argparse
     parser = argparse.ArgumentParser(description='Access to Process some integers.')
     parser.add_argument('-d', '--device', action='store', type=str,
-                        dest='serial_device', default='/dev/ttyUSB0',
+                        dest='serialDevice', default='/dev/ttyUSB0',
                         help='Serial device to access the MCU.')
     args = parser.parse_args()
-    run_test(args.serial_device)
+
+    # Run the hardware test.
+    run_test(args.serialDevice)
+
     print("\nBye-bye!")
 

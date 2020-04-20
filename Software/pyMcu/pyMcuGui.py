@@ -4,7 +4,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 30 Mar 2020
-# Rev.: 18 Apr 2020
+# Rev.: 20 Apr 2020
 #
 # Python GUI for accessing the TM4C1294NCPDT MCU on the TM4C1294 Connected
 # LaunchPad Evaluation Kit over a serial port (UART).
@@ -43,8 +43,8 @@ class PyMcuGui(Frame):
 
     # Software version.
     swName      = "pyMCU"
-    swVersion   = "0.2.1"
-    swDate      = "18 Apr 2020"
+    swVersion   = "0.2.2"
+    swDate      = "20 Apr 2020"
 
     # Window titles.
     titleMain   = swName + " GUI - v" + swVersion + " - " + swDate
@@ -97,7 +97,7 @@ class PyMcuGui(Frame):
         self.entryButtonStatus = []
         self.entryButtonPressedCnt = []
         self.entryButtonReleasedCnt = []
-        for i in range (0, GpioButton.GpioButton.buttonNum):
+        for i in range(0, GpioButton.GpioButton.buttonNum):
             self.labelButtonName.append(Label(self.frameButton, text=buttonNames[i] + " ({0:d})".format(i), anchor=W, justify=LEFT, width = 12))
             self.labelButtonName[i].grid(row=i+1, column=0, sticky=W+E)
             self.entryButtonStatus.append(Entry(self.frameButton, width=10, justify=RIGHT, state="readonly"))
@@ -216,7 +216,7 @@ class PyMcuGui(Frame):
         self.varLcdCmds.set(self.optionsLcdCmds[0])
         self.labelLcdCmdParam = []
         self.entryLcdCmdParam = []
-        for i in range (0, 6):
+        for i in range(0, 6):
             self.labelLcdCmdParam.append(Label(self.frameLcd, text="Parameter {0:d}".format(i), anchor=W))
             self.labelLcdCmdParam[i].grid(row=i+1, column=0, sticky=W+E)
             self.entryLcdCmdParam.append(Entry(self.frameLcd, width=41, justify=LEFT))
@@ -356,9 +356,9 @@ class PyMcuGui(Frame):
         self.buttonQuit.grid(row=1, column=0, columnspan=2, sticky=W+E, pady=2)
 
     # Initialize the hardware.
-    def init_hw(self, dev):
+    def init_hw(self, serialDevice):
         # Open the MCU serial interface.
-        self.mcuSer = McuSerial.McuSerial(dev)
+        self.mcuSer = McuSerial.McuSerial(serialDevice)
         self.mcuSer.debugLevel = 0
         self.mcuSer.simulateHwAccess = False
         self.mcuSer.clear()
@@ -390,8 +390,10 @@ class PyMcuGui(Frame):
             entry.delete(0, END)
             entry.insert(0, text)
             entry['state'] = 'readonly'
+            return 0
         except Exception as e:
             messagebox.showerror(self.titleError, self.prefixError + "\nError setting the text of a tkinter Entry element:\n" + str(e))
+            return -1
 
     # Read and show the MCU firmware info.
     def mcu_fw_info(self):
@@ -399,23 +401,25 @@ class PyMcuGui(Frame):
             self.mcuSer.clear()
             self.mcuSer.send("info")
             self.labelFwInfo['text'] = "Firmware info:\n" + self.mcuSer.get().replace('\r', '')
+            return 0
         except Exception as e:
             messagebox.showerror(self.titleError, self.prefixError + "\nError reading the MCU firmware info:\n" + str(e))
+            return -1
 
     # Get the GPIO button status.
     def gpio_button_get(self):
         try:
             for i in range(0, self.gpioButton.buttonNum):
-                buttonStatus = self.gpioButton.get(i)
-                if len(buttonStatus) != 3:
+                ret, buttonStatus = self.gpioButton.get(i)
+                if ret or len(buttonStatus) != 3:
                     raise Exception("Unable to get the full status of button {0:d}.".format(i))
-                    return -1
                 self.entry_readonly_set_text(self.entryButtonStatus[i], "0x{0:01x}".format(buttonStatus[0]))
                 self.entry_readonly_set_text(self.entryButtonPressedCnt[i], "{0:d}".format(buttonStatus[1]))
                 self.entry_readonly_set_text(self.entryButtonReleasedCnt[i], "{0:d}".format(buttonStatus[2]))
             return 0
         except Exception as e:
             messagebox.showerror(self.titleError, self.prefixError + "\nError getting the GPIO button status:\n" + str(e))
+            return -1
 
     # Set the GPIO LEDs.
     def gpio_led_set(self):
@@ -427,6 +431,7 @@ class PyMcuGui(Frame):
             return ret
         except Exception as e:
             messagebox.showerror(self.titleError, self.prefixError + "\nError setting the GPIO LEDs:\n" + str(e))
+            return -1
 
     # Test the GPIO LEDs.
     def gpio_led_test(self):
@@ -447,6 +452,7 @@ class PyMcuGui(Frame):
             return ret
         except Exception as e:
             messagebox.showerror(self.titleError, self.prefixError + "\nError testing the GPIO LEDs:\n" + str(e))
+            return -1
 
     # Set the RGB LED.
     def rgb_led_set(self):
@@ -460,6 +466,7 @@ class PyMcuGui(Frame):
             return ret
         except Exception as e:
             messagebox.showerror(self.titleError, self.prefixError + "\nError setting the RGB LED:\n" + str(e))
+            return -1
 
     # Test the RGB LED.
     def rgb_led_test(self):
@@ -485,6 +492,7 @@ class PyMcuGui(Frame):
             return ret
         except Exception as e:
             messagebox.showerror(self.titleError, self.prefixError + "\nError testing the RGB LED:\n" + str(e))
+            return -1
 
     # Update the analog values.
     def analog_update(self):
@@ -501,27 +509,30 @@ class PyMcuGui(Frame):
             return 0
         except Exception as e:
             messagebox.showerror(self.titleError, self.prefixError + "\nError updating the analog values:\n" + str(e))
+            return -1
 
     # Update the sensor values.
     def sensor_update(self):
         try:
-            self.entry_readonly_set_text(self.entrySensorTmp006ManId, "0x{0:04x}".format(self.i2cTmp006.read_manufacturer_id()))
-            self.entry_readonly_set_text(self.entrySensorTmp006DevId, "0x{0:04x}".format(self.i2cTmp006.read_device_id()))
-            self.entry_readonly_set_text(self.entrySensorTmp006Value, "{0:9.5f} degC".format(self.i2cTmp006.read_temperature()))
-            self.entry_readonly_set_text(self.entrySensorOpt3001ManId, "0x{0:04x}".format(self.i2cOpt3001.read_manufacturer_id()))
-            self.entry_readonly_set_text(self.entrySensorOpt3001DevId, "0x{0:04x}".format(self.i2cOpt3001.read_device_id()))
-            self.entry_readonly_set_text(self.entrySensorOpt3001Value, "{0:9.5f} lux".format(self.i2cOpt3001.read_illuminance()))
+            self.entry_readonly_set_text(self.entrySensorTmp006ManId, "0x{0:04x}".format(self.i2cTmp006.read_manufacturer_id()[1]))
+            self.entry_readonly_set_text(self.entrySensorTmp006DevId, "0x{0:04x}".format(self.i2cTmp006.read_device_id()[1]))
+            self.entry_readonly_set_text(self.entrySensorTmp006Value, "{0:9.5f} degC".format(self.i2cTmp006.read_temperature()[1]))
+            self.entry_readonly_set_text(self.entrySensorOpt3001ManId, "0x{0:04x}".format(self.i2cOpt3001.read_manufacturer_id()[1]))
+            self.entry_readonly_set_text(self.entrySensorOpt3001DevId, "0x{0:04x}".format(self.i2cOpt3001.read_device_id()[1]))
+            self.entry_readonly_set_text(self.entrySensorOpt3001Value, "{0:9.5f} lux".format(self.i2cOpt3001.read_illuminance()[1]))
+            return 0
         except Exception as e:
             messagebox.showerror(self.titleError, self.prefixError + "\nError updating the sensor values:\n" + str(e))
+            return -1
 
     # Update the parameter labels according to the currently selected LCD command.
     def lcd_update_labels(self, lcdCmd):
         try:
             lcdCmd = lcdCmd[:lcdCmd.find(" - ")].strip()
-            for i in range (0, 6):
+            for i in range(0, 6):
                 self.labelLcdCmdParam[i]['text'] = "<unused>"
             if lcdCmd == "info":
-                None
+                pass
             elif lcdCmd == "circle":
                 self.labelLcdCmdParam[0]['text'] = "X (center)"
                 self.labelLcdCmdParam[1]['text'] = "Y (center)"
@@ -555,8 +566,10 @@ class PyMcuGui(Frame):
                 self.labelLcdCmdParam[2]['text'] = "Color (RGB: 0xRRGGBB)"
                 self.labelLcdCmdParam[3]['text'] = "Align (0: left, 1: center)"
                 self.labelLcdCmdParam[4]['text'] = "Text"
+            return 0
         except Exception as e:
             messagebox.showerror(self.titleError, self.prefixError + "\nError updating the LCD parameter labels:\n" + str(e))
+            return -1
 
     # Execute an LCD command
     def lcd_exec_cmd(self):
@@ -580,9 +593,9 @@ class PyMcuGui(Frame):
             elif lcdCmd == "text":
                 lcdCmdParamNum = 5
             else:
-                return
+                return -1
             cmd = "lcd " + lcdCmd
-            for i in range (0, lcdCmdParamNum):
+            for i in range(0, lcdCmdParamNum):
                 lcdCmdParam = self.entryLcdCmdParam[i].get().strip()
                 if lcdCmdParam == "":
                     lcdCmdParam = "0"
@@ -613,6 +626,7 @@ class PyMcuGui(Frame):
             return 0
         except Exception as e:
             messagebox.showerror(self.titleError, self.prefixError + "\nError executing LCD parameters:\n" + str(e))
+            return -1
 
     # For using the enter (return) key in self.entryLcdCmdParam[].
     def lcd_exec_cmd_enter(self, event):
@@ -630,23 +644,37 @@ class PyMcuGui(Frame):
             self.textMcuCmdResponse.delete(1.0, END)
             self.textMcuCmdResponse.insert(END, self.mcuSer.get_full())
             self.textMcuCmdResponse['state'] = DISABLED
+            return 0
         except Exception as e:
             messagebox.showerror(self.titleError, self.prefixError + "\nError executing MCU command:\n" + str(e))
+            return -1
 
     # For using the enter (return) key in self.entryMcuCmd.
     def mcu_exec_cmd_enter(self, event):
         self.mcu_exec_cmd()
 
+    # Get the currently selected I2C port and return its object.
+    def i2c_port_get(self):
+        try:
+            if self.varI2CPort.get() == 0:
+                return 0, self.mcuI2C0
+            elif self.varI2CPort.get() == 2:
+                return 0, self.mcuI2C2
+            else:
+                messagebox.showerror(self.titleError, self.prefixError +
+                    "\nI2C port {0:d} not supported!".format(self.varI2CPort.get()))
+            return -1, None
+        except Exception as e:
+            messagebox.showerror(self.titleError, self.prefixError +
+                "\nError getting the current I2C port {0:d}:\n".format(self.varI2CPort.get()) + str(e))
+            return -1, None
+
     # Perform an I2C access.
     def i2c_access(self):
         try:
-            # Get I2C options.
-            if self.varI2CPort.get() == 0:
-                mcuI2C = self.mcuI2C0
-            elif self.varI2CPort.get() == 2:
-                mcuI2C = self.mcuI2C2
-            else:
-                messagebox.showerror(self.titleError, "{0:s}:\nI2C bus {1:d} not supported!".format(self.prefixError, self.varI2CPort.get()))
+            # Get I2C port.
+            ret, mcuI2C = self.i2c_port_get()
+            if ret or mcuI2C is None:
                 return -1
             i2cSlaveAdr = int(self.entryI2CSlaveAdr.get(), 0)
             i2cDataWr = [int(i, 0) for i in filter(None, self.entryI2CDataWr.get().split(" "))]
@@ -655,79 +683,97 @@ class PyMcuGui(Frame):
             i2cRepeatedStart = self.varI2CRepeatedStart.get()
             i2cStopCondition = self.varI2CStopCondition.get()
             i2cQuickCommand = self.varI2CQuickCommand.get()
-            i2cAccMode = (0x01 if i2cRead else 0x00) | \
-                         (0x02 if i2cRepeatedStart else 0x00) | \
-                         (0x04 if not i2cStopCondition else 0x00) | \
-                         (0x08 if i2cQuickCommand else 0x00)
             ret = 0
             i2cDataRd = [0]
             if i2cQuickCommand:
                 ret = mcuI2C.ms_quick_cmd_adv(i2cSlaveAdr, i2cRead, i2cRepeatedStart)
             elif i2cRead:
-                i2cDataRd = mcuI2C.ms_read_adv(i2cSlaveAdr, i2cDataRdCnt, i2cRepeatedStart, i2cStopCondition)
+                ret, i2cDataRd = mcuI2C.ms_read_adv(i2cSlaveAdr, i2cDataRdCnt, i2cRepeatedStart, i2cStopCondition)
                 i2cDataRdStr = ""
-                for i in range(0, len(i2cDataRd)):
-                    if i > 0: i2cDataRdStr += " "
-                    i2cDataRdStr += "0x{0:02x}".format(i2cDataRd[i])
-                self.entry_readonly_set_text(self.entryI2CDataRd, i2cDataRdStr)
+                for datum in i2cDataRd:
+                    i2cDataRdStr += "0x{0:02x} ".format(datum)
+                self.entry_readonly_set_text(self.entryI2CDataRd, i2cDataRdStr.strip())
             else:
                 ret = mcuI2C.ms_write_adv(i2cSlaveAdr, i2cDataWr, i2cRepeatedStart, i2cStopCondition)
-            if ret or len(i2cDataRd) == 0:
+            if ret or (i2cRead and not i2cDataRd):
                 messagebox.showerror(self.titleError, self.prefixError +
-                    "\nError during I2C access on port {0:d}. See console for details.".format(self.varI2CPort.get()))
+                    "\nError during I2C access on port {0:d}.\nError code: {1:d}\nSee console for details.".format(self.varI2CPort.get(), ret))
                 return -1
             return 0
         except Exception as e:
             messagebox.showerror(self.titleError, self.prefixError +
                 "\nError during I2C access on port {0:d}:\n".format(self.varI2CPort.get()) + str(e))
+            return -1
 
     # Detect devices on the I2C bus.
     def i2c_detect(self):
         try:
-            if (self.varI2CPort.get() != 0) and (self.varI2CPort.get() != 2):
-                messagebox.showerror(self.titleError, "{0:s}:\nI2C bus {1:d} not supported!".format(self.prefixError, self.varI2CPort.get()))
+            ret, mcuI2C = self.i2c_port_get()
+            if ret or mcuI2C is None:
                 return -1
-            cmd = "i2c-det {0:d}".format(self.varI2CPort.get())
-            # Temporarily increase the timeout of the serial device.
-            serTimeoutBackup = self.mcuSer.ser.timeout
-            self.mcuSer.ser.timeout = 0.01
-            self.mcuSer.send(cmd)
-            self.mcuSer.ser.timeout = serTimeoutBackup
-            if self.mcuSer.eval():
-                messagebox.showerror(self.titleError, "{0:s}:\nDetection of I2C devices on port {1:d} failed!".format(self.prefixError, self.varI2CPort.get()))
+            ret, devAdr = mcuI2C.ms_detect_devices()
+            if ret:
+                messagebox.showerror(self.titleError, self.prefixError +
+                    "\nDetection of I2C devices on port {0:d} failed!\nError code: {1:d}".format(self.varI2CPort.get(), ret))
                 return -1
-            self.entry_readonly_set_text(self.entryI2CDetect, self.mcuSer.get().lstrip(' \t').strip(' \n\r'))
+            devAdrStr = "I2C device{0:s} found at slave address:".format('' if len(devAdr) == 1 else 's')
+            for adr in devAdr:
+                devAdrStr += " 0x{0:02x}".format(adr)
+            self.entry_readonly_set_text(self.entryI2CDetect, devAdrStr)
             return 0
         except Exception as e:
             messagebox.showerror(self.titleError, self.prefixError +
                 "\nError detecting I2C devices on port {0:d}:\n".format(self.varI2CPort.get()) + str(e))
+            return -1
+
+    # Get the currently selected UART port and return its object.
+    def uart_port_get(self):
+        try:
+            if self.varUartPort.get() == 6:
+                return 0, self.mcuUart6
+            else:
+                messagebox.showerror(self.titleError, self.prefixError +
+                    "\nUART port {0:d} not supported!".format(self.varUartPort.get()))
+            return -1, None
+        except Exception as e:
+            messagebox.showerror(self.titleError, self.prefixError +
+                "\nError getting the current UART port {0:d}:\n".format(self.varUartPort.get()) + str(e))
+            return -1, None
 
     # Set up the UART port.
     def uart_setup(self):
         try:
-            ret = self.mcuUart6.setup(
+            ret, mcuUart = self.uart_port_get()
+            if ret or mcuUart is None:
+                return -1
+            ret = mcuUart.setup(
                 int(self.entryUartBaud.get().strip(), 0),
                 self.optionsUartPartiy.index(self.varUartParity.get()),
                 self.optionsUartLoopback.index(self.varUartLoopback.get()))
             if ret:
                 messagebox.showerror(self.titleError, self.prefixError +
-                    "\nError setting up the UART port {0:d}.\n".format(self.varUartPort.get()))
+                    "\nError setting up the UART port {0:d}.\nError code: {1:d}".format(self.varUartPort.get(), ret))
             return ret
         except Exception as e:
             messagebox.showerror(self.titleError, self.prefixError +
                 "\nError setting up the UART port {0:d}:\n".format(self.varUartPort.get()) + str(e))
+            return -1
 
     # Send a string to the UART.
     def uart_send_string(self):
         try:
-            ret = self.mcuUart6.write_str(self.entryUartDataWrString.get())
+            ret, mcuUart = self.uart_port_get()
+            if ret or mcuUart is None:
+                return -1
+            ret = mcuUart.write_str(self.entryUartDataWrString.get())
             if ret:
                 messagebox.showerror(self.titleError, self.prefixError +
-                    "\nError sending string to the UART port {0:d}.\n".format(self.varUartPort.get()))
+                    "\nError sending string to the UART port {0:d}.\nError code: {1:d}".format(self.varUartPort.get(), ret))
             return ret
         except Exception as e:
             messagebox.showerror(self.titleError, self.prefixError +
                 "\nError sending string to the UART port {0:d}:\n".format(self.varUartPort.get()) + str(e))
+            return -1
 
     # For using the enter (return) key in self.entryUartDataWrString.
     def uart_send_string_enter(self, event):
@@ -736,15 +782,19 @@ class PyMcuGui(Frame):
     # Send bytes to the UART.
     def uart_send_bytes(self):
         try:
+            ret, mcuUart = self.uart_port_get()
+            if ret or mcuUart is None:
+                return -1
             uartDataWr = [int(i, 0) for i in filter(None, self.entryUartDataWrBytes.get().split(" "))]
-            ret = self.mcuUart6.write(uartDataWr)
+            ret = mcuUart.write(uartDataWr)
             if ret:
                 messagebox.showerror(self.titleError, self.prefixError +
-                    "\nError sending bytes to the UART port {0:d}.\n".format(self.varUartPort.get()))
+                    "\nError sending bytes to the UART port {0:d}.\nError code: {1:d}".format(self.varUartPort.get(), ret))
             return ret
         except Exception as e:
             messagebox.showerror(self.titleError, self.prefixError +
                 "\nError sending bytes to the UART port {0:d}:\n".format(self.varUartPort.get()) + str(e))
+            return -1
 
     # For using the enter (return) key in self.entryUartDataWrBytes.
     def uart_send_bytes_enter(self, event):
@@ -753,19 +803,24 @@ class PyMcuGui(Frame):
     # Read data from the UART.
     def uart_read_data(self):
         try:
-            uartDataRd = self.mcuUart6.read_all()
+            ret, mcuUart = self.uart_port_get()
+            if ret or mcuUart is None:
+                return -1
+            ret, uartDataRd = mcuUart.read_all()
             uartDataRdString = ''.join([chr(x) for x in uartDataRd])
             self.entry_readonly_set_text(self.entryUartDataRdString, uartDataRdString)
             uartDataRdBytes = ''.join(["0x{0:02x} ".format(x) for x in uartDataRd]).strip()
             self.entry_readonly_set_text(self.entryUartDataRdBytes, uartDataRdBytes)
-            if len(uartDataRd) == 0:
+            # Ignore return codes warning up to the warning level.
+            if ret > mcuUart.mcuSer.mcuResponseCodeWarning:
                 messagebox.showerror(self.titleError, self.prefixError +
-                    "\nError reading data from the UART port {0:d}.\n".format(self.varUartPort.get()))
+                    "\nError reading data from the UART port {0:d}.\nError code: {1:d}".format(self.varUartPort.get(), ret))
                 return -1
             return 0
         except Exception as e:
             messagebox.showerror(self.titleError, self.prefixError +
                 "\nError reading data from the UART port {0:d}:\n".format(self.varUartPort.get()) + str(e))
+            return -1
 
     # Quit.
     def quit(self):
@@ -777,11 +832,11 @@ class PyMcuGui(Frame):
 
 
 # Launch the GUI.
-def launch_gui(dev):
+def launch_gui(serialDevice):
     root = Tk()
 #    root.geometry("600x400")
     pyMcuGui = PyMcuGui(root)
-    pyMcuGui.init_hw(dev)
+    pyMcuGui.init_hw(serialDevice)
     while pyMcuGui.winfo_exists():
         root.update_idletasks()
         root.update()
@@ -800,11 +855,14 @@ def launch_gui(dev):
 
 
 if __name__ == "__main__":
+    # Command line arguments.
     import argparse
     parser = argparse.ArgumentParser(description='Access to Process some integers.')
     parser.add_argument('-d', '--device', action='store', type=str,
-                        dest='serial_device', default='/dev/ttyUSB0',
+                        dest='serialDevice', default='/dev/ttyUSB0',
                         help='Serial device to access the MCU.')
     args = parser.parse_args()
-    launch_gui(args.serial_device)
+
+    # Launch the GUI.
+    launch_gui(args.serialDevice)
 

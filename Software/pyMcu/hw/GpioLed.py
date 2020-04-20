@@ -51,13 +51,14 @@ class GpioLed:
             print(self.prefixDebug + "Response from MCU:")
             print(self.mcuSer.get_full())
         # Evaluate response.
-        if self.mcuSer.eval():
+        ret = self.mcuSer.eval()
+        if ret:
             self.errorCount += 1
             print(self.prefixError + "Error sending command for LEDs!")
             if self.debugLevel >= 1:
                 print(self.prefixError + "Command sent to MCU: " + cmd)
                 print(self.prefixError + "Response from MCU:")
                 print(self.mcuSer.get_full())
-            return -1
+            return ret
         return 0
 
