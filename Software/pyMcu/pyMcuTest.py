@@ -4,7 +4,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 24 Mar 2020
-# Rev.: 20 Apr 2020
+# Rev.: 21 Apr 2020
 #
 # Python script to test hardware features of the TM4C1294NCPDT MCU on the
 # TM4C1294 Connected LaunchPad Evaluation Kit over a serial port (UART).
@@ -31,6 +31,7 @@ import GpioLed
 import I2CTmp006
 import I2COpt3001
 import McuI2C
+import McuSsi
 import McuSerial
 import McuUart
 import RgbLed
@@ -48,10 +49,12 @@ testGpioLed         = False
 testGpioLedRaw      = False
 testRgbLed          = False
 testI2C             = False
+testSsi             = False
 testUart            = False
 testAdc             = False
 testTmp006          = False
 testOpt3001         = False
+testLcd             = False
 testMcuSerial_1     = False
 # Set the tests to true that you want to run.
 testFwInfo          = True
@@ -62,10 +65,12 @@ testGpioLed         = True
 testGpioLedRaw      = True
 testRgbLed          = True
 testI2C             = True
+testSsi             = True
 testUart            = True
 testAdc             = True
 testTmp006          = True
 testOpt3001         = True
+testLcd             = True
 testMcuSerial_1     = True
 
 
@@ -98,6 +103,8 @@ def run_test(serialDevice):
     # Define the MCU peripherals.
     mcuI2C2 = McuI2C.McuI2C(mcuSer, 2)
     mcuI2C2.debugLevel = 1
+    mcuSsi2 = McuSsi.McuSsi(mcuSer, 2)
+    mcuSsi2.debugLevel = 1
     mcuUart6 = McuUart.McuUart(mcuSer, 6)
     mcuUart6.debugLevel = 1
     adc = Adc.Adc(mcuSer)
@@ -109,9 +116,9 @@ def run_test(serialDevice):
     rgbLED = RgbLed.RgbLed(mcuSer)
     rgbLED.debugLevel = 1
     i2cTmp006 = I2CTmp006.I2CTmp006(mcuI2C2, 0x40)
-    i2cTmp006.debugLevel = 1
+    i2cTmp006.debugLevel = 0
     i2cOpt3001 = I2COpt3001.I2COpt3001(mcuI2C2, 0x44)
-    i2cOpt3001.debugLevel = 1
+    i2cOpt3001.debugLevel = 0
 
 
 
@@ -226,6 +233,25 @@ def run_test(serialDevice):
 
 
 
+    # SSI test.
+    if testSsi:
+        print("SSI port {0:d} test.".format(mcuSsi2.port))
+        mcuSsi2.setup(1000000, 0, 8)    # 1 MHz SSI clock, SPI CPOL=0 CPHA=0, data width =8
+#        for i in range(0, 200):
+#            mcuSsi2.write([0x12, 0x34, 0x56, 0x78])
+#            mcuSsi2.read(4)
+        # Binary write/read.
+        mcuSsi2.clear()
+        mcuSsi2.write([0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07])
+        ret, data = mcuSsi2.read_all()
+        print("Data read from SSI:", end='')
+        for datum in data:
+            print(" 0x{0:02x}".format(datum), end='')
+        print()
+        print(separatorTests)
+
+
+
     # UART test.
     if testUart:
         print("UART port {0:d} test.".format(mcuUart6.port))
@@ -298,6 +324,30 @@ def run_test(serialDevice):
         print(separatorTests)
 
 
+
+    # Test the LCD.
+    if testLcd:
+        print("LCD test.")
+        mcuSer.send("lcd clear 0x000000")
+        time.sleep(0.5)
+        mcuSer.send("lcd clear 0xff0000")
+        time.sleep(0.5)
+        mcuSer.send("lcd clear 0x00ff00")
+        time.sleep(0.5)
+        mcuSer.send("lcd clear 0x0000ff")
+        time.sleep(0.5)
+        mcuSer.send("lcd clear 0xffffff")
+        time.sleep(0.5)
+        mcuSer.send("lcd info")
+        time.sleep(0.5)
+        mcuSer.send("lcd orient 1")
+        time.sleep(0.5)
+        mcuSer.send("lcd orient 2")
+        time.sleep(0.5)
+        mcuSer.send("lcd orient 3")
+        time.sleep(0.5)
+        mcuSer.send("lcd orient 0")
+        print(separatorTests)
 
     # Read the MCU serial port info.
     if testMcuSerial_1:
