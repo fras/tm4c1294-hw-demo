@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 28 Mar 2020
-# Rev.: 20 Apr 2020
+# Rev.: 21 Apr 2020
 #
 # Python class for using the I2C ports of the TM4C1294NCPDT MCU.
 #
@@ -105,6 +105,7 @@ class McuI2C:
         if self.debugLevel >= 2:
             print(self.prefixDebug + "Writing data to the I2C master port {0:d}.".format(self.port), end='')
             print(self.separatorDetails + "Slave address: 0x{0:02x}".format(slaveAddr), end='')
+            print(self.separatorDetails + "Access mode: 0x{0:01x}".format(accMode), end='')
             print(self.separatorDetails + "Data:", end='')
             for datum in data:
                 print(" 0x{0:02x}".format(datum & 0xff), end='')
@@ -134,7 +135,10 @@ class McuI2C:
         accMode = 0x01 | (0x02 if repeatedStart else 0) | (0x04 if not stop else 0)
         cmd = "i2c {0:d} 0x{1:02x} 0x{2:02x} {3:d}".format(self.port, slaveAddr & 0x7f, accMode, cnt)
         if self.debugLevel >= 2:
-            print(self.prefixDebug + "Reading data from the I2C master port {0:d}.".format(self.port))
+            print(self.prefixDebug + "Reading data from the I2C master port {0:d}.".format(self.port), end='')
+            print(self.separatorDetails + "Slave address: 0x{0:02x}".format(slaveAddr), end='')
+            print(self.separatorDetails + "Access mode: 0x{0:01x}".format(accMode), end='')
+            print()
         # Send command.
         ret = self.ms_send_cmd(cmd)
         if ret:
