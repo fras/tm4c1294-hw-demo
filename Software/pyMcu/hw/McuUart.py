@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 31 Mar 2020
-# Rev.: 20 Apr 2020
+# Rev.: 21 Apr 2020
 #
 # Python class for using the UART ports of the TM4C1294NCPDT MCU.
 #
@@ -109,12 +109,12 @@ class McuUart:
 
 
 
-    # Clear UART RX data.
+    # Clear the UART RX buffer.
     def clear(self):
-        # Clear the full UART RX buffer of 255 = 0xff bytes.
-        cmd = "uart {0:d} 1 {1:d}".format(self.port, 0xff)
+        # Clear the full UART RX buffer of 16 = 0x10 bytes.
+        cmd = "uart {0:d} 1 {1:d}".format(self.port, 0x10)
         if self.debugLevel >= 2:
-            print(self.prefixDebug + "Clearing RX data from the UART port {0:d}.".format(self.port))
+            print(self.prefixDebug + "Clearing the RX buffer of UART port {0:d}.".format(self.port))
         # Send command.
         # CAUTION: Do not check for errors here, as this command will return a
         #          warning, when it tries to read more bytes than available.
