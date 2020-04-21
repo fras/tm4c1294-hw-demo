@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 30 Mar 2020
-# Rev.: 20 Apr 2020
+# Rev.: 21 Apr 2020
 #
 # Python class for reading analog values of a joystick and an 3-axes
 # accelerometer connected to ADC ports of the TM4C1294NCPDT MCU.
@@ -38,7 +38,7 @@ class Adc:
 
     # Read the ADC values
     def read(self):
-        if self.debugLevel >= 1:
+        if self.debugLevel >= 2:
             print(self.prefixDebug + "Reading the ADC values.")
         cmd = "adc"
         # Debug: Show command.
@@ -67,7 +67,7 @@ class Adc:
         self.accelX = int(data[2], 0)
         self.accelY = int(data[3], 0)
         self.accelZ = int(data[4], 0)
-        if self.debugLevel >= 1:
+        if self.debugLevel >= 2:
             print(self.prefixDebug + "ADC values:", end='')
             print(" Joystick:", end='')
             print(" X = {0:4d}".format(self.joystickX), end='')

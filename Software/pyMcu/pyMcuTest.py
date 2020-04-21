@@ -91,10 +91,10 @@ def mcuSerial_print_info(mcuSer):
 
 
 # Run the hardware test.
-def run_test(serialDevice):
+def run_test(serialDevice, verbosity):
     # Open the MCU serial interface.
     mcuSer = McuSerial.McuSerial(serialDevice)
-    mcuSer.debugLevel = 0
+    mcuSer.debugLevel = verbosity
     mcuSer.simulateHwAccess = False
     mcuSer.clear()
 
@@ -102,23 +102,23 @@ def run_test(serialDevice):
 
     # Define the MCU peripherals.
     mcuI2C2 = McuI2C.McuI2C(mcuSer, 2)
-    mcuI2C2.debugLevel = 1
+    mcuI2C2.debugLevel = verbosity
     mcuSsi2 = McuSsi.McuSsi(mcuSer, 2)
-    mcuSsi2.debugLevel = 1
+    mcuSsi2.debugLevel = verbosity
     mcuUart6 = McuUart.McuUart(mcuSer, 6)
-    mcuUart6.debugLevel = 1
+    mcuUart6.debugLevel = verbosity
     adc = Adc.Adc(mcuSer)
-    adc.debugLevel = 1
+    adc.debugLevel = verbosity
     gpioButton = GpioButton.GpioButton(mcuSer)
-    gpioButton.debugLevel = 1
+    gpioButton.debugLevel = verbosity
     gpioLED = GpioLed.GpioLed(mcuSer)
-    gpioLED.debugLevel = 1
+    gpioLED.debugLevel = verbosity
     rgbLED = RgbLed.RgbLed(mcuSer)
-    rgbLED.debugLevel = 1
+    rgbLED.debugLevel = verbosity
     i2cTmp006 = I2CTmp006.I2CTmp006(mcuI2C2, 0x40)
-    i2cTmp006.debugLevel = 0
+    i2cTmp006.debugLevel = verbosity
     i2cOpt3001 = I2COpt3001.I2COpt3001(mcuI2C2, 0x44)
-    i2cOpt3001.debugLevel = 0
+    i2cOpt3001.debugLevel = verbosity
 
 
 
@@ -365,10 +365,13 @@ if __name__ == "__main__":
     parser.add_argument('-d', '--device', action='store', type=str,
                         dest='serialDevice', default='/dev/ttyUSB0',
                         help='Serial device to access the MCU.')
+    parser.add_argument('-v', '--verbosity', action='store', type=int,
+                        dest='verbosity', default="1", choices=range(0, 5),
+                        help='Set the verbosity level. The default is 1.')
     args = parser.parse_args()
 
     # Run the hardware test.
-    run_test(args.serialDevice)
+    run_test(args.serialDevice, args.verbosity)
 
     print("\nBye-bye!")
 

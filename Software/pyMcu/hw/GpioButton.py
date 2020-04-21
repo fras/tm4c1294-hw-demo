@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 17 Apr 2020
-# Rev.: 20 Apr 2020
+# Rev.: 21 Apr 2020
 #
 # Python class for getting the status of the buttons connected to GPIO ports of
 # the TM4C1294NCPDT MCU.
@@ -44,7 +44,7 @@ class GpioButton:
             self.errorCount += 1
             print(self.prefixDebug + "Button index {0:d} outside of valid range 0..{1:d}.".format(index, self.buttonNum - 1))
             return -1, []
-        if self.debugLevel >= 1:
+        if self.debugLevel >= 2:
             print(self.prefixDebug + "Getting the status of button {0:d}.".format(index))
         cmd = "button {0:d}".format(index)
         # Debug: Show command.

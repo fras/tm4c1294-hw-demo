@@ -4,7 +4,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 31 Mar 2020
-# Rev.: 14 Apr 2020
+# Rev.: 21 Apr 2020
 #
 # Python front-end for accessing the TM4C1294NCPDT MCU on the TM4C1294
 # Connected LaunchPad Evaluation Kit over a serial port (UART).
@@ -37,16 +37,19 @@ parser.add_argument('-g', '--gui', action='store_true',
 parser.add_argument('-t', '--test', action='store_true',
                     dest='runTest', default=False,
                     help='Run a hardware feature test.')
+parser.add_argument('-v', '--verbosity', action='store', type=int,
+                    dest='verbosity', default="1", choices=range(0, 5),
+                    help='Set the verbosity level. The default is 1.')
 args = parser.parse_args()
 
 
 
 # Run the hardware test.
 if args.runTest:
-    pyMcuTest.run_test(args.serialDevice)
+    pyMcuTest.run_test(args.serialDevice, args.verbosity)
 # Launch the GUI.
 elif args.launchGui:
-    pyMcuGui.launch_gui(args.serialDevice)
+    pyMcuGui.launch_gui(args.serialDevice, args.verbosity)
 else:
     print("Please use one of these options:")
     print("   --test")

@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 28 Mar 2020
-# Rev.: 20 Apr 2020
+# Rev.: 21 Apr 2020
 #
 # Python class for communicating with the TMP006 I2C temperature sensor IC.
 #
@@ -94,7 +94,7 @@ class I2CTmp006:
     # Initialize the TMP006 sensor IC.
     def init(self):
         # Debug info.
-        if self.debugLevel >= 1:
+        if self.debugLevel >= 2:
             print(self.prefixDebug + "Initializing the TMP006 sensor IC.", end='')
             self.print_details()
         # Write data.
@@ -112,7 +112,7 @@ class I2CTmp006:
     # Reset the TMP006 sensor IC.
     def reset(self):
         # Debug info.
-        if self.debugLevel >= 1:
+        if self.debugLevel >= 2:
             print(self.prefixDebug + "Resetting the TMP006 sensor IC.", end='')
             self.print_details()
         # Write data.
@@ -142,7 +142,7 @@ class I2CTmp006:
     # Returns the sensor voltage in nano volts (nV).
     def read_voltage(self):
         # Debug info.
-        if self.debugLevel >= 1:
+        if self.debugLevel >= 2:
             print(self.prefixDebug + "Reading voltage from the TMP006 sensor IC.", end='')
             self.print_details()
         # Set the pointer register of the TMP006 IC to the sensor voltage register (0x00).
@@ -155,7 +155,7 @@ class I2CTmp006:
             return -1, -255.0
         # Calculate the sensor voltage in nano Volts (nV).
         voltageRaw = (data[0] << 8) | data[1]
-        if self.debugLevel >= 2:
+        if self.debugLevel >= 3:
             print(self.prefixDebug + "Raw sensor voltage value: 0x{0:04x}".format(voltageRaw))
         # Negative sensor voltage.
         if voltageRaw & 0x8000:
@@ -172,7 +172,7 @@ class I2CTmp006:
     # Returns the temperature in degree Celcius.
     def read_temperature(self):
         # Debug info.
-        if self.debugLevel >= 1:
+        if self.debugLevel >= 2:
             print(self.prefixDebug + "Reading temperature from the TMP006 sensor IC.", end='')
             self.print_details()
         # Set the pointer register of the TMP006 IC to the ambient temperature register (0x01).
@@ -185,7 +185,7 @@ class I2CTmp006:
             return -1, -255.0
         # Calculate the temperature in degree Celcius.
         temperatureRaw = (data[0] << 6) | (data[1] >> 2)
-        if self.debugLevel >= 2:
+        if self.debugLevel >= 3:
             print(self.prefixDebug + "Raw temperature value: 0x{0:04x}".format(temperatureRaw))
         # Negative temperature.
         if temperatureRaw & 0x2000 != 0:
@@ -201,7 +201,7 @@ class I2CTmp006:
     # Read the manufacturer ID from the TMP006 sensor IC.
     def read_manufacturer_id(self):
         # Debug info.
-        if self.debugLevel >= 1:
+        if self.debugLevel >= 2:
             print(self.prefixDebug + "Reading manufacturer ID from the TMP006 sensor IC.", end='')
             self.print_details()
         # Set the pointer register of the TMP006 IC to the manufacturer ID register (0xfe).
@@ -214,7 +214,7 @@ class I2CTmp006:
             return -1, 0xffff
         # Assemble the manufacturer ID.
         manufacturerId = (data[0] << 8) | data[1]
-        if self.debugLevel >= 2:
+        if self.debugLevel >= 3:
             print(self.prefixDebug + "Manufacturer ID: 0x{0:04x}".format(manufacturerId))
         return 0, manufacturerId
 
@@ -223,7 +223,7 @@ class I2CTmp006:
     # Read the device ID from the TMP006 sensor IC.
     def read_device_id(self):
         # Debug info.
-        if self.debugLevel >= 1:
+        if self.debugLevel >= 2:
             print(self.prefixDebug + "Reading device ID from the TMP006 sensor IC.", end='')
             self.print_details()
         # Set the pointer register of the TMP006 IC to the device ID register (0xff).
@@ -236,7 +236,7 @@ class I2CTmp006:
             return -1, 0xffff
         # Assemble the device ID.
         deviceId = (data[0] << 8) | data[1]
-        if self.debugLevel >= 2:
+        if self.debugLevel >= 3:
             print(self.prefixDebug + "Device ID: 0x{0:04x}".format(deviceId))
         return 0, deviceId
 

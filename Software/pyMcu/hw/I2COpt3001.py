@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 31 Mar 2020
-# Rev.: 20 Apr 2020
+# Rev.: 21 Apr 2020
 #
 # Python class for communicating with the OPT3001 ambient light sensor.
 #
@@ -93,7 +93,7 @@ class I2COpt3001:
     # Initialize the OPT3001 sensor IC.
     def init(self):
         # Debug info.
-        if self.debugLevel >= 1:
+        if self.debugLevel >= 2:
             print(self.prefixDebug + "Initializing the OPT3001 sensor IC.", end='')
             self.print_details()
         # Write data.
@@ -111,7 +111,7 @@ class I2COpt3001:
     # Reset the OPT3001 sensor IC.
     def reset(self):
         # Debug info.
-        if self.debugLevel >= 1:
+        if self.debugLevel >= 2:
             print(self.prefixDebug + "Resetting the OPT3001 sensor IC.", end='')
             self.print_details()
         # The OPT3001 sensor IC accepts the general-call reset command. This is
@@ -146,7 +146,7 @@ class I2COpt3001:
     # Returns the light illuminance in lux.
     def read_illuminance(self):
         # Debug info.
-        if self.debugLevel >= 1:
+        if self.debugLevel >= 2:
             print(self.prefixDebug + "Reading illuminance from the OPT3001 sensor IC.", end='')
             self.print_details()
         # Set the pointer register of the OPT3001 IC to the result register (0x00).
@@ -159,7 +159,7 @@ class I2COpt3001:
             return -1, -255.0
         # Calculate the light illuminance in lux.
         illuminanceRaw = (data[0] << 8) | data[1]
-        if self.debugLevel >= 2:
+        if self.debugLevel >= 3:
             print(self.prefixDebug + "Raw illuminance value: 0x{0:04x}".format(illuminanceRaw))
         illuminanceMantissa = illuminanceRaw & 0x0fff
         illuminanceExponent = (illuminanceRaw & 0xf000) >> 12
@@ -171,7 +171,7 @@ class I2COpt3001:
     # Read the manufacturer ID from the OPT3001 sensor IC.
     def read_manufacturer_id(self):
         # Debug info.
-        if self.debugLevel >= 1:
+        if self.debugLevel >= 2:
             print(self.prefixDebug + "Reading manufacturer ID from the OPT3001 sensor IC.", end='')
             self.print_details()
         # Set the pointer register of the OPT3001 IC to the manufacturer ID register (0x7e).
@@ -184,7 +184,7 @@ class I2COpt3001:
             return -1, 0xffff
         # Assemble the manufacturer ID.
         manufacturerId = (data[0] << 8) | data[1]
-        if self.debugLevel >= 2:
+        if self.debugLevel >= 3:
             print(self.prefixDebug + "Manufacturer ID: 0x{0:04x}".format(manufacturerId))
         return 0, manufacturerId
 
@@ -193,7 +193,7 @@ class I2COpt3001:
     # Read the device ID from the OPT3001 sensor IC.
     def read_device_id(self):
         # Debug info.
-        if self.debugLevel >= 1:
+        if self.debugLevel >= 2:
             print(self.prefixDebug + "Reading device ID from the OPT3001 sensor IC.", end='')
             self.print_details()
         # Set the pointer register of the OPT3001 IC to the device ID register (0x7f).
@@ -206,7 +206,7 @@ class I2COpt3001:
             return -1, 0xffff
         # Assemble the device ID.
         deviceId = (data[0] << 8) | data[1]
-        if self.debugLevel >= 2:
+        if self.debugLevel >= 3:
             print(self.prefixDebug + "Device ID: 0x{0:04x}".format(deviceId))
         return 0, deviceId
 

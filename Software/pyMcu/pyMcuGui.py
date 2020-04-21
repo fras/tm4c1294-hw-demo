@@ -4,7 +4,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 30 Mar 2020
-# Rev.: 20 Apr 2020
+# Rev.: 21 Apr 2020
 #
 # Python GUI for accessing the TM4C1294NCPDT MCU on the TM4C1294 Connected
 # LaunchPad Evaluation Kit over a serial port (UART).
@@ -43,8 +43,8 @@ class PyMcuGui(Frame):
 
     # Software version.
     swName      = "pyMCU"
-    swVersion   = "0.2.2"
-    swDate      = "20 Apr 2020"
+    swVersion   = "0.2.3"
+    swDate      = "21 Apr 2020"
 
     # Window titles.
     titleMain   = swName + " GUI - v" + swVersion + " - " + swDate
@@ -55,7 +55,7 @@ class PyMcuGui(Frame):
     prefixDebug = "DEBUG: {0:s}: ".format(__file__)
 
     # Debug configuration.
-    debugLevel = 3                 # Debug verbosity.
+    debugLevel = 1                  # Debug verbosity.
 
 
 
@@ -74,6 +74,8 @@ class PyMcuGui(Frame):
         self.frame0.grid(row=0, column=0, sticky=W+E)
         self.frame1 = Frame(self, bd=0, padx=5, pady=5)
         self.frame1.grid(row=0, column=1, sticky=N+W+E)
+        self.frame2 = Frame(self, bd=0, padx=5, pady=0)
+        self.frame2.grid(row=1, column=0, columnspan=2, sticky=N+W+E)
         # ***** Firmware info. *****
         self.frameFwInfo = Frame(self.frame0, bd=2, relief=GROOVE, padx=5, pady=5)
         self.frameFwInfo.grid(row=0, column=0, sticky=W+E, pady=2)
@@ -351,37 +353,72 @@ class PyMcuGui(Frame):
         self.buttonUartDataWrBytes.grid(row=1, column=0, sticky=W+E, padx=(10, 0))
         self.buttonUartDataRd = Button(self.frameUartDataCmd, text="Read Data", command=self.uart_read_data)
         self.buttonUartDataRd.grid(row=2, column=0, sticky=W+E, padx=(10, 0))
-        # ***** Quit button. *****
-        self.buttonQuit = Button(self, text="Quit", command=self.quit)
-        self.buttonQuit.grid(row=1, column=0, columnspan=2, sticky=W+E, pady=2)
+        # ***** Control elements. *****
+        self.frameControl = Frame(self, bd=2, relief=GROOVE, padx=5, pady=5)
+        self.frameControl.grid(row=1, column=0, columnspan=2, sticky=W+E, padx=5, pady=2)
+        self.labelVerbosity = Label(self.frameControl, text="Verbosity", anchor=W, padx=5)
+        self.labelVerbosity.grid(row=0, column=0, sticky=W+E)
+        self.varVerbosity = IntVar()
+        self.optionsVerbosity = [0, 1, 2, 3, 4]
+        self.optionMenuVerbosity = OptionMenu(self.frameControl, self.varVerbosity, *self.optionsVerbosity, command=self.verbosity_set)
+        self.optionMenuVerbosity.grid(row=0, column=1, sticky=W+E)
+        self.varVerbosity.set(1)
+        self.buttonQuit = Button(self.frameControl, text="Quit", command=self.quit)
+        self.buttonQuit.grid(row=0, column=2, sticky=W+E, padx=(10, 5))
+        Grid.columnconfigure(self.frameControl, 2, weight=1)
 
     # Initialize the hardware.
-    def init_hw(self, serialDevice):
+    def init_hw(self, serialDevice, verbosity):
         # Open the MCU serial interface.
         self.mcuSer = McuSerial.McuSerial(serialDevice)
-        self.mcuSer.debugLevel = 0
+        self.mcuSer.debugLevel = verbosity
         self.mcuSer.simulateHwAccess = False
         self.mcuSer.clear()
         # Define the MCU peripherals.
         self.mcuI2C0 = McuI2C.McuI2C(self.mcuSer, 0)
-        self.mcuI2C0.debugLevel = 1
+        self.mcuI2C0.debugLevel = verbosity
         self.mcuI2C2 = McuI2C.McuI2C(self.mcuSer, 2)
-        self.mcuI2C2.debugLevel = 1
+        self.mcuI2C2.debugLevel = verbosity
         self.mcuUart6 = McuUart.McuUart(self.mcuSer, 6)
-        self.mcuUart6.debugLevel = 1
+        self.mcuUart6.debugLevel = verbosity
         self.adc = Adc.Adc(self.mcuSer)
-        self.adc.debugLevel = 1
+        self.adc.debugLevel = verbosity
         self.gpioButton = GpioButton.GpioButton(self.mcuSer)
-        self.gpioButton.debugLevel = 1
+        self.gpioButton.debugLevel = verbosity
         self.gpioLED = GpioLed.GpioLed(self.mcuSer)
-        self.gpioLED.debugLevel = 1
+        self.gpioLED.debugLevel = verbosity
         self.rgbLED = RgbLed.RgbLed(self.mcuSer)
-        self.rgbLED.debugLevel = 1
+        self.rgbLED.debugLevel = verbosity
         self.i2cTmp006 = I2CTmp006.I2CTmp006(self.mcuI2C2, 0x40)
-        self.i2cTmp006.debugLevel = 1
+        self.i2cTmp006.debugLevel = verbosity
         self.i2cOpt3001 = I2COpt3001.I2COpt3001(self.mcuI2C2, 0x44)
-        self.i2cOpt3001.debugLevel = 1
+        self.i2cOpt3001.debugLevel = verbosity
+        # Set the verbosity.
+        if verbosity < min(self.optionsVerbosity):
+            self.varVerbosity.set(min(self.optionsVerbosity))
+        elif verbosity > max(self.optionsVerbosity):
+            self.varVerbosity.set(max(self.optionsVerbosity))
+        else:
+            self.varVerbosity.set(verbosity)
+        # Update the firmware info.
         self.mcu_fw_info()
+
+    # Set the verbosity level.
+    def verbosity_set(self, event):
+        try:
+            verbosity = self.varVerbosity.get()
+            self.debugLevel = verbosity
+            self.mcuI2C0.debugLevel = verbosity
+            self.mcuI2C2.debugLevel = verbosity
+            self.mcuUart6.debugLevel = verbosity
+            self.adc.debugLevel = verbosity
+            self.gpioButton.debugLevel = verbosity
+            self.gpioLED.debugLevel = verbosity
+            self.rgbLED.debugLevel = verbosity
+            self.i2cTmp006.debugLevel = verbosity
+            self.i2cOpt3001.debugLevel = verbosity
+        except Exception as e:
+            messagebox.showerror(self.titleError, self.prefixError + "\nError setting the verbosity:\n" + str(e))
 
     # Auxiliary function to set the text of a tkinter Entry element that is read-only.
     def entry_readonly_set_text(self, entry, text):
@@ -832,11 +869,11 @@ class PyMcuGui(Frame):
 
 
 # Launch the GUI.
-def launch_gui(serialDevice):
+def launch_gui(serialDevice, verbosity):
     root = Tk()
 #    root.geometry("600x400")
     pyMcuGui = PyMcuGui(root)
-    pyMcuGui.init_hw(serialDevice)
+    pyMcuGui.init_hw(serialDevice, verbosity)
     while pyMcuGui.winfo_exists():
         root.update_idletasks()
         root.update()
@@ -861,8 +898,11 @@ if __name__ == "__main__":
     parser.add_argument('-d', '--device', action='store', type=str,
                         dest='serialDevice', default='/dev/ttyUSB0',
                         help='Serial device to access the MCU.')
+    parser.add_argument('-v', '--verbosity', action='store', type=int,
+                        dest='verbosity', default="1", choices=range(0, 5),
+                        help='Set the verbosity level. The default is 1.')
     args = parser.parse_args()
 
     # Launch the GUI.
-    launch_gui(args.serialDevice)
+    launch_gui(args.serialDevice, args.verbosity)
 

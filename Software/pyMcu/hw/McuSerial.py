@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 24 Mar 2020
-# Rev.: 20 Apr 2020
+# Rev.: 21 Apr 2020
 #
 # Python class for communicating with the TM4C1294NCPDT MCU over a serial port
 # (UART).
@@ -41,7 +41,7 @@ class McuSerial:
 
     # Simulated hardware access.
     simulateHwAccess = False       # Only simulate the access to hardware.
-    simulateHwAccessMsg = "INFO: {0:s}: Simuated hardware access!".format(__file__)
+    simulateHwAccessMsg = "INFO: {0:s}: Simulated hardware access!".format(__file__)
 
 
 
@@ -183,7 +183,7 @@ class McuSerial:
             self.mcuResponse = self.mcuResponseOk + " (simulated hardware access)"
             return 0
         try:
-            if self.debugLevel >= 1:
+            if self.debugLevel >= 2:
                 print(self.prefixDebug + "Sending MCU command: " + cmd)
             self.ser.write((cmd + "\r").encode('utf-8'))
             self.ser.flush()
