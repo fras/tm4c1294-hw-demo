@@ -3,7 +3,7 @@
 Auth: M. Fras, Electronics Division, MPI for Physics, Munich  
 Mod.: M. Fras, Electronics Division, MPI for Physics, Munich  
 Date: 07 Feb 2020  
-Rev.: 18 Apr 2020  
+Rev.: 24 Apr 2020  
 
 
 
@@ -141,7 +141,7 @@ Rev.: 18 Apr 2020
     Example minicom session:
     ```
     *******************************************************************************
-    TIVA TM4C1294 `hw_demo' firmware version 0.3.1, release date: 18 Apr 2020
+    TIVA TM4C1294 `hw_demo' firmware version 0.3.2, release date: 24 Apr 2020
     *******************************************************************************
     
     Type `help' to get an overview of available commands.
@@ -157,16 +157,16 @@ Rev.: 18 Apr 2020
       illum   [COUNT]                     Read ambient light sensor info.
       info                                Show information about this firmware.
       lcd     CMD PARAMS                  LCD commands.
-      led     VALUE                       Set the Leds.
-      rgb     VALUE                       Set the RGB LED.
+      led     VALUE                       Set the LEDs.
+      rgb     VALUE                       Set the RGB LED (RGB value = 0xRRGGBB).
       ssi     PORT R/W NUM|DATA           SSI/SPI access (R/W: 0 = write, 1 = read).
       ssi-set PORT FREQ [MODE] [WIDTH]    Set up the SSI port.
       temp    [COUNT]                     Read temperature sensor info.
       uart    PORT R/W NUM|DATA           UART access (R/W: 0 = write, 1 = read).
       uart-s  PORT BAUD [PARITY] [LOOP]   Set up the UART port.
     > info
-    TIVA TM4C1294 `hw_demo' firmware version 0.3.1, release date: 18 Apr 2020
-    It was compiled using gcc 6.3.1 20170620 at 13:33:05 on Apr 18 2020.
+    TIVA TM4C1294 `hw_demo' firmware version 0.3.2, release date: 24 Apr 2020
+    It was compiled using gcc 6.3.1 20170620 at 01:13:36 on Apr 24 2020.
     > button
     OK. Button 3..0 status: 0x0000
     > button 0

@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 07 Feb 2020
-// Rev.: 18 Apr 2020
+// Rev.: 24 Apr 2020
 //
 // Hardware demo for the TI Tiva TM4C1294 Connected LaunchPad Evaluation Kit.
 //
@@ -106,7 +106,7 @@ int main(void)
     // Initialize the user buttons.
     GpioButtonInit();
 
-    // Initialize the Leds.
+    // Initialize the LEDs.
     GpioLedInit();
 
     // Initialize the RGB LED on the Educational BoosterPack MK II.
@@ -253,8 +253,8 @@ void Help(void)
     UARTprintf("  illum   [COUNT]                     Read ambient light sensor info.\n");
     UARTprintf("  info                                Show information about this firmware.\n");
     UARTprintf("  lcd     CMD PARAMS                  LCD commands.\n");
-    UARTprintf("  led     VALUE                       Set the Leds.\n");
-    UARTprintf("  rgb     VALUE                       Set the RGB LED.\n");
+    UARTprintf("  led     VALUE                       Set the LEDs.\n");
+    UARTprintf("  rgb     VALUE                       Set the RGB LED (RGB value = 0xRRGGBB).\n");
     UARTprintf("  ssi     PORT R/W NUM|DATA           SSI/SPI access (R/W: 0 = write, 1 = read).\n");
     UARTprintf("  ssi-set PORT FREQ [MODE] [WIDTH]    Set up the SSI port.\n");
     UARTprintf("  temp    [COUNT]                     Read temperature sensor info.\n");
@@ -390,7 +390,8 @@ int LcdCmd(char *pcCmd, char *pcParam, tLcdFwInfo *psLcdFwInfo)
     char pcLcdText[UI_STR_BUF_SIZE] = "";
 
     if (pcLcdCmd == NULL) {
-        UARTprintf("%s: LCD command required after command `%s'.", UI_STR_ERROR, pcCmd);
+        UARTprintf("%s: LCD command required after command `%s'.\n", UI_STR_ERROR, pcCmd);
+        LcdHelp();
         return -1;
     }
     // Parse parameters of the LCD command.
@@ -494,12 +495,12 @@ int LcdCheckParamCnt(char *pcLcdCmd, int iLcdParamCntActual, int iLcdParamCntTar
 {
     if (iLcdParamCntActual < iLcdParamCntTarget) {
         UARTprintf("%s: The LCD command `%s' requires %d parameter%s, but only %d %s given!",
-                   UI_STR_WARNING, pcLcdCmd, iLcdParamCntTarget, (iLcdParamCntTarget == 1) ? "" : "s",
+                   UI_STR_ERROR, pcLcdCmd, iLcdParamCntTarget, (iLcdParamCntTarget == 1) ? "" : "s",
                    iLcdParamCntActual, (iLcdParamCntActual == 1) ? "was" : "were");
         return -1;
     } else if (iLcdParamCntActual > iLcdParamCntTarget) {
         UARTprintf("%s: The LCD command `%s' requires %d parameter%s, but %d %s given! Ignoring the last %d parameter%s.",
-                   UI_STR_WARNING, pcLcdCmd, iLcdParamCntTarget, (iLcdParamCntTarget == 1) ? "" : "s",
+                   UI_STR_ERROR, pcLcdCmd, iLcdParamCntTarget, (iLcdParamCntTarget == 2) ? "" : "s",
                    iLcdParamCntActual, (iLcdParamCntActual == 1) ? "was" : "were",
                    iLcdParamCntActual - iLcdParamCntTarget,
                    (iLcdParamCntActual - iLcdParamCntTarget == 1) ? "" : "s");
@@ -527,7 +528,7 @@ void LcdHelp(void)
 
 
 
-// Set the user Leds.
+// Set the user LEDs.
 int LedSet(char *pcCmd, char *pcParam)
 {
     uint32_t ui32LedSet, ui32LedGet;
@@ -540,11 +541,11 @@ int LedSet(char *pcCmd, char *pcParam)
     GpioLedSet(ui32LedSet);
     ui32LedGet = GpioLedGet();
     if (ui32LedSet != ui32LedGet) {
-        UARTprintf("%s: Setting the Leds to 0x%02x failed!", UI_STR_ERROR, ui32LedSet);
-        UARTprintf(" The Leds were set to 0x%02x instead.", ui32LedGet);
+        UARTprintf("%s: Setting the LEDs to 0x%02x failed!", UI_STR_ERROR, ui32LedSet);
+        UARTprintf(" The LEDs were set to 0x%02x instead.", ui32LedGet);
         return -1;
     } else {
-        UARTprintf("%s: Leds set to 0x%02x.", UI_STR_OK, GpioLedGet());
+        UARTprintf("%s: LEDs set to 0x%02x.", UI_STR_OK, GpioLedGet());
         return 0;
     }
 }
