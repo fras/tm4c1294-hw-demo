@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 31 Mar 2020
-# Rev.: 21 Apr 2020
+# Rev.: 23 Apr 2020
 #
 # Python class for using the UART ports of the TM4C1294NCPDT MCU.
 #
@@ -30,6 +30,11 @@ class McuUart:
     hwParity            = ['none', 'even', 'odd', 'one', 'zero']
     hwMarkData          = "Data:"
 
+    # Default values.
+    hwBaudDefault       = 115200
+    hwParityDefault     = 0
+    hwLoopbackDefault   = 0
+
 
 
     # Initialize the UART port of the MCU.
@@ -41,6 +46,8 @@ class McuUart:
         self.accessWrite = 0
         self.bytesRead = 0
         self.bytesWritten = 0
+        # Set up the UART port using the default values.
+        self.setup(self.hwBaudDefault, self.hwParityDefault, self.hwLoopbackDefault)
 
 
 
@@ -86,7 +93,7 @@ class McuUart:
 
 
 
-    # Setup the UART port.
+    # Set up the UART port.
     def setup(self, baud, parity, loopback):
         if baud < self.hwBaudMin or baud > self.hwBaudMax:
             self.errorCount += 1
@@ -96,6 +103,11 @@ class McuUart:
             self.errorCount += 1
             print(self.prefixError + "UART parity {0:d} outside of valid range {1:d}..{2:d}!".format(parity, 0, len(self.hwParity)-1))
             return -1
+        # Store UART parameter.
+        self.baud = baud
+        self.parity = parity
+        self.loopback = loopback
+        # Assemble MCU command.
         cmd = "uart-s {0:d} {1:d} {2:d} {3:d}".format(self.port, baud, parity, loopback & 0x1)
         if self.debugLevel >= 2:
             print(self.prefixDebug + "Setting up the UART port {0:d}.".format(self.port), end='')

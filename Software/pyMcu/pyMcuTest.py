@@ -4,7 +4,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 24 Mar 2020
-# Rev.: 21 Apr 2020
+# Rev.: 23 Apr 2020
 #
 # Python script to test hardware features of the TM4C1294NCPDT MCU on the
 # TM4C1294 Connected LaunchPad Evaluation Kit over a serial port (UART).
@@ -255,8 +255,8 @@ def run_test(serialDevice, verbosity):
     # UART test.
     if testUart:
         print("UART port {0:d} test.".format(mcuUart6.port))
-        # Setup the UART.
-        mcuUart6.setup(11520, 0, 1)     # 11520 baud, no parity, internal loopback enabled.
+        # Set up the UART.
+        mcuUart6.setup(115200, 0, 1)    # 115200 baud, no parity, internal loopback enabled.
 #        for i in range(0, 100):
 #            mcuUart6.write([i])
 #            mcuUart6.read(1)

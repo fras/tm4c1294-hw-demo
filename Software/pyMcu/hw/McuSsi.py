@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 21 Apr 2020
-# Rev.: 21 Apr 2020
+# Rev.: 23 Apr 2020
 #
 # Python class for using the Synchronous Serial Interface (SSI) / Serial
 # Peripheral Interface (SPI) ports of the TM4C1294NCPDT MCU.
@@ -34,6 +34,10 @@ class McuSsi:
     hwMode              = ['SPI, CPOL=0, CPHA=0', 'SPI, CPOL=0, CPHA=1',
                            'SPI, CPOL=1, CPHA=0', 'SPI, CPOL=1, CPHA=1',
                            'TI frame format', 'National MicroWire']
+    # Default values.
+    hwFreqDefault       = 1000000
+    hwModeDefault       = 0
+    hwDataWidthDefault  = 8
 
 
 
@@ -46,6 +50,8 @@ class McuSsi:
         self.accessWrite = 0
         self.dataRead = 0
         self.dataWritten = 0
+        # Set up the SSI port using the default values.
+        self.setup(self.hwFreqDefault, self.hwModeDefault, self.hwDataWidthDefault)
 
 
 
@@ -91,7 +97,7 @@ class McuSsi:
 
 
 
-    # Setup the SSI port.
+    # Set up the SSI port.
     def setup(self, freq, mode, dataWidth):
         if freq < self.hwFreqMin or freq > self.hwFreqMax:
             self.errorCount += 1
@@ -103,8 +109,14 @@ class McuSsi:
             return -1
         if dataWidth < self.hwDataWidthMin or dataWidth > self.hwDataWidthMax:
             self.errorCount += 1
-            print(self.prefixError + "SSI data width {0:d} outside of valid range {1:d}..{2:d}!".format(dataWidth, self.hwDataWidthMin, self.hwDataWidthMax))
+            print(self.prefixError + "SSI data width {0:d} outside of valid range {1:d}..{2:d}!".\
+                format(dataWidth, self.hwDataWidthMin, self.hwDataWidthMax))
             return -1
+        # Store SSI parameters.
+        self.freq = freq
+        self.mode = mode
+        self.dataWidth = dataWidth
+        # Assemble MCU command.
         cmd = "ssi-set {0:d} {1:d} {2:d} {3:d}".format(self.port, freq, mode, dataWidth)
         if self.debugLevel >= 2:
             print(self.prefixDebug + "Setting up the SSI port {0:d}.".format(self.port), end='')
