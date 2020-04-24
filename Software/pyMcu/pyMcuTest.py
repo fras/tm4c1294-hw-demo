@@ -4,7 +4,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 24 Mar 2020
-# Rev.: 23 Apr 2020
+# Rev.: 24 Apr 2020
 #
 # Python script to test hardware features of the TM4C1294NCPDT MCU on the
 # TM4C1294 Connected LaunchPad Evaluation Kit over a serial port (UART).
@@ -13,9 +13,12 @@
 
 
 # Append hardware classes folder to python path.
-import sys
 import os
-sys.path.append(os.path.dirname(__file__) + '/hw')
+import sys
+thisFilePath = os.path.dirname(__file__)
+if thisFilePath:
+    thisFilePath += '/'
+sys.path.append(thisFilePath + 'hw')
 
 
 
@@ -361,7 +364,7 @@ def run_test(serialDevice, verbosity):
 if __name__ == "__main__":
     # Command line arguments.
     import argparse
-    parser = argparse.ArgumentParser(description='Access to Process some integers.')
+    parser = argparse.ArgumentParser(description='Run an automated set of MCU tests.')
     parser.add_argument('-d', '--device', action='store', type=str,
                         dest='serialDevice', default='/dev/ttyUSB0',
                         help='Serial device to access the MCU.')

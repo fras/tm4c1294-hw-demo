@@ -4,7 +4,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 30 Mar 2020
-# Rev.: 23 Apr 2020
+# Rev.: 24 Apr 2020
 #
 # Python GUI for accessing the TM4C1294NCPDT MCU on the TM4C1294 Connected
 # LaunchPad Evaluation Kit over a serial port (UART).
@@ -13,9 +13,14 @@
 
 
 # Append hardware classes folder to python path.
-import sys
 import os
-sys.path.append(os.path.dirname(__file__) + '/hw')
+import sys
+thisFilePath = os.path.dirname(__file__)
+if thisFilePath:
+    thisFilePath += '/'
+sys.path.append(thisFilePath + 'hw')
+
+
 
 # System modules.
 import time
@@ -23,7 +28,8 @@ import time
 # GUI: tkinter
 from tkinter import *
 from tkinter import messagebox
-from tkinter.scrolledtext import ScrolledText
+import tkinter.scrolledtext
+import tkinter.filedialog
 
 # Hardware classes.
 import Adc
@@ -37,6 +43,9 @@ import McuSsi
 import McuUart
 import RgbLed
 
+# Module for the MCU command batch file execution.
+import pyMcuBatch
+
 
 
 # GUI class.
@@ -44,8 +53,8 @@ class PyMcuGui(Frame):
 
     # Software version.
     swName      = "pyMCU"
-    swVersion   = "0.2.4"
-    swDate      = "23 Apr 2020"
+    swVersion   = "0.3.0"
+    swDate      = "24 Apr 2020"
 
     # Window titles.
     titleMain   = swName + " GUI - v" + swVersion + " - " + swDate
@@ -243,13 +252,26 @@ class PyMcuGui(Frame):
         self.entryMcuCmd.grid(row=0, column=1, sticky=W+E)
         self.entryMcuCmd.insert(0, "help")
         self.entryMcuCmd.bind('<Return>', self.mcu_exec_cmd_enter)
-        self.textMcuCmdResponse = ScrolledText(self.frameMcuCmd, width=81, height=4, state=DISABLED)
+        self.textMcuCmdResponse = tkinter.scrolledtext.ScrolledText(self.frameMcuCmd, width=81, height=4, state=DISABLED)
         self.textMcuCmdResponse.grid(row=1, column=0, columnspan=3, sticky=W+E, pady=(5, 0))
         self.buttonMcuCmdExec= Button(self.frameMcuCmd, text="Execute", command=self.mcu_exec_cmd)
         self.buttonMcuCmdExec.grid(row=0, column=2, sticky=W+E, padx=(padxButtonL, padxButtonR))
+        # ***** Load and execute an MCU command batch file. *****
+        self.frameMcuBatch = Frame(self.frame1, bd=2, relief=GROOVE, padx=5, pady=5)
+        self.frameMcuBatch.grid(row=1, column=0, sticky=W+E, pady=2)
+        Grid.columnconfigure(self.frameMcuBatch, 1, weight=1)
+        self.buttonMcuBatchFileSelect= Button(self.frameMcuBatch, text="Open MCU Command File", command=self.mcu_batch_open)
+        self.buttonMcuBatchFileSelect.grid(row=0, column=0, sticky=W+E, padx=(padxButtonL, padxButtonR))
+        mcuBatchFileNamePrefix = os.path.dirname(__file__)
+        self.entryMcuBatchFileName = Entry(self.frameMcuBatch, width=20, justify=LEFT)
+        self.entryMcuBatchFileName.grid(row=0, column=1, sticky=W+E)
+        self.entryMcuBatchFileName.insert(0, thisFilePath + "batch/cmd_test.mcu")
+        self.entryMcuBatchFileName.xview(END)
+        self.buttonMcuBatchFileExec= Button(self.frameMcuBatch, text="Execute", command=self.mcu_batch_exec)
+        self.buttonMcuBatchFileExec.grid(row=0, column=2, sticky=W+E, padx=(padxButtonL, padxButtonR))
         # ***** I2C. ******
         self.frameI2C = Frame(self.frame1, bd=2, relief=GROOVE, padx=5, pady=5)
-        self.frameI2C.grid(row=1, column=0, sticky=W+E, pady=2)
+        self.frameI2C.grid(row=2, column=0, sticky=W+E, pady=2)
         Grid.columnconfigure(self.frameI2C, 2, weight=1)
         Grid.columnconfigure(self.frameI2C, 3, weight=1)
         self.labelI2CPort = Label(self.frameI2C, text="I2C Bus", anchor=CENTER)
@@ -304,7 +326,7 @@ class PyMcuGui(Frame):
         self.buttonI2CDetect.grid(row=0, column=1, sticky=W+E, padx=(padxButtonL, padxButtonR))
         # ***** SSI. ******
         self.frameSsi = Frame(self.frame1, bd=2, relief=GROOVE, padx=5, pady=5)
-        self.frameSsi.grid(row=2, column=0, sticky=W+E, pady=2)
+        self.frameSsi.grid(row=3, column=0, sticky=W+E, pady=2)
         Grid.columnconfigure(self.frameSsi, 0, weight=1)
         self.frameSsiSetup = Frame(self.frameSsi, bd=0, padx=0, pady=5)
         self.frameSsiSetup.grid(row=0, column=0, sticky=W+E)
@@ -357,7 +379,7 @@ class PyMcuGui(Frame):
         self.buttonSsiDataRd.grid(row=2, column=0, sticky=W+E, padx=(padxButtonL, padxButtonR))
         # ***** UART. ******
         self.frameUart = Frame(self.frame1, bd=2, relief=GROOVE, padx=5, pady=5)
-        self.frameUart.grid(row=3, column=0, sticky=W+E, pady=2)
+        self.frameUart.grid(row=4, column=0, sticky=W+E, pady=2)
         Grid.columnconfigure(self.frameUart, 0, weight=1)
         self.frameUartSetup = Frame(self.frameUart, bd=0, padx=0, pady=5)
         self.frameUartSetup.grid(row=0, column=0, sticky=W+E)
@@ -466,6 +488,8 @@ class PyMcuGui(Frame):
         self.i2cOpt3001.debugLevel = verbosity
         # Set up the hardware.
         self.ssi_setup()
+        self.mcuSsi3.setup(15000000, 0, 8)      # Setup the SSI 3 port for usage with the LCD:
+                                                # 15 MHz, SPI CPOL=0 CPHA=0, 8 bit data width
         self.uart_setup()
         # Set the verbosity.
         if verbosity < min(self.optionsVerbosity):
@@ -773,6 +797,47 @@ class PyMcuGui(Frame):
     def mcu_exec_cmd_enter(self, event):
         self.mcu_exec_cmd()
 
+    # File dialog for opening an MCU command batch file.
+    def mcu_batch_open(self):
+        try:
+            mcuBatchFileName = tkinter.filedialog.askopenfilename(
+                title='Open MCU Command File',
+                initialdir='',
+                filetypes=[
+                    ("MCU command files", '*.mcu'),
+                    ("All files", '*')],
+                multiple=False)
+            if mcuBatchFileName:
+                self.entryMcuBatchFileName.delete(0, END)
+                self.entryMcuBatchFileName.insert(0, mcuBatchFileName)
+                self.entryMcuBatchFileName.xview(END)
+            return 0
+        except Exception as e:
+            messagebox.showerror(self.titleError, self.prefixError + "\nError showing the MCU command batch file open dialog:\n" + str(e))
+            return -1
+
+    # Execute an MCU command batch file.
+    def mcu_batch_exec(self):
+        try:
+            mcuBatchFileName = self.entryMcuBatchFileName.get()
+            # Check if mcuBatchFileName is a file.
+            if not os.path.isfile(mcuBatchFileName):
+                messagebox.showerror(self.titleError, "The MCU command batch file parameter `{0:s}' is not a file!".format(mcuBatchFileName))
+                return 1
+            # Check if the MCU command batch file is readable.
+            if not os.access(mcuBatchFileName, os.R_OK):
+                messagebox.showerror(self.titleError, "Cannot open the MCU command batch file `{0:s}'!".format(mcuBatchFileName))
+                return -1
+            ret = pyMcuBatch.exec_batch(self.mcuSer.ser.port, mcuBatchFileName, True, self.debugLevel)
+            if ret:
+                messagebox.showerror(self.titleError, "Error while executing MCU command batch file `{0:s}'! Exit code: {1:d}".\
+                    format(mcuBatchFileName, ret))
+            return ret
+        except Exception as e:
+            messagebox.showerror(self.titleError, self.prefixError +
+                "\nError executing the MCU command batch file `{0:s}':\n".format(self.entryMcuBatchFileName.get()) + str(e))
+            return -1
+
     # Get the currently selected I2C port and return its object.
     def i2c_port_get(self):
         try:
@@ -1061,7 +1126,7 @@ def launch_gui(serialDevice, verbosity):
 if __name__ == "__main__":
     # Command line arguments.
     import argparse
-    parser = argparse.ArgumentParser(description='Access to Process some integers.')
+    parser = argparse.ArgumentParser(description='Launch a GUI to control the MCU.')
     parser.add_argument('-d', '--device', action='store', type=str,
                         dest='serialDevice', default='/dev/ttyUSB0',
                         help='Serial device to access the MCU.')

@@ -1,0 +1,119 @@
+# File: cmd_test.mcu
+# Auth: M. Fras, Electronics Division, MPI for Physics, Munich
+# Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
+# Date: 23 Apr 2020
+# Rev.: 24 Apr 2020
+#
+# MCU command file for testing all availabel MCU commands.
+#
+
+
+
+# Show help text.
+help
+
+# Read ADC values.
+adc                     # Read once.
+adc 10                  # Read 10 times
+
+# Get the status of the buttons.
+button                  # Overview status of all buttons.
+button 0                # Detailed status fo button 1.
+button 1
+button 2
+button 3
+
+# Delay execution.
+delay 100000            # Delay for 100,000 us.
+
+# I2C access.
+i2c 2 0x40 0x8          # Quick command.
+i2c 2 0x40 0x4 0x1      # Set pointer register of TMP006 temperature sensor.
+                        # 0x4: No stop condition.
+i2c 2 0x40 0x3 2        # Read data from the TMP006 temperature sensor.
+                        # 0x3: Repeated start, read.
+
+# Detect I2C devices on port 2.
+i2c-det 2
+
+# Read ambient light sensor info.
+illum                   # Read once.
+illum 10                # Read 10 times.
+
+# Firmware information.
+info
+
+# LCD commands.
+lcd help
+lcd clear 0xff0000      # Fill the LCD with color 0xRRGGBB.
+delay 100000
+lcd clear 0x00ff00
+delay 100000
+lcd clear 0x0000ff
+delay 100000
+lcd clear 0x000000
+lcd circle 64 64 54 0xff0000 0
+lcd line  10  64 118  64 0x00ff00
+lcd line  64  10  64 118 0x00ff00
+lcd pixel 64 64 0x000000
+lcd rect 10 10 118 118 0x0000ff 0
+lcd text 64 4 0xffffff 1 LCD TEST
+delay 100000
+lcd info
+lcd orient 0
+delay 100000
+lcd orient 1
+delay 100000
+lcd orient 2
+delay 100000
+lcd orient 3
+delay 100000
+lcd orient 0
+
+# Set the LEDs.
+led 0x1
+delay 100000
+led 0x2
+delay 100000
+led 0x4
+delay 100000
+led 0x8
+delay 100000
+led 0x0
+
+# Set the RGB LED.
+rgb 0x880000            # RGB value = 0xRRGGBB.
+delay 100000
+rgb 0x008800            # RGB value = 0xRRGGBB.
+delay 100000
+rgb 0x000088            # RGB value = 0xRRGGBB.
+delay 100000
+rgb 0x888888            # RGB value = 0xRRGGBB.
+delay 100000
+rgb 0x000000            # RGB value = 0xRRGGBB.
+
+# SSI access.
+ssi-set 2 1000000 0 8   # Set up SSI port 2: 1 MHz, SPI CPOL = 0, CPHA = 0,
+                        #                    data width = 8
+ssi 2 0 0x12 0x34 0x56 0x78 # Write data.
+ssi 2 1 2               # Read 2 data words.
+ssi 2 1                 # Read all data.
+ssi 2 1                 # This will issue a warning, as no more data are
+                        # available.
+
+# Read temperature sensor info.
+temp                    # Read once.
+temp 10                 # Read 10 times.
+
+# UART access.
+uart-s 6 115200 0 1     # Set up the UART port 6: 115200 baud, no parity,
+                        # internal loopback mode enabled.
+uart 6 0 0x12 0x34 0x56 0x78    # Send data bytes.
+uart 6 1 2              # Read 2 data bytes.
+uart 6 1                # Read all data bytes.
+uart 6 1                # This will issue a warning, as no more data are
+                        # available.
+
+# Stop execution of this MCU command batch file.
+exit
+
