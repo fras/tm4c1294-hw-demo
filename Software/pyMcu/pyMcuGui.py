@@ -139,6 +139,8 @@ class PyMcuGui(Frame):
         self.buttonGpioLedSet.grid(row=0, column=4, sticky=W+E, padx=(10, 0))
         self.buttonGpioLedTest = Button(self.frameLed, text="Test LEDs", command=self.gpio_led_test)
         self.buttonGpioLedTest.grid(row=0, column=5, sticky=W+E, padx=(10, 0))
+        self.buttonGpioLedGet = Button(self.frameLed, text="Get LED Value", command=self.gpio_led_get)
+        self.buttonGpioLedGet.grid(row=0, column=6, sticky=W+E, padx=(10, 0))
         # ***** RGB LED using PWM. *****
         self.labelRgbLed = Label(self.frameLed, text="RGB LED", anchor=W)
         self.labelRgbLed.grid(row=1, column=0, sticky=W+E)
@@ -262,7 +264,6 @@ class PyMcuGui(Frame):
         Grid.columnconfigure(self.frameMcuBatch, 1, weight=1)
         self.buttonMcuBatchFileSelect= Button(self.frameMcuBatch, text="Open MCU Command File", command=self.mcu_batch_open)
         self.buttonMcuBatchFileSelect.grid(row=0, column=0, sticky=W+E, padx=(padxButtonL, padxButtonR))
-        mcuBatchFileNamePrefix = os.path.dirname(__file__)
         self.entryMcuBatchFileName = Entry(self.frameMcuBatch, width=20, justify=LEFT)
         self.entryMcuBatchFileName.grid(row=0, column=1, sticky=W+E)
         self.entryMcuBatchFileName.insert(0, thisFilePath + "batch/cmd_test.mcu")
@@ -575,6 +576,21 @@ class PyMcuGui(Frame):
             return ret
         except Exception as e:
             messagebox.showerror(self.titleError, self.prefixError + "\nError setting the GPIO LEDs:\n" + str(e))
+            return -1
+
+    # Get the current value of the GPIO LEDs.
+    def gpio_led_get(self):
+        try:
+            led = int(self.entryGpioLed.get(), 0)
+            ret, led = self.gpioLED.get()
+            if ret:
+                messagebox.showerror(self.titleError, self.prefixError + "\nError getting the current value of the GPIO LEDs.")
+                return ret
+            self.entryGpioLed.delete(0, END)
+            self.entryGpioLed.insert(0, "0x{0:01x}".format(led))
+            return 0
+        except Exception as e:
+            messagebox.showerror(self.titleError, self.prefixError + "\nError getting the current value of the GPIO LEDs:\n" + str(e))
             return -1
 
     # Test the GPIO LEDs.

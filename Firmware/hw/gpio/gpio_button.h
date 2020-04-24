@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 10 Feb 2020
-// Rev.: 17 Apr 2020
+// Rev.: 24 Apr 2020
 //
 // Header file for the GPIO button functions for the TI Tiva TM4C1294 Connected
 // LaunchPad Evaluation Kit.
@@ -40,7 +40,7 @@ extern uint32_t g_ui32GpioButtonReleasedCnt[GPIO_BUTTON_NUM];
 
 // Function prototypes.
 void GpioButtonInit(void);
-int32_t GpioButtonGet(void);
+uint32_t GpioButtonGet(void);
 void GpioButtonIntHandler(void);
 
 

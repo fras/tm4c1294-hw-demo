@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 07 Feb 2020
-// Rev.: 04 Apr 2020
+// Rev.: 24 Apr 2020
 //
 // Header file for the GPIO LED control for the TI Tiva TM4C1294 Connected
 // LaunchPad Evaluation Kit.
@@ -18,7 +18,7 @@
 // Function prototypes.
 void GpioLedInit(void);
 void GpioLedSet(uint32_t val);
-int32_t GpioLedGet(void);
+uint32_t GpioLedGet(void);
 
 
 

@@ -71,7 +71,8 @@ delay 100000
 lcd orient 0
 
 # Set the LEDs.
-led 0x1
+led                     # Get the current value of the user LEDs.
+led 0x1                 # Set the user LEDs to 0x1.
 delay 100000
 led 0x2
 delay 100000

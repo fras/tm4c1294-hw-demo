@@ -1,0 +1,44 @@
+# File: led_count.mcu
+# Auth: M. Fras, Electronics Division, MPI for Physics, Munich
+# Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
+# Date: 24 Apr 2020
+# Rev.: 24 Apr 2020
+#
+# MCU command file showing a simple binary counter on the LEDs.
+#
+
+
+
+led 0x1
+delay 200000
+led 0x2
+delay 200000
+led 0x3
+delay 200000
+led 0x4
+delay 200000
+led 0x5
+delay 200000
+led 0x6
+delay 200000
+led 0x7
+delay 200000
+led 0x8
+delay 200000
+led 0x9
+delay 200000
+led 0xa
+delay 200000
+led 0xb
+delay 200000
+led 0xc
+delay 200000
+led 0xd
+delay 200000
+led 0xe
+delay 200000
+led 0xf
+delay 200000
+led 0x0
+delay 200000
+

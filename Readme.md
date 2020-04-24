@@ -141,7 +141,7 @@ Rev.: 24 Apr 2020
     Example minicom session:
     ```
     *******************************************************************************
-    TIVA TM4C1294 `hw_demo' firmware version 0.3.2, release date: 24 Apr 2020
+    TIVA TM4C1294 `hw_demo' firmware version 0.3.3, release date: 24 Apr 2020
     *******************************************************************************
     
     Type `help' to get an overview of available commands.
@@ -157,7 +157,7 @@ Rev.: 24 Apr 2020
       illum   [COUNT]                     Read ambient light sensor info.
       info                                Show information about this firmware.
       lcd     CMD PARAMS                  LCD commands.
-      led     VALUE                       Set the LEDs.
+      led     [VALUE]                     Get/Set the value of the user LEDs.
       rgb     VALUE                       Set the RGB LED (RGB value = 0xRRGGBB).
       ssi     PORT R/W NUM|DATA           SSI/SPI access (R/W: 0 = write, 1 = read).
       ssi-set PORT FREQ [MODE] [WIDTH]    Set up the SSI port.
@@ -165,16 +165,20 @@ Rev.: 24 Apr 2020
       uart    PORT R/W NUM|DATA           UART access (R/W: 0 = write, 1 = read).
       uart-s  PORT BAUD [PARITY] [LOOP]   Set up the UART port.
     > info
-    TIVA TM4C1294 `hw_demo' firmware version 0.3.2, release date: 24 Apr 2020
-    It was compiled using gcc 6.3.1 20170620 at 01:13:36 on Apr 24 2020.
+    TIVA TM4C1294 `hw_demo' firmware version 0.3.3, release date: 24 Apr 2020
+    It was compiled using gcc 6.3.1 20170620 at 21:41:14 on Apr 24 2020.
     > button
-    OK. Button 3..0 status: 0x0000
+    OK. Button 3..0 status: 0x0
+    > button
+    OK. Button 3..0 status: 0xf
     > button 0
     OK. Button 0 status: 0x0, pressed count: 1, released count: 1
     > button 0
     OK. Button 0 status: 0x1, pressed count: 2, released count: 1
     > led 0xf
-    OK: LEDs set to 0x0f.
+    OK: LEDs set to 0xf.
+    > led
+    OK: Current LED value: 0xf
     > i2c-det 2
     OK. I2C device(s) found at slave address: 0x40 0x44
     > i2c 2 0x40 0 0x2

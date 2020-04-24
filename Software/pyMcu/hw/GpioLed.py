@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 30 Mar 2020
-# Rev.: 21 Apr 2020
+# Rev.: 24 Apr 2020
 #
 # Python class for setting the LEDs connected to GPIO ports of the
 # TM4C1294NCPDT MCU.
@@ -25,6 +25,7 @@ class GpioLed:
 
     # Hardware parameters.
     ledMask = 0x0f
+    hwMarkData = "Current LED value:"
 
 
 
@@ -61,4 +62,56 @@ class GpioLed:
                 print(self.mcuSer.get_full())
             return ret
         return 0
+
+
+
+    # Get the current GPIO LED value.
+    def get(self):
+        if self.debugLevel >= 2:
+            print(self.prefixDebug + "Getting the current LED value.")
+        cmd = "led"
+        # Debug: Show command.
+        if self.debugLevel >= 3:
+            print(self.prefixDebug + "Sending command for LEDs: " + cmd)
+        # Send command.
+        self.mcuSer.send(cmd)
+        # Debug: Show response.
+        if self.debugLevel >= 3:
+            print(self.prefixDebug + "Response from MCU:")
+            print(self.mcuSer.get_full())
+        # Evaluate response.
+        ret = self.mcuSer.eval()
+        if ret:
+            self.errorCount += 1
+            print(self.prefixError + "Error sending command for LEDs!")
+            if self.debugLevel >= 1:
+                print(self.prefixError + "Command sent to MCU: " + cmd)
+                print(self.prefixError + "Response from MCU:")
+                print(self.mcuSer.get_full())
+            return ret, 0
+        # Get and parse response from MCU.
+        dataStr = self.mcuSer.get()
+        dataPos = dataStr.find(self.hwMarkData)
+        if dataPos < 0:
+            self.errorCount += 1
+            print(self.prefixError + "Error parsing data read from the LEDs!")
+            if self.debugLevel >= 1:
+                print(self.prefixError + "Command sent to MCU: " + cmd)
+                print(self.prefixError + "Response from MCU:")
+                print(self.mcuSer.get_full())
+            return -1, 0
+        # Get sub-string containing the data. Add the length of hwMarkData to
+        # point beyond the data mark.
+        dataStr = dataStr[dataPos+len(self.hwMarkData):].strip()
+        # Convert data string to list of data bytes.
+        data = [int(i, 0) for i in filter(None, dataStr.split(" "))]
+        if self.debugLevel >= 2:
+            print(self.prefixDebug + "Data read:", end='')
+            for datum in data:
+                print(" 0x{0:02x}".format(datum), end='')
+            print()
+        if not data:
+            return -1, 0
+        return 0, data[0]
+
 

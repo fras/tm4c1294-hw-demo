@@ -60,7 +60,7 @@ int DelayUs(char *pcCmd, char *pcParam, uint32_t ui32SysClock);
 int LcdCmd(char *pcCmd, char *pcParam, tLcdFwInfo *psLcdFwInfo);
 int LcdCheckParamCnt(char *pcLcdCmd, int iLcdParamCntActual, int iLcdParamCntTarget);
 void LcdHelp(void);
-int LedSet(char *pcCmd, char *pcParam);
+int LedGetSet(char *pcCmd, char *pcParam);
 int RgbLedSet(char *pcCmd, char *pcParam);
 int I2CAccess(char *pcCmd, char *pcParam);
 void I2CAccessHelp(void);
@@ -204,7 +204,7 @@ int main(void)
             LcdCmd(pcUartCmd, pcUartParam, &sLcdFwInfo);
         // GPIO LED based functions.
         } else if (!strcasecmp(pcUartCmd, "led")) {
-            LedSet(pcUartCmd, pcUartParam);
+            LedGetSet(pcUartCmd, pcUartParam);
         // PWM based functions.
         } else if (!strcasecmp(pcUartCmd, "rgb")) {
             RgbLedSet(pcUartCmd, pcUartParam);
@@ -253,7 +253,7 @@ void Help(void)
     UARTprintf("  illum   [COUNT]                     Read ambient light sensor info.\n");
     UARTprintf("  info                                Show information about this firmware.\n");
     UARTprintf("  lcd     CMD PARAMS                  LCD commands.\n");
-    UARTprintf("  led     VALUE                       Set the LEDs.\n");
+    UARTprintf("  led     [VALUE]                     Get/Set the value of the user LEDs.\n");
     UARTprintf("  rgb     VALUE                       Set the RGB LED (RGB value = 0xRRGGBB).\n");
     UARTprintf("  ssi     PORT R/W NUM|DATA           SSI/SPI access (R/W: 0 = write, 1 = read).\n");
     UARTprintf("  ssi-set PORT FREQ [MODE] [WIDTH]    Set up the SSI port.\n");
@@ -356,10 +356,7 @@ int ButtonGet(char *pcCmd, char *pcParam)
 
     if (pcParam == NULL) {
         UARTprintf("%s. ", UI_STR_OK);
-        UARTprintf("Button %d..0 status: 0x", GPIO_BUTTON_NUM - 1);
-        for (int i = GPIO_BUTTON_NUM - 1; i >= 0; i--) {
-            UARTprintf("%1x", (g_ui8GpioButtonStatus[i] == GPIO_BUTTON_PRESSED) ? 1 : 0);
-        }
+        UARTprintf("Button %d..0 status: 0x%01x", GPIO_BUTTON_NUM - 1, GpioButtonGet());
     } else {
         ui32ButtonIndex = strtoul(pcParam, (char **) NULL, 0);
         if (ui32ButtonIndex >= GPIO_BUTTON_NUM) {
@@ -528,24 +525,25 @@ void LcdHelp(void)
 
 
 
-// Set the user LEDs.
-int LedSet(char *pcCmd, char *pcParam)
+// Get/Set the value of the user LEDs.
+int LedGetSet(char *pcCmd, char *pcParam)
 {
     uint32_t ui32LedSet, ui32LedGet;
 
+    // Read the current value of the user LEDs if no parameter is given.
     if (pcParam == NULL) {
-        UARTprintf("%s: Parameter required after command `%s'.", UI_STR_ERROR, pcCmd);
-        return -1;
+        UARTprintf("%s: Current LED value: 0x%01x", UI_STR_OK, GpioLedGet());
+        return 0;
     }
     ui32LedSet = strtoul(pcParam, (char **) NULL, 0);
     GpioLedSet(ui32LedSet);
     ui32LedGet = GpioLedGet();
     if (ui32LedSet != ui32LedGet) {
-        UARTprintf("%s: Setting the LEDs to 0x%02x failed!", UI_STR_ERROR, ui32LedSet);
-        UARTprintf(" The LEDs were set to 0x%02x instead.", ui32LedGet);
+        UARTprintf("%s: Setting the LEDs to 0x%01x failed!", UI_STR_ERROR, ui32LedSet);
+        UARTprintf(" The LEDs were set to 0x%01x instead.", ui32LedGet);
         return -1;
     } else {
-        UARTprintf("%s: LEDs set to 0x%02x.", UI_STR_OK, GpioLedGet());
+        UARTprintf("%s: LEDs set to 0x%01x.", UI_STR_OK, GpioLedGet());
         return 0;
     }
 }
