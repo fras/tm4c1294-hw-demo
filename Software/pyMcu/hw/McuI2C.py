@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 28 Mar 2020
-# Rev.: 21 Apr 2020
+# Rev.: 29 Apr 2020
 #
 # Python class for using the I2C ports of the TM4C1294NCPDT MCU.
 #
@@ -99,7 +99,7 @@ class McuI2C:
                 print(self.prefixError + "At least one data byte must be provided!")
             return -1
         accMode = 0x00 | (0x02 if repeatedStart else 0) | (0x04 if not stop else 0)
-        cmd = "i2c {0:d} 0x{1:02x} 0x{2:02x}".format(self.port, slaveAddr & 0x7f, accMode)
+        cmd = "i2c {0:d} 0x{1:02x} 0x{2:01x}".format(self.port, slaveAddr & 0x7f, accMode)
         for datum in data:
             cmd += " 0x{0:02x}".format(datum & 0xff)
         if self.debugLevel >= 2:
@@ -133,7 +133,7 @@ class McuI2C:
                 print(self.prefixError + "At least one data byte must be read!")
             return -1, []
         accMode = 0x01 | (0x02 if repeatedStart else 0) | (0x04 if not stop else 0)
-        cmd = "i2c {0:d} 0x{1:02x} 0x{2:02x} {3:d}".format(self.port, slaveAddr & 0x7f, accMode, cnt)
+        cmd = "i2c {0:d} 0x{1:02x} 0x{2:01x} {3:d}".format(self.port, slaveAddr & 0x7f, accMode, cnt)
         if self.debugLevel >= 2:
             print(self.prefixDebug + "Reading data from the I2C master port {0:d}.".format(self.port), end='')
             print(self.separatorDetails + "Slave address: 0x{0:02x}".format(slaveAddr), end='')
@@ -179,7 +179,7 @@ class McuI2C:
     # Send a quick command (advanced).
     def ms_quick_cmd_adv(self, slaveAddr, read, repeatedStart):
         accMode = 0x08 | (0x01 if read else 0) | (0x02 if repeatedStart else 0)
-        cmd = "i2c {0:d} 0x{1:02x} 0x{2:02x}".format(self.port, slaveAddr & 0x7f, accMode)
+        cmd = "i2c {0:d} 0x{1:02x} 0x{2:01x}".format(self.port, slaveAddr & 0x7f, accMode)
         if self.debugLevel >= 2:
             print(self.prefixDebug + "Sending quick command to the I2C master port {0:d}.".format(self.port), end='')
             print(self.separatorDetails + "Slave address: 0x{0:02x}".format(slaveAddr), end='')

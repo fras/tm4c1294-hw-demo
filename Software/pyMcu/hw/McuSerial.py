@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 24 Mar 2020
-# Rev.: 21 Apr 2020
+# Rev.: 29 Apr 2020
 #
 # Python class for communicating with the TM4C1294NCPDT MCU over a serial port
 # (UART).
@@ -66,7 +66,10 @@ class McuSerial:
         self.bytesWritten = 0
 
         try:
-            self.ser.open()
+            if port:
+                self.ser.open()
+            else:
+                self.simulateHwAccess = True
         except Exception as e:
             self.errorCount += 1
             print(self.prefixError + "Error opening serial port `" + port + "': " + str(e))
