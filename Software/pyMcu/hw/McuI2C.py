@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 28 Mar 2020
-# Rev.: 29 Apr 2020
+# Rev.: 04 May 2020
 #
 # Python class for using the I2C ports of the TM4C1294NCPDT MCU.
 #
@@ -75,7 +75,7 @@ class McuI2C:
             print(self.separatorDetails + "Error count: {0:d}".format(self.errorCount), end='')
         if self.debugLevel >= 1:
             print(self.separatorDetails + "Read access count: {0:d}".format(self.accessRead), end='')
-            print(self.separatorDetails + "Write access countn: {0:d}".format(self.accessWrite), end='')
+            print(self.separatorDetails + "Write access count: {0:d}".format(self.accessWrite), end='')
         if self.debugLevel >= 1:
             print(self.separatorDetails + "Bytes read: {0:d}".format(self.bytesRead), end='')
             print(self.separatorDetails + "Bytes written: {0:d}".format(self.bytesWritten), end='')

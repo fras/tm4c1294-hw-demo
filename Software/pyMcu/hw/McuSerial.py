@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 24 Mar 2020
-# Rev.: 29 Apr 2020
+# Rev.: 04 May 2020
 #
 # Python class for communicating with the TM4C1294NCPDT MCU over a serial port
 # (UART).
@@ -68,8 +68,11 @@ class McuSerial:
         try:
             if port:
                 self.ser.open()
+                self.simulateHwAccess = False
             else:
                 self.simulateHwAccess = True
+                if self.debugLevel >= 3:
+                    print("{0:s}: Using simulated hardware access only!".format(__file__))
         except Exception as e:
             self.errorCount += 1
             print(self.prefixError + "Error opening serial port `" + port + "': " + str(e))
@@ -79,6 +82,9 @@ class McuSerial:
 
     # Print details.
     def print_details(self):
+        if self.simulateHwAccess:
+            print(self.simulateHwAccessMsg)
+            return 0
         print(self.prefixDetails, end='')
         print("UART port: " + self.ser.port, end='')
         print(self.separatorDetails + "Baud rate: {0:d}".format(self.ser.baudrate), end='')
@@ -90,11 +96,12 @@ class McuSerial:
             print(self.separatorDetails + "Error count: {0:d}".format(self.errorCount), end='')
         if self.debugLevel >= 1:
             print(self.separatorDetails + "Read access count: {0:d}".format(self.accessRead), end='')
-            print(self.separatorDetails + "Write access countn: {0:d}".format(self.accessWrite), end='')
+            print(self.separatorDetails + "Write access count: {0:d}".format(self.accessWrite), end='')
         if self.debugLevel >= 1:
             print(self.separatorDetails + "Bytes read: {0:d}".format(self.bytesRead), end='')
             print(self.separatorDetails + "Bytes written: {0:d}".format(self.bytesWritten), end='')
         print()
+        return 0
 
 
 
@@ -182,9 +189,9 @@ class McuSerial:
         # Clear previous MCU response.
         self.mcuResponse = ""
         if self.simulateHwAccess:
-            print(self.simulateHwAccessMsg + " 'Sending MCU command: " + cmd)
+            print(self.simulateHwAccessMsg + " Sending MCU command: " + cmd)
             self.mcuResponse = self.mcuResponseOk + " (simulated hardware access)"
-            return 0
+            return self.mcuResponseCodeOk
         try:
             if self.debugLevel >= 2:
                 print(self.prefixDebug + "Sending MCU command: " + cmd)

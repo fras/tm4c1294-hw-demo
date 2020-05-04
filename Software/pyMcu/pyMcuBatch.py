@@ -4,7 +4,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 20 Apr 2020
-# Rev.: 24 Apr 2020
+# Rev.: 30 Apr 2020
 #
 # Python script to load and execute a batch of MCU commands from a file on the
 # TM4C1294NCPDT MCU on the TM4C1294 Connected LaunchPad Evaluation Kit over a
@@ -76,7 +76,6 @@ def exec_batch(serialDevice, batchFileName, stopOnError, verbosity):
     # Open the MCU serial interface.
     mcuSer = McuSerial.McuSerial(serialDevice)
     mcuSer.debugLevel = 0
-    mcuSer.simulateHwAccess = False
     mcuSer.clear()
     # Increase the maximum number of lines and the timeout value.
     mcuSer.ser.mcuReadLineMax = 200

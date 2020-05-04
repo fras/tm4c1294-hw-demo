@@ -4,7 +4,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 30 Mar 2020
-# Rev.: 24 Apr 2020
+# Rev.: 30 Apr 2020
 #
 # Python GUI for accessing the TM4C1294NCPDT MCU on the TM4C1294 Connected
 # LaunchPad Evaluation Kit over a serial port (UART).
@@ -53,8 +53,8 @@ class PyMcuGui(Frame):
 
     # Software version.
     swName      = "pyMCU"
-    swVersion   = "0.3.0"
-    swDate      = "24 Apr 2020"
+    swVersion   = "0.3.1"
+    swDate      = "30 Apr 2020"
 
     # Window titles.
     titleMain   = swName + " GUI - v" + swVersion + " - " + swDate
@@ -462,7 +462,6 @@ class PyMcuGui(Frame):
         # Open the MCU serial interface.
         self.mcuSer = McuSerial.McuSerial(serialDevice)
         self.mcuSer.debugLevel = verbosity
-        self.mcuSer.simulateHwAccess = False
         self.mcuSer.clear()
         # Define the MCU peripherals.
         self.mcuI2C0 = McuI2C.McuI2C(self.mcuSer, 0)

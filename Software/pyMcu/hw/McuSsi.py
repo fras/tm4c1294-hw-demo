@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 21 Apr 2020
-# Rev.: 23 Apr 2020
+# Rev.: 04 May 2020
 #
 # Python class for using the Synchronous Serial Interface (SSI) / Serial
 # Peripheral Interface (SPI) ports of the TM4C1294NCPDT MCU.
@@ -88,7 +88,7 @@ class McuSsi:
             print(self.separatorDetails + "Error count: {0:d}".format(self.errorCount), end='')
         if self.debugLevel >= 1:
             print(self.separatorDetails + "Read access count: {0:d}".format(self.accessRead), end='')
-            print(self.separatorDetails + "Write access countn: {0:d}".format(self.accessWrite), end='')
+            print(self.separatorDetails + "Write access count: {0:d}".format(self.accessWrite), end='')
         if self.debugLevel >= 1:
             print(self.separatorDetails + "Data read: {0:d}".format(self.dataRead), end='')
             print(self.separatorDetails + "Data written: {0:d}".format(self.dataWritten), end='')

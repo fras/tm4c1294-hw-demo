@@ -4,7 +4,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 24 Mar 2020
-# Rev.: 24 Apr 2020
+# Rev.: 30 Apr 2020
 #
 # Python script to test hardware features of the TM4C1294NCPDT MCU on the
 # TM4C1294 Connected LaunchPad Evaluation Kit over a serial port (UART).
@@ -98,7 +98,6 @@ def run_test(serialDevice, verbosity):
     # Open the MCU serial interface.
     mcuSer = McuSerial.McuSerial(serialDevice)
     mcuSer.debugLevel = verbosity
-    mcuSer.simulateHwAccess = False
     mcuSer.clear()
 
 
