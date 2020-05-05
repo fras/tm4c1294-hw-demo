@@ -4,7 +4,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 30 Mar 2020
-# Rev.: 30 Apr 2020
+# Rev.: 05 May 2020
 #
 # Python GUI for accessing the TM4C1294NCPDT MCU on the TM4C1294 Connected
 # LaunchPad Evaluation Kit over a serial port (UART).
@@ -12,13 +12,10 @@
 
 
 
-# Append hardware classes folder to python path.
+# Append hardware classes folder to Python path.
 import os
 import sys
-thisFilePath = os.path.dirname(__file__)
-if thisFilePath:
-    thisFilePath += '/'
-sys.path.append(thisFilePath + 'hw')
+sys.path.append(os.path.relpath(os.path.join(os.path.dirname(__file__), 'hw')))
 
 
 
@@ -53,8 +50,8 @@ class PyMcuGui(Frame):
 
     # Software version.
     swName      = "pyMCU"
-    swVersion   = "0.3.1"
-    swDate      = "30 Apr 2020"
+    swVersion   = "0.3.2"
+    swDate      = "05 May 2020"
 
     # Window titles.
     titleMain   = swName + " GUI - v" + swVersion + " - " + swDate
@@ -266,7 +263,7 @@ class PyMcuGui(Frame):
         self.buttonMcuBatchFileSelect.grid(row=0, column=0, sticky=W+E, padx=(padxButtonL, padxButtonR))
         self.entryMcuBatchFileName = Entry(self.frameMcuBatch, width=20, justify=LEFT)
         self.entryMcuBatchFileName.grid(row=0, column=1, sticky=W+E)
-        self.entryMcuBatchFileName.insert(0, thisFilePath + "batch/cmd_test.mcu")
+        self.entryMcuBatchFileName.insert(0, os.path.relpath(os.path.dirname(__file__) + "/batch/cmd_test.mcu"))
         self.entryMcuBatchFileName.xview(END)
         self.buttonMcuBatchFileExec= Button(self.frameMcuBatch, text="Execute", command=self.mcu_batch_exec)
         self.buttonMcuBatchFileExec.grid(row=0, column=2, sticky=W+E, padx=(padxButtonL, padxButtonR))
@@ -817,14 +814,14 @@ class PyMcuGui(Frame):
         try:
             mcuBatchFileName = tkinter.filedialog.askopenfilename(
                 title='Open MCU Command File',
-                initialdir='',
+                initialdir=os.path.relpath(os.path.dirname(__file__) + "/batch"),
                 filetypes=[
                     ("MCU command files", '*.mcu'),
                     ("All files", '*')],
                 multiple=False)
             if mcuBatchFileName:
                 self.entryMcuBatchFileName.delete(0, END)
-                self.entryMcuBatchFileName.insert(0, mcuBatchFileName)
+                self.entryMcuBatchFileName.insert(0, os.path.relpath(mcuBatchFileName))
                 self.entryMcuBatchFileName.xview(END)
             return 0
         except Exception as e:

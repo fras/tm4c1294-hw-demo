@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 30 Apr 2020
-# Rev.: 04 May 2020
+# Rev.: 05 May 2020
 #
 # Python class implementing generic hardware access for I2C devices.
 #
@@ -104,7 +104,7 @@ class I2CDevice:
         self.bytesWritten += len(dataWr)
         # Read access with repeated start.
         if self.debugLevel >= 3:
-            print(self.prefixDebugDevice + "Reading data  with repeated start.", end='')
+            print(self.prefixDebugDevice + "Reading data with repeated start.", end='')
             self.print_details()
         # Repeated start, generate stop condition after write.
         ret, dataRd = self.mcuI2C.ms_read_adv(self.slaveAddr, readCnt, True, True)

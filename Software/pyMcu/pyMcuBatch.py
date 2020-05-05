@@ -4,7 +4,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 20 Apr 2020
-# Rev.: 30 Apr 2020
+# Rev.: 05 May 2020
 #
 # Python script to load and execute a batch of MCU commands from a file on the
 # TM4C1294NCPDT MCU on the TM4C1294 Connected LaunchPad Evaluation Kit over a
@@ -13,13 +13,10 @@
 
 
 
-# Append hardware classes folder to python path.
+# Append hardware classes folder to Python path.
 import os
 import sys
-thisFilePath = os.path.dirname(__file__)
-if thisFilePath:
-    thisFilePath += '/'
-sys.path.append(thisFilePath + 'hw')
+sys.path.append(os.path.relpath(os.path.join(os.path.dirname(__file__), 'hw')))
 
 
 
