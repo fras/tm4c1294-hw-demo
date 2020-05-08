@@ -4,7 +4,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 24 Mar 2020
-# Rev.: 05 May 2020
+# Rev.: 08 May 2020
 #
 # Python script to test hardware features of the TM4C1294NCPDT MCU on the
 # TM4C1294 Connected LaunchPad Evaluation Kit over a serial port (UART).
@@ -38,9 +38,13 @@ import RgbLed
 
 
 
+# Message prefixes and separators.
+separatorTests      = "-----"
+prefixDebug         = "DEBUG: {0:s}: ".format(__file__)
+prefixError         = "ERROR: {0:s}: ".format(__file__)
+
 # Select tests to run.
-separatorTests        = "-----"
-# Preset all to fales.
+# Preset all to false.
 testFwInfo          = False
 testMcuSerial_0     = False
 testGpioButton      = False
