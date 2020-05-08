@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 07 Feb 2020
-// Rev.: 24 Apr 2020
+// Rev.: 08 May 2020
 //
 // Header file of the hardware demo for the TI Tiva TM4C1294 Connected
 // LaunchPad Evaluation Kit.
@@ -27,6 +27,9 @@
 // ******************************************************************
 // System clock settings.
 // ******************************************************************
+// Use the internal 16-MHz precision oscillator of the MCU.
+//#define SYSTEM_CLOCK_SETTINGS       (SYSCTL_OSC_INT | SYSCTL_USE_PLL | SYSCTL_CFG_VCO_480)
+// Use an external 25 MHz crystal or oscillator.
 #define SYSTEM_CLOCK_SETTINGS       (SYSCTL_XTAL_25MHZ | SYSCTL_OSC_MAIN | SYSCTL_USE_PLL | SYSCTL_CFG_VCO_480)
 #define SYSTEM_CLOCK_FREQ           120000000
 
