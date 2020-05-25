@@ -2,7 +2,7 @@
 //
 // uartstdio.c - Utility driver to provide simple UART console functions.
 //
-// Copyright (c) 2007-2017 Texas Instruments Incorporated.  All rights reserved.
+// Copyright (c) 2007-2020 Texas Instruments Incorporated.  All rights reserved.
 // Software License Agreement
 // 
 // Texas Instruments (TI) is supplying this software for use solely and
@@ -18,7 +18,7 @@
 // CIRCUMSTANCES, BE LIABLE FOR SPECIAL, INCIDENTAL, OR CONSEQUENTIAL
 // DAMAGES, FOR ANY REASON WHATSOEVER.
 // 
-// This is part of revision 2.1.4.178 of the Tiva Utility Library.
+// This is part of revision 2.2.0.295 of the Tiva Utility Library.
 //
 //*****************************************************************************
 
@@ -159,7 +159,7 @@ static const uint32_t g_ui32UARTBase[8] =
 // The list of possible interrupts for the console UART.
 //
 //*****************************************************************************
-//Static const uint32_t g_ui32UARTInt[3] =
+//static const uint32_t g_ui32UARTInt[3] =
 //{
 //    INT_UART0, INT_UART1, INT_UART2
 //};
@@ -493,6 +493,10 @@ UARTwrite(const char *pcBuf, uint32_t ui32Len)
                 break;
             }
         }
+        else if(pcBuf[uIdx] == 0)
+		{
+        	break;
+		}
 
         //
         // Send the character to the UART output.
@@ -547,6 +551,10 @@ UARTwrite(const char *pcBuf, uint32_t ui32Len)
         {
             MAP_UARTCharPut(g_ui32Base, '\r');
         }
+        else if(pcBuf[uIdx] == 0)
+		{
+        	break;
+		}
 
         //
         // Send the character to the UART output.

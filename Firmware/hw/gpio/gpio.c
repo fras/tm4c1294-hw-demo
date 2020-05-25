@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 10 Feb 2020
-// Rev.: 24 Apr 2020
+// Rev.: 25 May 2020
 //
 // GPIO functions for the TI Tiva TM4C1294 Connected LaunchPad Evaluation Kit.
 //
@@ -23,12 +23,18 @@ void GpioInit(tGPIO *psGpio)
     // Enable the GPIO peripheral for the input.
     SysCtlPeripheralEnable(psGpio->ui32Peripheral);
 
+    // Unlock a GPIO pin which had been previously locked. This is required for
+    // pins that by default are locked against inadvertent reconfiguration.
+    // These are e.g. pins used by the JTAG/SWD interface and any pin capable
+    // of acting as an NMI input.
+    GPIOUnlockPin(psGpio->ui32Port, psGpio->ui8Pins);
+
     // Set the direction as input.
     if (psGpio->bInput) GPIOPinTypeGPIOInput(psGpio->ui32Port, psGpio->ui8Pins);
     // Set the direction as output.
     else GPIOPinTypeGPIOOutput(psGpio->ui32Port, psGpio->ui8Pins);
 
-    // End enable the GPIO pins for digital function.
+    // Enable the GPIO pins for digital function.
     GPIOPadConfigSet(psGpio->ui32Port, psGpio->ui8Pins, psGpio->ui32Strength, psGpio->ui32PinType);
 }
 

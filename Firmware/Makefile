@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 07 Fab 2020
-# Rev.: 10 Apr 2020
+# Rev.: 25 May 2020
 #
 # Makefile for the firmware running on the TI Tiva TM4C1294 Connected LaunchPad
 # Evaluation Kit.
@@ -78,7 +78,7 @@ RM_FILES_REALCLEAN = $(RM_FILES_CLEAN) $(COMPILER) *.bak *~ \
 PART=TM4C1294NCPDT
 
 # The base directory for TivaWare.
-TIVAWARE=TivaWare/SW-EK-TM4C1294XL-2.1.4.178
+TIVAWARE=TivaWare/SW-TM4C-2.2.0.295
 
 # Include the common make definitions.
 include $(TIVAWARE)/makedefs
