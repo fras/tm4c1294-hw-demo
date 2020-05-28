@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 10 Feb 2020
-// Rev.: 25 May 2020
+// Rev.: 29 May 2020
 //
 // GPIO functions for the TI Tiva TM4C1294 Connected LaunchPad Evaluation Kit.
 //
@@ -31,6 +31,8 @@ void GpioInit(tGPIO *psGpio)
 
     // Set the direction as input.
     if (psGpio->bInput) GPIOPinTypeGPIOInput(psGpio->ui32Port, psGpio->ui8Pins);
+    // Set the direction as output with open drain.
+    else if (psGpio->ui32PinType == GPIO_PIN_TYPE_OD) GPIOPinTypeGPIOOutputOD(psGpio->ui32Port, psGpio->ui8Pins);
     // Set the direction as output.
     else GPIOPinTypeGPIOOutput(psGpio->ui32Port, psGpio->ui8Pins);
 
@@ -54,10 +56,17 @@ void GpioInitIntr(tGPIO *psGpio, void (*pfnIntHandler)(void))
 
 
 
-// Read a GPIO input.
+// Read a GPIO input or an open-drain output.
 int32_t GpioInputGet(tGPIO *psGpio)
 {
-    return GPIOPinRead(psGpio->ui32Port, psGpio->ui8Pins);
+    int32_t i32GpioVal;
+
+    // Temporarily switch the direction of an open-drain output to input.
+    if (psGpio->ui32PinType == GPIO_PIN_TYPE_OD) GPIODirModeSet(psGpio->ui32Port, psGpio->ui8Pins, GPIO_DIR_MODE_IN);
+    i32GpioVal = GPIOPinRead(psGpio->ui32Port, psGpio->ui8Pins);
+    if (psGpio->ui32PinType == GPIO_PIN_TYPE_OD) GPIODirModeSet(psGpio->ui32Port, psGpio->ui8Pins, GPIO_DIR_MODE_OUT);
+
+    return i32GpioVal;
 }
 
 
@@ -65,7 +74,7 @@ int32_t GpioInputGet(tGPIO *psGpio)
 // Read a GPIO input (boolean).
 bool GpioInputGetBool(tGPIO *psGpio)
 {
-    if (GPIOPinRead(psGpio->ui32Port, psGpio->ui8Pins) == psGpio->ui8Pins) {
+    if (GpioInputGet(psGpio) == psGpio->ui8Pins) {
         return true;
     } else {
         return false;
@@ -85,8 +94,8 @@ void GpioOutputSet(tGPIO *psGpio, uint8_t ui8Val)
 // Set a GPIO output (boolean).
 void GpioOutputSetBool(tGPIO *psGpio, bool bVal)
 {
-    if (bVal) GPIOPinWrite(psGpio->ui32Port, psGpio->ui8Pins, psGpio->ui8Pins);
-    else GPIOPinWrite(psGpio->ui32Port, psGpio->ui8Pins, 0);
+    if (bVal) GpioOutputSet(psGpio, psGpio->ui8Pins);
+    else GpioOutputSet(psGpio, 0);
 }
 
 
@@ -102,7 +111,7 @@ int32_t GpioOutputGet(tGPIO *psGpio)
 // Read back a GPIO output (boolean).
 bool GpioOutputGetBool(tGPIO *psGpio)
 {
-    if (GPIOPinRead(psGpio->ui32Port, psGpio->ui8Pins) == psGpio->ui8Pins) {
+    if (GpioOutputGet(psGpio) == psGpio->ui8Pins) {
         return true;
     } else {
         return false;
