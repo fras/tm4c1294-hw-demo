@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 30 Mar 2020
-# Rev.: 24 Apr 2020
+# Rev.: 15 Jun 2020
 #
 # Python class for setting the LEDs connected to GPIO ports of the
 # TM4C1294NCPDT MCU.
@@ -111,6 +111,8 @@ class GpioLed:
                 print(" 0x{0:02x}".format(datum), end='')
             print()
         if not data:
+            self.errorCount += 1
+            print(self.prefixError + "No data received from the GPIO LEDs!")
             return -1, 0
         return 0, data[0]
 
