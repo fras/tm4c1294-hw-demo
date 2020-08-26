@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 07 Feb 2020
-// Rev.: 24 Apr 2020
+// Rev.: 26 Aug 2020
 //
 // Hardware demo for the TI Tiva TM4C1294 Connected LaunchPad Evaluation Kit.
 //
@@ -15,7 +15,10 @@
 #include <string.h>
 #include <strings.h>
 #include "inc/hw_memmap.h"
+#include "inc/hw_nvic.h"
+#include "inc/hw_types.h"
 #include "driverlib/i2c.h"
+#include "driverlib/rom.h"
 #include "driverlib/rom_map.h"
 #include "driverlib/ssi.h"
 #include "driverlib/sysctl.h"
@@ -54,6 +57,7 @@ void __error__(char *pcFilename, uint32_t ui32Line)
 // Function prototypes.
 void Help(void);
 void Info(void);
+int JumpToBootLoader(char *pcCmd, char *pcParam, uint32_t ui32SysClock);
 int AdcRead(char *pcCmd, char *pcParam);
 int ButtonGet(char *pcCmd, char *pcParam);
 int DelayUs(char *pcCmd, char *pcParam, uint32_t ui32SysClock);
@@ -184,6 +188,9 @@ int main(void)
         // ADC based functions.
         } else if (!strcasecmp(pcUartCmd, "adc")) {
             AdcRead(pcUartCmd, pcUartParam);
+        // Enter the boot loader for firmware update over UART.
+        } else if (!strcasecmp(pcUartCmd, "bootldr")) {
+            JumpToBootLoader(pcUartCmd, pcUartParam, ui32SysClock);
         // GPIO button based functions.
         } else if (!strcasecmp(pcUartCmd, "button")) {
             ButtonGet(pcUartCmd, pcUartParam);
@@ -245,6 +252,7 @@ void Help(void)
     UARTprintf("Available commands:\n");
     UARTprintf("  help                                Show this help text.\n");
     UARTprintf("  adc     [COUNT]                     Read ADC values.\n");
+    UARTprintf("  bootldr                             Enter the boot loader for firmware update.\n");
     UARTprintf("  button  [INDEX]                     Get the status of the buttons.\n");
     UARTprintf("  delay   MICROSECONDS                Delay execution.\n");
     UARTprintf("  i2c     PORT SLV-ADR ACC NUM|DATA   I2C access (ACC bits: R/W, Sr, nP, Q).\n");
@@ -291,6 +299,46 @@ int DelayUs(char *pcCmd, char *pcParam, uint32_t ui32SysClock)
         SysCtlDelay((ui32SysClock / 3e6) * ui32DelayUs);
 
     UARTprintf("%s.", UI_STR_OK);
+
+    return 0;
+}
+
+
+// Passes control to the boot loader and initiates a remote software update.
+// This function is based on the EK-TM4C1294XL boot_demo1 example.
+int JumpToBootLoader(char *pcCmd, char *pcParam, uint32_t ui32SysClock)
+{
+    char pcUartStr[4];
+
+    UARTprintf("Do you really want to jump to the serial boot loader (yes/no)? ");
+    UARTgets(pcUartStr, 4);
+
+    if (!strcasecmp(pcUartStr, "yes")) {
+        UARTprintf("Entering the serial boot loader on UART %d.", g_sUartUi.ui32Port);
+        // Wait some time for UART to send out the last message.
+        SysCtlDelay((ui32SysClock / 3e6) * 1e5);
+
+        // Code copied from the EK-TM4C1294XL boot_demo1 example.
+
+        // We must make sure we turn off SysTick and its interrupt before entering 
+        // the boot loader!
+        MAP_SysTickIntDisable(); 
+        MAP_SysTickDisable(); 
+
+        // Disable all processor interrupts.  Instead of disabling them
+        // one at a time, a direct write to NVIC is done to disable all
+        // peripheral interrupts.
+        HWREG(NVIC_DIS0) = 0xffffffff;
+        HWREG(NVIC_DIS1) = 0xffffffff;
+        HWREG(NVIC_DIS2) = 0xffffffff;
+        HWREG(NVIC_DIS3) = 0xffffffff;
+
+        // Return control to the boot loader.  This is a call to the SVC
+        // handler in the boot loader.
+        (*((void (*)(void))(*(uint32_t *)0x2c)))();
+    } else {
+        UARTprintf("Operation aborted.");
+    }
 
     return 0;
 }
