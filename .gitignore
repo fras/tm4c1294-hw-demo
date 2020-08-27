@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 01 Apr 2020
-# Rev.: 25 Apr 2020
+# Rev.: 27 Aug 2020
 #
 # List of files to be ignored by git.
 #
@@ -38,4 +38,8 @@
 # Compiled python files.
 *.pyc
 __pycache__/
+
+# Compiled TivaWare tools.
+/Software/TivaWare/*/tools/sflash/sflash
+/Software/TivaWare/*/tools/bin
 
