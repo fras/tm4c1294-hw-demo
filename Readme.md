@@ -104,7 +104,7 @@ Rev.: 28 Aug 2020
 
     Example minicom session for the serial boot loader:
     ```
-    ***** TIVA TM4C1294 boot loader version 0.0.2, release date: 27 Aug 2020 *****
+    ***** TIVA TM4C1294 boot loader version 0.0.3, release date: 28 Aug 2020 *****
 
     Press any key to enter the boot loader menu.
     5 4 3 2 1
@@ -118,6 +118,11 @@ Rev.: 28 Aug 2020
     f   Force MCU firmware download via the serial boot loader.
     r   Reboot the MCU.
     > f
+    
+    
+    
+    ***** TIVA TM4C1294 boot loader version 0.0.3, release date: 28 Aug 2020 *****
+    
     Waiting for firmware data...
     ```
 
@@ -174,7 +179,7 @@ Rev.: 28 Aug 2020
 
     Optionally, you can also run the sflash tool from the command line:
     ```shell
-    sflash -c /dev/ttyUSB0 -p 0x4000 -b 115200 -d -s 60 gcc/hw_demo.bin
+    sflash -c /dev/ttyUSB0 -p 0x4000 -b 115200 -d -s 252 gcc/hw_demo.bin
     ```
 
 5. Communicate with the MCU using the minicom terminal program.  

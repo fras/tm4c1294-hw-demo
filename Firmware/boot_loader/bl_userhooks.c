@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 26 Aug 2020
-// Rev.: 27 Aug 2020
+// Rev.: 28 Aug 2020
 //
 // User hook functions of the boot loader running on the TI Tiva TM4C1294
 // Connected LaunchPad Evaluation Kit.
@@ -13,6 +13,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include "inc/hw_memmap.h"
+#include "inc/hw_nvic.h"
+#include "inc/hw_types.h"
 #include "driverlib/gpio.h"
 #include "driverlib/pin_map.h"
 #include "driverlib/rom.h"
@@ -84,9 +86,9 @@ void BL_FwDownloadEnd(void)
     // Blink all LEDs to indicate the end of the firmware download.
     for (int i = 0; i < 4; i++) {
         GpioLedSet(g_ui8Led = 0xf);
-        DelayUs(5e4);
+        DelayUs(5e5);
         GpioLedSet(g_ui8Led = 0x0);
-        DelayUs(5e4);
+        DelayUs(5e5);
     }
 }
 
@@ -121,7 +123,28 @@ unsigned long BL_UserCheckUpdateHook(void)
     }
     // Enter the boot loader menu.
     if (UARTCharsAvail(UARTx_BASE)) {
-        return BL_UserMenu(UARTx_BASE);
+        // A return value of 1 can freeze the boot loader. The reason is unknown.
+        //return BL_UserMenu(UARTx_BASE);
+
+        // Work-around: Use code copied from the EK-TM4C1294XL boot_demo1 example.
+        if (BL_UserMenu(UARTx_BASE)) {
+            // We must make sure we turn off SysTick and its interrupt before entering 
+            // the boot loader!
+            MAP_SysTickIntDisable(); 
+            MAP_SysTickDisable(); 
+
+            // Disable all processor interrupts.  Instead of disabling them
+            // one at a time, a direct write to NVIC is done to disable all
+            // peripheral interrupts.
+            HWREG(NVIC_DIS0) = 0xffffffff;
+            HWREG(NVIC_DIS1) = 0xffffffff;
+            HWREG(NVIC_DIS2) = 0xffffffff;
+            HWREG(NVIC_DIS3) = 0xffffffff;
+
+            // Return control to the boot loader.  This is a call to the SVC
+            // handler in the boot loader.
+            (*((void (*)(void))(*(uint32_t *)0x2c)))();
+        }
     }
 
     // Turn off all LEDs.

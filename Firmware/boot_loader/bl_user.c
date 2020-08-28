@@ -124,7 +124,7 @@ int BL_UserMenu(uint32_t ui32UartBase)
                 return 0;
             case 'f':
             case 'F':
-                UARTprint(ui32UartBase, "Waiting for firmware data...\r\n");
+//                UARTprint(ui32UartBase, "Waiting for firmware data...\r\n");
                 // Wait some time for the UART to send out the message.
                 DelayUs(1e4);
                 return 1;

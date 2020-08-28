@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 26 Aug 2020
-// Rev.: 27 Aug 2020
+// Rev.: 28 Aug 2020
 //
 // Header file of the user functions of the boot loader running on the TI Tiva
 // TM4C1294 Connected LaunchPad Evaluation Kit.
@@ -20,9 +20,11 @@
 // ******************************************************************
 
 #define BL_NAME                     "boot loader"
-#define BL_VERSION                  "0.0.2"
-#define BL_RELEASEDATE              "27 Aug 2020"
+#define BL_VERSION                  "0.0.3"
+#define BL_RELEASEDATE              "28 Aug 2020"
+// Timeout in seconds to enter the boot loader at startup.
 #define BL_ACTIVATION_TIMEOUT       5
+// Command prompt of the boot loader.
 #define BL_COMMAND_PROMPT           "> "
 
 
