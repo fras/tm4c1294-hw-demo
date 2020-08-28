@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 26 Aug 2020
-// Rev.: 26 Aug 2020
+// Rev.: 27 Aug 2020
 //
 // Header file of the user functions of the boot loader running on the TI Tiva
 // TM4C1294 Connected LaunchPad Evaluation Kit.
@@ -18,18 +18,46 @@
 // ******************************************************************
 // Boot loader parameters.
 // ******************************************************************
+
 #define BL_NAME                     "boot loader"
-#define BL_VERSION                  "0.0.1"
-#define BL_RELEASEDATE              "26 Aug 2020"
+#define BL_VERSION                  "0.0.2"
+#define BL_RELEASEDATE              "27 Aug 2020"
+#define BL_ACTIVATION_TIMEOUT       5
+#define BL_COMMAND_PROMPT           "> "
+
+
+
+// ******************************************************************
+// System clock settings.
+// ******************************************************************
+
+// Use the internal 16-MHz precision oscillator of the MCU.
+//#define SYSTEM_CLOCK_SETTINGS       (SYSCTL_OSC_INT | SYSCTL_USE_PLL | SYSCTL_CFG_VCO_480)
+// Use an external 25 MHz crystal or oscillator.
+#define SYSTEM_CLOCK_SETTINGS       (SYSCTL_XTAL_25MHZ | SYSCTL_OSC_MAIN | SYSCTL_USE_PLL | SYSCTL_CFG_VCO_480)
+#define SYSTEM_CLOCK_FREQ           120000000
+
+
+
+// ******************************************************************
+// Global variables.
+// ******************************************************************
+
+extern uint32_t g_ui32SysClock;
+extern uint8_t g_ui8Led;
 
 
 
 // ******************************************************************
 // Function prototypes.
 // ******************************************************************
+
 void DelayUs(uint32_t ui32DelayUs);
 void UARTprint(uint32_t ui32UartBase, const char* pcStr);
 void UARTprintBlInfo(uint32_t ui32UartBase);
+int UserHwInit(void);
+int BL_UserMenu(uint32_t ui32UartBase);
+int BL_UserMenuHelp(uint32_t ui32UartBase);
 
 
 

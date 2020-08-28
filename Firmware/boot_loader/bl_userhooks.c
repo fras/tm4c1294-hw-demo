@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 26 Aug 2020
-// Rev.: 26 Aug 2020
+// Rev.: 27 Aug 2020
 //
 // User hook functions of the boot loader running on the TI Tiva TM4C1294
 // Connected LaunchPad Evaluation Kit.
@@ -19,14 +19,12 @@
 #include "driverlib/rom_map.h"
 #include "driverlib/sysctl.h"
 #include "driverlib/uart.h"
+#include "utils/ustdlib.h"
+#include "hw/gpio/gpio.h"
+#include "hw/gpio/gpio_led.h"
 #include "bl_config.h"
 #include "bl_user.h"
 #include "bl_userhooks.h"
-
-
-
-// Global variables.
-uint32_t g_ui32SysClock;
 
 
 
@@ -40,32 +38,8 @@ extern void Delay(uint32_t ui32Count);
 // reset.
 void BL_UserHwInit(void)
 {
-    // Set up the system clock.
-    g_ui32SysClock = MAP_SysCtlClockFreqSet(SYSTEM_CLOCK_SETTINGS, SYSTEM_CLOCK_FREQ);
-
-    // Set up the UART.
-    // Enable the GPIO peripheral used by the UART.
-    MAP_SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOC);
-
-    // Set up the UART7.
-    MAP_SysCtlPeripheralDisable(SYSCTL_PERIPH_UART7);
-    MAP_SysCtlPeripheralReset(SYSCTL_PERIPH_UART7);
-    MAP_SysCtlPeripheralEnable(SYSCTL_PERIPH_UART7);
-    while (!MAP_SysCtlPeripheralReady(SYSCTL_PERIPH_UART7));
-
-    // Configure GPIO pins for UART mode.
-    MAP_GPIOPinConfigure(GPIO_PC4_U7RX);
-    MAP_GPIOPinTypeUART(GPIO_PORTC_BASE, GPIO_PIN_4);
-    MAP_GPIOPinConfigure(GPIO_PC5_U7TX);
-    MAP_GPIOPinTypeUART(GPIO_PORTC_BASE, GPIO_PIN_5);
-
-    // Configure the UART for 115,200, 8-N-1 operation.
-    MAP_UARTConfigSetExpClk(UART7_BASE, g_ui32SysClock, 115200,
-                           (UART_CONFIG_WLEN_8 | UART_CONFIG_STOP_ONE |
-                            UART_CONFIG_PAR_NONE));
-
-    // Initialize the UART for console I/O.
-//    UARTStdioConfig(7, 115200, g_ui32SysClock);
+    // Initialize the hardware peripherals.
+    UserHwInit();
 }
 
 
@@ -74,7 +48,7 @@ void BL_UserHwInit(void)
 void BL_Reinit(void)
 {
     // Re-initialize the hardware peripherals.
-    BL_UserHwInit();
+    UserHwInit();
 
     // Show boot loader info.
     UARTprintBlInfo(UARTx_BASE);
@@ -87,6 +61,8 @@ void BL_Reinit(void)
 // Informs an application that a download is starting.
 void BL_FwDownloadStart(void)
 {
+    // Switch on LED 0 to indicate activity.
+    GpioLedSet(g_ui8Led = 0x1);
 }
 
 
@@ -94,6 +70,10 @@ void BL_FwDownloadStart(void)
 // Informs an application of download progress.
 void BL_FwDownloadProgress(void)
 {
+    // Counting LEDs to indicate activity.
+    g_ui8Led &= 0xe;
+    g_ui8Led += 2;
+    GpioLedSet(g_ui8Led = 0x1 | g_ui8Led);
 }
 
 
@@ -101,6 +81,13 @@ void BL_FwDownloadProgress(void)
 // Informs an application that a download has completed.
 void BL_FwDownloadEnd(void)
 {
+    // Blink all LEDs to indicate the end of the firmware download.
+    for (int i = 0; i < 4; i++) {
+        GpioLedSet(g_ui8Led = 0xf);
+        DelayUs(5e4);
+        GpioLedSet(g_ui8Led = 0x0);
+        DelayUs(5e4);
+    }
 }
 
 
@@ -110,6 +97,35 @@ unsigned long BL_UserCheckUpdateHook(void)
 {
     // Show boot loader info.
     UARTprintBlInfo(UARTx_BASE);
+
+    // Clear all pending characters from the UART to avoid false activation of
+    // the boot loader menu.
+    while (UARTCharsAvail(UARTx_BASE)) {
+        UARTCharGetNonBlocking(UARTx_BASE);
+    }
+    // Wait for any charater to enter the boot loader menu.
+    UARTprint(UARTx_BASE, "\r\nPress any key to enter the boot loader menu.\r\n");
+    for (int i = BL_ACTIVATION_TIMEOUT; i >= 0; i--) {
+        char pcTimeoutStr[10];
+        usprintf(pcTimeoutStr, "%d ", i);
+        UARTprint(UARTx_BASE, pcTimeoutStr);
+        // Blink the LED 0 with 1 second period.
+        DelayUs(5e5);
+        GpioLedSet(g_ui8Led &= ~0x1);
+        // Character received on the UART.
+        if (UARTCharsAvail(UARTx_BASE)) break;
+        DelayUs(5e5);
+        GpioLedSet(g_ui8Led |= 0x1);
+        // Character received on the UART.
+        if (UARTCharsAvail(UARTx_BASE)) break;
+    }
+    // Enter the boot loader menu.
+    if (UARTCharsAvail(UARTx_BASE)) {
+        return BL_UserMenu(UARTx_BASE);
+    }
+
+    // Turn off all LEDs.
+    GpioLedSet(g_ui8Led = 0x0);
 
     return 0;
 }

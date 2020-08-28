@@ -3,7 +3,7 @@
 Auth: M. Fras, Electronics Division, MPI for Physics, Munich  
 Mod.: M. Fras, Electronics Division, MPI for Physics, Munich  
 Date: 07 Feb 2020  
-Rev.: 24 Apr 2020  
+Rev.: 28 Aug 2020  
 
 
 
@@ -90,7 +90,41 @@ Rev.: 24 Apr 2020
     sudo apt-get install python3 python3-serial python3-tk
     ```
 
-2. Compile and download the firmware project.  
+2. Install the serial boot loader.  
+    The serial boot loader provides firmware updates over the UART 7, which is
+    normally used for the user interface. In order to build and install the
+    boot loader, change to the ```Firmware/boot_loader``` directory and run
+    this command:
+    ```
+    make install
+    ```
+
+    The boot loader sits at address ```0x0000``` of the flash, the main
+    firmware image starts at address ```0x4000```.
+
+    Example minicom session for the serial boot loader:
+    ```
+    ***** TIVA TM4C1294 boot loader version 0.0.2, release date: 27 Aug 2020 *****
+
+    Press any key to enter the boot loader menu.
+    5 4 3 2 1
+
+    Boot Loader Menu
+    ================
+    
+    Available commands:
+    h   Show this help text.
+    b   Start normal boot process.
+    f   Force MCU firmware download via the serial boot loader.
+    r   Reboot the MCU.
+    > f
+    Waiting for firmware data...
+    ```
+
+    Note that you can abort a pending firmware update by pressing the reset
+    button on the TM4C1294 Connected LaunchPad Evaluation Kit board.
+
+3. Compile and download the firmware project.  
     Change to the ```Firmware``` directory. Then clean the firmware project
     directory.
     ```shell
@@ -121,9 +155,29 @@ Rev.: 24 Apr 2020
     version again.
     ```shell
     make clean install
+
+4. Firmware download via the serial boot loader.  
+    Once the serial boot loader is installed, you can use it to download the
+    main firmware. To do so, hit any key during the countdown after power-up to
+    enter the boot loader menu. Then press the key ```f``` to force a firmware
+    update. Now quit the terminal program, change to the ```Firmware```
+    directory and download the main firmware via the serial boot loader.
+    ```shell
+    make sflash
+    ```
+    If not yet done, this will automatically build the ```sflash``` tool that
+    comes with the TivaWare.
+
+    Note that you may need to change the serial device in the ```Makefile```
+    from ```/dev/ttyUSB0``` to the one your computer uses to communicate with
+    UART 7 of the MCU.
+
+    Optionally, you can also run the sflash tool from the command line:
+    ```shell
+    sflash -c /dev/ttyUSB0 -p 0x4000 -b 115200 -d -s 60 gcc/hw_demo.bin
     ```
 
-3. Communicate with the MCU using the minicom terminal program.  
+5. Communicate with the MCU using the minicom terminal program.  
     Create a file ```.minirc.hw_demo``` in your home directory with this
     content:
     ```
@@ -149,6 +203,7 @@ Rev.: 24 Apr 2020
     Available commands:
       help                                Show this help text.
       adc     [COUNT]                     Read ADC values.
+      bootldr                             Enter the boot loader for firmware update.
       button  [INDEX]                     Get the status of the buttons.
       delay   MICROSECONDS                Delay execution.
       i2c     PORT SLV-ADR ACC NUM|DATA   I2C access (ACC bits: R/W, Sr, nP, Q).
@@ -158,6 +213,7 @@ Rev.: 24 Apr 2020
       info                                Show information about this firmware.
       lcd     CMD PARAMS                  LCD commands.
       led     [VALUE]                     Get/Set the value of the user LEDs.
+      reset                               Reset the MCU.
       rgb     VALUE                       Set the RGB LED (RGB value = 0xRRGGBB).
       ssi     PORT R/W NUM|DATA           SSI/SPI access (R/W: 0 = write, 1 = read).
       ssi-set PORT FREQ [MODE] [WIDTH]    Set up the SSI port.
@@ -165,8 +221,8 @@ Rev.: 24 Apr 2020
       uart    PORT R/W NUM|DATA           UART access (R/W: 0 = write, 1 = read).
       uart-s  PORT BAUD [PARITY] [LOOP]   Set up the UART port.
     > info
-    TIVA TM4C1294 `hw_demo' firmware version 0.3.3, release date: 24 Apr 2020
-    It was compiled using gcc 6.3.1 20170620 at 21:41:14 on Apr 24 2020.
+    TIVA TM4C1294 `hw_demo' firmware version 0.4.0, release date: 27 Aug 2020
+    It was compiled using gcc 6.3.1 20170620 at 14:46:56 on Aug 27 2020.
     > button
     OK. Button 3..0 status: 0x0
     > button
@@ -199,7 +255,7 @@ Rev.: 24 Apr 2020
     >
     ```
 
-4. Control the MCU using the Python scripts.  
+6. Control the MCU using the Python scripts.  
     Change to the ```Software/pyMcu``` directory. Then type ```./pyMcu.py
     --test``` to run a pre-defined automated test procedure from the command
     line or ```./pyMcu.py --gui``` to open a GUI. You can specify a custom

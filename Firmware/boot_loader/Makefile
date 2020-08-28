@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 26 Aug 2020
-# Rev.: 26 Aug 2020
+# Rev.: 27 Aug 2020
 #
 # Makefile for the serial boot loader running on the TI Tiva TM4C1294 Connected
 # LaunchPad Evaluation Kit.
@@ -18,11 +18,19 @@ OS       = $(shell uname -s)
 # ********** Program parameters. **********
 PROJECT       = boot_serial
 SOURCE_FILES  = bl_user.c                   \
+                bl_user_io.c                \
                 bl_userhooks.c              \
+                hw/gpio/gpio.c              \
+                hw/gpio/gpio_led.c          \
+                hw/uart/uart.c              \
 
 HEADER_FILES  = bl_config.h                 \
                 bl_user.h                   \
+                bl_user_io.h                \
                 bl_userhooks.h              \
+                hw/gpio/gpio.h              \
+                hw/gpio/gpio_led.h          \
+                hw/uart/uart.h              \
 
 EXTRA_SOURCES = bl_autobaud.c               \
                 bl_can.c                    \
@@ -40,6 +48,7 @@ EXTRA_SOURCES = bl_autobaud.c               \
                 bl_usb.c                    \
                 bl_usbfuncs.c               \
                 uartstdio.c                 \
+                ustdlib.c                   \
 
 
 
@@ -65,19 +74,21 @@ include $(TIVAWARE)/makedefs
 
 # Where to find source files that do not live in this directory.
 #VPATH  = $(TIVAWARE)/utils
-VPATH  = ../utils
-VPATH += $(TIVAWARE)/utils
+VPATH  = ..
 VPATH += $(TIVAWARE)/boot_loader
 
 # Where to find header files that do not live in the source directory.
-IPATH  = .
-IPATH += ../utils
-IPATH += $(TIVAWARE)
+IPATH  = $(TIVAWARE)
+IPATH += .
+IPATH += ..
+IPATH += ../hw
+IPATH += ../hw/gpio
+IPATH += ../hw/uart
 
 # Rules for building the project.
 SCATTERgcc_$(PROJECT)=$(TIVAWARE)/boot_loader/bl_link.ld
 ENTRY_$(PROJECT)=ResetISR
-CFLAGSgcc=-DTARGET_IS_TM4C129_RA0
+CFLAGSgcc=-DTARGET_IS_TM4C129_RA2
 
 
 
@@ -145,7 +156,7 @@ all: $(COMPILER) $(COMPILER)/$(PROJECT).axf
 
 $(COMPILER):
 	@$(MKDIR) -p $(COMPILER)
-#	@$(MKDIR) -p $(addprefix $(COMPILER)/, $(filter-out $(TIVAWARE), $(IPATH)))
+	@$(MKDIR) -p $(addprefix $(COMPILER)/, $(subst ../,,$(filter-out $(TIVAWARE), $(IPATH))))
 
 edit: $(SOURCE_FILES) $(HEADER_FILES)
 	@$(EDIT) $(SOURCE_FILES) $(HEADER_FILES)
@@ -154,7 +165,7 @@ exec: install
 
 flash: install
 
-install: $(COMPILER) $(COMPILER)/$(PROJECT).axf $(COMPILER)/$(PROJECT).bin
+install: all $(COMPILER) $(COMPILER)/$(PROJECT).axf $(COMPILER)/$(PROJECT).bin
 # Program the boot loader at the beginning of the flash to address 0x0.
 #	@$(LM4FLASH) -E -v -S 0x0 $(COMPILER)/$(PROJECT).bin
 	@$(LM4FLASH) -E -S 0x0 $(COMPILER)/$(PROJECT).bin

@@ -47,7 +47,7 @@ extern tI2C g_sI2C2;
 extern tSSI g_sSsi2;
 extern tSSI g_sSsi3;
 
-// UARTs
+// UARTs.
 extern tUART g_sUart6;
 
 

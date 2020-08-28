@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 07 Feb 2020
-// Rev.: 26 Aug 2020
+// Rev.: 27 Aug 2020
 //
 // Hardware demo for the TI Tiva TM4C1294 Connected LaunchPad Evaluation Kit.
 //
@@ -54,13 +54,20 @@ void __error__(char *pcFilename, uint32_t ui32Line)
 
 
 
+// Global variables.
+uint32_t g_ui32SysClock;
+
+
+
 // Function prototypes.
 void Help(void);
 void Info(void);
-int JumpToBootLoader(char *pcCmd, char *pcParam, uint32_t ui32SysClock);
+int DelayUs(uint32_t ui32DelayUs);
+int DelayUsCmd(char *pcCmd, char *pcParam);
+int McuReset(char *pcCmd, char *pcParam);
+int JumpToBootLoader(char *pcCmd, char *pcParam);
 int AdcRead(char *pcCmd, char *pcParam);
 int ButtonGet(char *pcCmd, char *pcParam);
-int DelayUs(char *pcCmd, char *pcParam, uint32_t ui32SysClock);
 int LcdCmd(char *pcCmd, char *pcParam, tLcdFwInfo *psLcdFwInfo);
 int LcdCheckParamCnt(char *pcLcdCmd, int iLcdParamCntActual, int iLcdParamCntTarget);
 void LcdHelp(void);
@@ -86,16 +93,15 @@ void UartSetupHelp(void);
 // Initialize hardware, get and process commands.
 int main(void)
 {
-    uint32_t ui32SysClock;
     char pcUartStr[UI_STR_BUF_SIZE];
     char *pcUartCmd;
     char *pcUartParam;
 
     // Set up the system clock.
-    ui32SysClock = MAP_SysCtlClockFreqSet(SYSTEM_CLOCK_SETTINGS, SYSTEM_CLOCK_FREQ);
+    g_ui32SysClock = MAP_SysCtlClockFreqSet(SYSTEM_CLOCK_SETTINGS, SYSTEM_CLOCK_FREQ);
 
     // Initialize the UART for the user interface.
-    g_sUartUi.ui32SrcClock = ui32SysClock;
+    g_sUartUi.ui32SrcClock = g_ui32SysClock;
     UartUiInit(&g_sUartUi);
 
     // Initialize the ADCs.
@@ -117,12 +123,12 @@ int main(void)
     PwmRgbLedInit();
 
     // Initialize the I2C master for the BoosterPack 1 socket.
-    g_sI2C0.ui32I2CClk = ui32SysClock;
+    g_sI2C0.ui32I2CClk = g_ui32SysClock;
     I2CMasterInit(&g_sI2C0);
 
     // Initialize the I2C master for the Educational BoosterPack MK II
     // (BoosterPack 2 socket).
-    g_sI2C2.ui32I2CClk = ui32SysClock;
+    g_sI2C2.ui32I2CClk = g_ui32SysClock;
     I2CMasterInit(&g_sI2C2);
 
     // Initialize the I2C devices.
@@ -132,15 +138,15 @@ int main(void)
     I2COpt3001Init(&g_sI2C2, EDUMKII_I2C_OPT3001_SLV_ADR);
 
     // Initialize SSI 2 for BoosterPack 1.
-    g_sSsi2.ui32SsiClk = ui32SysClock;
+    g_sSsi2.ui32SsiClk = g_ui32SysClock;
     SsiMasterInit(&g_sSsi2);
 
     // Initialize SSI 3 for BoosterPack 2.
-    g_sSsi3.ui32SsiClk = ui32SysClock;
+    g_sSsi3.ui32SsiClk = g_ui32SysClock;
     SsiMasterInit(&g_sSsi3);
 
     // Initialize the UART on the Educational BoosterPack MKII.
-    g_sUart6.ui32UartClk = ui32SysClock;
+    g_sUart6.ui32UartClk = g_ui32SysClock;
 //    g_sUart6.bLoopback = true;        // Enable loopback for testing.
     UartInit(&g_sUart6);
 
@@ -185,18 +191,21 @@ int main(void)
         // Show info.
         } else if (!strcasecmp(pcUartCmd, "info")) {
             Info();
+        // Delay execution for a given number of microseconds.
+        } else if (!strcasecmp(pcUartCmd, "delay")) {
+            DelayUsCmd(pcUartCmd, pcUartParam);
+        // Reset the MCU.
+        } else if (!strcasecmp(pcUartCmd, "reset")) {
+            McuReset(pcUartCmd, pcUartParam);
+        // Enter the boot loader for firmware update over UART.
+        } else if (!strcasecmp(pcUartCmd, "bootldr")) {
+            JumpToBootLoader(pcUartCmd, pcUartParam);
         // ADC based functions.
         } else if (!strcasecmp(pcUartCmd, "adc")) {
             AdcRead(pcUartCmd, pcUartParam);
-        // Enter the boot loader for firmware update over UART.
-        } else if (!strcasecmp(pcUartCmd, "bootldr")) {
-            JumpToBootLoader(pcUartCmd, pcUartParam, ui32SysClock);
         // GPIO button based functions.
         } else if (!strcasecmp(pcUartCmd, "button")) {
             ButtonGet(pcUartCmd, pcUartParam);
-        // Delay execution for a given number of microseconds.
-        } else if (!strcasecmp(pcUartCmd, "delay")) {
-            DelayUs(pcUartCmd, pcUartParam, ui32SysClock);
         // I2C based functions.
         } else if (!strcasecmp(pcUartCmd, "i2c")) {
             I2CAccess(pcUartCmd, pcUartParam);
@@ -262,6 +271,7 @@ void Help(void)
     UARTprintf("  info                                Show information about this firmware.\n");
     UARTprintf("  lcd     CMD PARAMS                  LCD commands.\n");
     UARTprintf("  led     [VALUE]                     Get/Set the value of the user LEDs.\n");
+    UARTprintf("  reset                               Reset the MCU.\n");
     UARTprintf("  rgb     VALUE                       Set the RGB LED (RGB value = 0xRRGGBB).\n");
     UARTprintf("  ssi     PORT R/W NUM|DATA           SSI/SPI access (R/W: 0 = write, 1 = read).\n");
     UARTprintf("  ssi-set PORT FREQ [MODE] [WIDTH]    Set up the SSI port.\n");
@@ -282,7 +292,22 @@ void Info(void)
 
 
 // Delay execution for a given number of microseconds.
-int DelayUs(char *pcCmd, char *pcParam, uint32_t ui32SysClock)
+int DelayUs(uint32_t ui32DelayUs)
+{
+    // Limit the delay to max. 10 seconds.
+    if (ui32DelayUs > 1e7) ui32DelayUs = 1e7;
+    // CAUTION: Calling SysCtlDelay(0) will hang the system.
+    if (ui32DelayUs > 0)
+        // Note: The SysCtlDelay executes a simple 3 instruction cycle loop.
+        SysCtlDelay((g_ui32SysClock / 3e6) * ui32DelayUs);
+
+    return 0;
+}
+
+
+
+// Delay execution for a given number of microseconds.
+int DelayUsCmd(char *pcCmd, char *pcParam)
 {
     uint32_t ui32DelayUs;
 
@@ -296,7 +321,7 @@ int DelayUs(char *pcCmd, char *pcParam, uint32_t ui32SysClock)
     // CAUTION: Calling SysCtlDelay(0) will hang the system.
     if (ui32DelayUs > 0)
         // Note: The SysCtlDelay executes a simple 3 instruction cycle loop.
-        SysCtlDelay((ui32SysClock / 3e6) * ui32DelayUs);
+        SysCtlDelay((g_ui32SysClock / 3e6) * ui32DelayUs);
 
     UARTprintf("%s.", UI_STR_OK);
 
@@ -304,9 +329,31 @@ int DelayUs(char *pcCmd, char *pcParam, uint32_t ui32SysClock)
 }
 
 
+
+// Reset the MCU.
+int McuReset(char *pcCmd, char *pcParam)
+{
+    char pcUartStr[4];
+
+    UARTprintf("Do you really want to reset the MCU (yes/no)? ");
+    UARTgets(pcUartStr, 4);
+
+    if (!strcasecmp(pcUartStr, "yes")) {
+        UARTprintf("%s. Resetting the MCU.", UI_STR_OK);
+        // Wait some time for the UART to send out the last message.
+        DelayUs(1e5);
+
+        SysCtlReset();
+    } else {
+        UARTprintf("Reset aborted.");
+    }
+
+    return 0;
+}
+
 // Passes control to the boot loader and initiates a remote software update.
 // This function is based on the EK-TM4C1294XL boot_demo1 example.
-int JumpToBootLoader(char *pcCmd, char *pcParam, uint32_t ui32SysClock)
+int JumpToBootLoader(char *pcCmd, char *pcParam)
 {
     char pcUartStr[4];
 
@@ -314,9 +361,9 @@ int JumpToBootLoader(char *pcCmd, char *pcParam, uint32_t ui32SysClock)
     UARTgets(pcUartStr, 4);
 
     if (!strcasecmp(pcUartStr, "yes")) {
-        UARTprintf("Entering the serial boot loader on UART %d.", g_sUartUi.ui32Port);
-        // Wait some time for UART to send out the last message.
-        SysCtlDelay((ui32SysClock / 3e6) * 1e5);
+        UARTprintf("%s. Entering the serial boot loader on UART %d.\n", UI_STR_OK, g_sUartUi.ui32Port);
+        // Wait some time for the UART to send out the last message.
+        DelayUs(1e5);
 
         // Code copied from the EK-TM4C1294XL boot_demo1 example.
 
@@ -387,7 +434,7 @@ int AdcRead(char *pcCmd, char *pcParam)
         UARTprintf(" Z = %4d", ui32Adc);
         #endif
         if (i < iCnt - 1) {
-            SysCtlDelay(1000000);
+            DelayUs(5e4);
             UARTprintf("\n");
         }
     }
@@ -831,7 +878,7 @@ int TemperatureRead(char *pcCmd, char *pcParam)
                         ui32Tmp006ManufacturerId, ui32Tmp006DeviceId);
         }
         if (i < iCnt - 1) {
-            SysCtlDelay(1000000);
+            DelayUs(5e4);
             UARTprintf("\n");
         }
     }
@@ -870,7 +917,7 @@ int IlluminanceRead(char *pcCmd, char *pcParam)
                         ui32Opt3001ManufacturerId, ui32Opt3001DeviceId);
         }
         if (i < iCnt - 1) {
-            SysCtlDelay(1000000);
+            DelayUs(5e4);
             UARTprintf("\n");
         }
     }

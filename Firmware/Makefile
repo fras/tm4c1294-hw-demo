@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 07 Fab 2020
-# Rev.: 26 Aug 2020
+# Rev.: 27 Aug 2020
 #
 # Makefile for the firmware running on the TI Tiva TM4C1294 Connected LaunchPad
 # Evaluation Kit.
@@ -103,7 +103,7 @@ IPATH += ./hw/uart
 # Rules for building the project.
 SCATTERgcc_$(PROJECT)=$(PROJECT).ld
 ENTRY_$(PROJECT)=ResetISR
-CFLAGSgcc=-DTARGET_IS_TM4C129_RA0
+CFLAGSgcc=-DTARGET_IS_TM4C129_RA2
 
 # Minicom configuration.
 MINICOM_CONFIG = hw_demo
@@ -127,6 +127,7 @@ CP              = cp -a
 CVS             = cvs
 DATE            = date
 DATE_BACKUP     = $(DATE) +"%Y-%m-%d_%H-%M-%S"
+DIRNAME         = dirname
 ECHO            = echo
 ECHO_ERR        = $(ECHO) "**ERROR:"
 EDIT			= gvim
@@ -142,9 +143,10 @@ MAKE            = make
 MKDIR           = mkdir
 MSGVIEW         = msgview
 MV              = mv
-SLEEP           = sleep
-SH              = sh -c
 RM              = rm
+SFLASH          = ../Software/$(TIVAWARE)/tools/sflash/sflash
+SH              = sh -c
+SLEEP           = sleep
 TAIL            = tail -n 5
 TAR             = tar
 TCL             = tclsh
@@ -168,7 +170,7 @@ LIBS += $(TIVAWARE)/grlib/$(COMPILER)/libgr.a
 
 
 # ********** Rules. **********
-.PHONY: all exec edit flash install clean real_clean mrproper minicom mk_backup mk_backup_src $(COMPILER)
+.PHONY: all exec edit flash install sflash clean real_clean mrproper minicom mk_backup mk_backup_src $(COMPILER)
 
 all: $(COMPILER)
 all: $(COMPILER) $(COMPILER)/$(PROJECT).axf
@@ -184,10 +186,17 @@ exec: install
 
 flash: install
 
-install: $(COMPILER) $(COMPILER)/$(PROJECT).axf $(COMPILER)/$(PROJECT).bin
+install: all $(COMPILER) $(COMPILER)/$(PROJECT).axf $(COMPILER)/$(PROJECT).bin
 # Offest 0x4000 for boot loader.
 #	@$(LM4FLASH) -E -v -S 0x4000 $(COMPILER)/$(PROJECT).bin
 	@$(LM4FLASH) -E -S 0x4000 $(COMPILER)/$(PROJECT).bin
+
+sflash: all $(COMPILER) $(COMPILER)/$(PROJECT).axf $(COMPILER)/$(PROJECT).bin $(SFLASH)
+# Offest 0x4000 for boot loader.
+	@$(SFLASH) -c /dev/ttyUSB0 -p 0x4000 -b 115200 -d -s 252 $(COMPILER)/$(PROJECT).bin
+
+$(SFLASH):
+	@$(CD) $(shell $(DIRNAME) $(SFLASH)) && $(MAKE)
 
 $(COMPILER)/$(PROJECT).axf: $(OBJS) $(LIBS)
 
