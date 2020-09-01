@@ -3,7 +3,7 @@
 Auth: M. Fras, Electronics Division, MPI for Physics, Munich  
 Mod.: M. Fras, Electronics Division, MPI for Physics, Munich  
 Date: 07 Feb 2020  
-Rev.: 28 Aug 2020  
+Rev.: 01 Sep 2020  
 
 
 
@@ -102,6 +102,13 @@ Rev.: 28 Aug 2020
     The boot loader sits at address ```0x0000``` of the flash, the main
     firmware image starts at address ```0x4000```.
 
+    The 4 LEDs D1..D4 indicate activity of the boot loader:
+    * LED 1 blinks during the countdown of the boot loader.
+    * The LED 1 is on when the boot loader is active.
+    * During firmware download via the boot loader, the LEDs 2..4 count up.
+    * When the firmware download via the boot loader is finished, all 4 LEDs
+      blink 3 times indicating the end of the firmware download.
+
     Example minicom session for the serial boot loader:
     ```
     ***** TIVA TM4C1294 boot loader version 0.0.3, release date: 28 Aug 2020 *****
@@ -171,7 +178,8 @@ Rev.: 28 Aug 2020
     make sflash
     ```
     If not yet done, this will automatically build the ```sflash``` tool that
-    comes with the TivaWare.
+    comes with the TivaWare. After the firmware download, the MCU reboots
+    automatically.
 
     Note that you may need to change the serial device in the ```Makefile```
     from ```/dev/ttyUSB0``` to the one your computer uses to communicate with
@@ -193,9 +201,9 @@ Rev.: 28 Aug 2020
     Connected LaunchPad™ Evaluation Kitis connected.
 
     Launch minicom either by calling ```make minicom``` inside the firmware
-    folder or by starting minicom from the shell ```minicom hw_demo```. To quit
-    minicom, press ```Ctrl-A```, then ```Q```. To edit the minicom settings,
-    press ```Ctrl-A```, then ```Z```.
+    directory or by starting minicom from the shell ```minicom -c on
+    hw_demo```. To quit minicom, press ```Ctrl-A```, then ```Q```. To edit the
+    minicom settings, press ```Ctrl-A```, then ```Z```.
 
     Example minicom session:
     ```
